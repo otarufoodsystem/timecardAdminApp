@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" href="https://otarufoodsystem.github.io/timecardSPApp/tm_icon_sp.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="OFSタイムカード管理画面">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>OFSタイムカード管理画面</title>
+  <style>
+    body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background-color: #fff; }
+    iframe { width: 100%; height: 100%; border: none; display: block; }
+  </style>
+</head>
+<body>
+
+  <iframe id="timecard-frame" src="" allow="geolocation"></iframe>
+
+  <script>
+    window.onload = function() {
+      document.getElementById('timecard-frame').src = "https://script.google.com/macros/s/AKfycbzzg2vSgy_St-cVF009bFOIQ1Rms-R9fQvVIkws_fpIIeVi2zpPO-fcRUoNqQ9Ai_9p/exec";
+    };
+  </script>
+
+</body>
+</html>
