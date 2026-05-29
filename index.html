@@ -149,10 +149,9 @@
 <div id="loading">処理中...</div>
 
 <script>
-  // ⚠️ ご自身のGASのウェブアプリURLに書き換えてください
-  const GAS_API_URL = "https://script.google.com/macros/s/AKfycbySC3W3Ph1g-DENo5E3e30_Ko0VnbWdrajnUR7o0epKE5GNSuFve8cq3mTmq6vgZFIj/exec";
+  // ⚠️ 最新のGASウェブアプリURLに書き換えてください
+  const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxGv744h0XMb8BZQzDqODOKlf553cjMXta--DAl93wQhaWXprnjFInY7jJDgoeycQHH/exec";
   
-  // 💡ブラウザの長期記憶（localStorage）からパスワードと前回の打刻時刻を読み込む
   let currentPassword = localStorage.getItem("admin_saved_password") || "";
   let lastAuthTime = localStorage.getItem("admin_last_auth_time") || "0";
 
@@ -160,22 +159,16 @@
     await runAuthentication();
   };
 
-  /**
-   * 10分の有効期限つき認証実行ルーチン
-   */
   async function runAuthentication() {
     const overlay = document.getElementById("protection-overlay");
     const now = Date.now();
-    const tenMinutes = 10 * 60 * 1000; // 💡 10分（ミリ秒換算）
+    const tenMinutes = 10 * 60 * 1000;
 
-    // 💡 前回の認証から10分以上経過している場合は、記憶をリセットして再入力を求める
     if (now - parseInt(lastAuthTime, 10) > tenMinutes) {
       currentPassword = "";
-      localStorage.removeItem("admin_saved_password");
-      localStorage.removeItem("admin_last_auth_time");
+      clearAuthStorage();
     }
     
-    // パスワードが未入力、または期限切れの場合はポップアップを出す
     while (!currentPassword) {
       const input = prompt("管理用パスワードを入力してください（10分間有効）：");
       if (input === null) {
@@ -196,7 +189,6 @@
       const resData = await responseToJson(response);
       
       if (resData.success) {
-        // 💡 認証成功：パスワードと「現在の時刻」をブラウザに記憶
         localStorage.setItem("admin_saved_password", currentPassword);
         localStorage.setItem("admin_last_auth_time", Date.now().toString());
         
@@ -209,20 +201,16 @@
         loadStaffList();
         loadStoreList();
       } else {
-        // パスワード間違い
         clearAuthStorage();
         currentPassword = "";
         alert("パスワードが違います。");
-        runAuthentication(); // 再試行
+        runAuthentication();
       }
     } catch (e) {
       overlay.innerText = "通信エラーが発生しました。リロードしてください。";
     }
   }
 
-  /**
-   * GASへの通信用共通関数（通信成功のたびに有効期限を10分延長します）
-   */
   async function callGas(action, data = null) {
     const payload = { action: action, password: currentPassword };
     if (data) payload.data = data;
@@ -232,10 +220,7 @@
     try {
       const response = await fetch(GAS_API_URL, { method: "POST", body: JSON.stringify(payload) });
       const resData = await responseToJson(response);
-      
-      // 💡 操作（通信）に成功するたびに、有効期限のタイマーをそこから10分間に「延長」する
       localStorage.setItem("admin_last_auth_time", Date.now().toString());
-      
       return resData;
     } catch (error) {
       alert("通信エラーが発生しました:\n" + error.message);
