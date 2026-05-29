@@ -11,21 +11,49 @@
       display: flex; justify-content: center; align-items: center;
       color: white; font-weight: bold; font-size: 1.2rem;
     }
+    
+    /* 💡 bodyに固定エリアの高さ分の余白を持たせ、コンテンツが隠れないようにします */
+    body { 
+      font-family: 'Helvetica Neue', Arial, sans-serif; 
+      background-color: #f4f6f9; 
+      margin: 0; 
+      padding-top: 120px; 
+      color: #333; 
+    }
+
+    /* 💡 ヘッダーとタブを上部に固定するエリア */
+    .fixed-top-area {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 1000;
+      background-color: #f4f6f9;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
     .header { 
       background-color: #22252a; 
       color: white; 
       padding: 15px 20px; 
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
-    .header { background-color: #22252a; color: white; padding: 15px 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
     .header h1 { margin: 0; font-size: 1.4rem; letter-spacing: 1px; }
     .header .version { font-size: 0.9rem; color: #c29d38; font-family: monospace; font-weight: bold; }
+    
     .container { max-width: 1100px; margin: 20px auto; padding: 0 15px; box-sizing: border-box; }
     
-    .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #ccc; padding-bottom: 5px; }
+    /* 💡 固定エリア内に収まるようタブの余白と背景色を調整 */
+    .tabs { 
+      display: flex; 
+      gap: 10px; 
+      margin-bottom: 0; 
+      border-bottom: 2px solid #ccc; 
+      padding: 10px 20px 0 20px; 
+      background-color: #fff;
+    }
     .tab-btn { padding: 10px 20px; font-size: 1rem; font-weight: bold; background: none; border: none; cursor: pointer; color: #666; border-radius: 5px 5px 0 0; transition: 0.2s; }
     .tab-btn.active { color: #c29d38; border-bottom: 4px solid #c29d38; background-color: #fff; }
     .tab-content { display: none; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
@@ -62,17 +90,19 @@
 
 <div id="protection-overlay">認証確認中...</div>
 
-<div class="header">
-  <h1>⚙️ OFSタイムカード 管理画面</h1>
-  <span class="version" id="app-version">...</span>
-</div>
+<div class="fixed-top-area">
+  <div class="header">
+    <h1>⚙️ OFSタイムカード 管理画面</h1>
+    <span class="version" id="app-version">...</span>
+  </div>
 
-<div class="container">
   <div class="tabs">
     <button id="tab-staff-btn" class="tab-btn active" onclick="switchTab('staff')">👤 スタッフ一覧メンテ</button>
     <button id="tab-store-btn" class="tab-btn" onclick="switchTab('store')">🏪 店舗一覧メンテ</button>
   </div>
+</div>
 
+<div class="container">
   <div id="tab-staff" class="tab-content active">
     <div class="view-grid">
       <div class="form-box">
@@ -257,11 +287,15 @@
   }
 
   function showLoading(show) { document.getElementById('loading').style.display = show ? 'flex' : 'none'; }
+  
   function switchTab(type) {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     document.getElementById(`tab-${type}-btn`).classList.add('active');
     document.getElementById(`tab-${type}`).classList.add('active');
+    
+    // 💡 タブ切り替え時に、固定ヘッダーに隠れないよう画面最上部へスクロールさせる
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   // --- スタッフ機能 ---
@@ -294,6 +328,7 @@
     document.getElementById('staff-stores').value = item.stores;
     document.getElementById('staff-hours').value = item.standardHours;
     document.getElementById('staff-form-title').innerText = "スタッフ編集 (上書き)";
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   function clearStaffForm() {
@@ -356,6 +391,7 @@
     document.getElementById('store-in-marume').value = item.inMarume;
     document.getElementById('store-out-marume').value = item.outMarume;
     document.getElementById('store-form-title').innerText = "店舗編集 (上書き)";
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   function clearStoreForm() {
