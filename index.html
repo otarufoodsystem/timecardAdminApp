@@ -1,28 +1,364 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <base target="_top">
   <meta charset="UTF-8">
-  <link rel="apple-touch-icon" href="https://otarufoodsystem.github.io/timecardAdminApp/tm_icon_admin.png">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="OFSタイムカード管理画面">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>OFSタイムカード管理画面</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OFSタイムカード 管理画面</title>
   <style>
-    body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background-color: #fff; }
-    iframe { width: 100%; height: 100%; border: none; display: block; }
+    /* パスワードが通るまで画面全体を隠すためのスタイル */
+    #protection-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background-color: #22252a; z-index: 99999;
+      display: flex; justify-content: center; align-items: center;
+      color: white; font-weight: bold; font-size: 1.2rem;
+    }
+    body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #f4f6f9; margin: 0; padding: 0; color: #333; }
+    .header { background-color: #22252a; color: white; padding: 15px 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+    .header h1 { margin: 0; font-size: 1.4rem; letter-spacing: 1px; }
+    .container { max-width: 1100px; margin: 20px auto; padding: 0 15px; box-sizing: border-box; }
+    .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #ccc; padding-bottom: 5px; }
+    .tab-btn { padding: 10px 20px; font-size: 1rem; font-weight: bold; background: none; border: none; cursor: pointer; color: #666; border-radius: 5px 5px 0 0; transition: 0.2s; }
+    .tab-btn.active { color: #c29d38; border-bottom: 4px solid #c29d38; background-color: #fff; }
+    .tab-content { display: none; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    .tab-content.active { display: block; }
+    .view-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+    @media (min-width: 768px) { .view-grid { grid-template-columns: 350px 1fr; } }
+    .form-box { background: #f8f9fa; padding: 15px; border-radius: 6px; border: 1px solid #ddd; height: fit-content; }
+    .form-box h3 { margin-top: 0; border-bottom: 2px solid #ddd; padding-bottom: 5px; color: #444; }
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; font-weight: bold; font-size: 0.9rem; margin-bottom: 4px; color: #555; }
+    .form-group input { width: 100%; padding: 8px; font-size: 0.95rem; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+    .btn-row { display: flex; gap: 10px; margin-top: 15px; }
+    .btn { padding: 10px 15px; font-size: 0.9rem; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; transition: 0.2s; text-align: center; }
+    .btn-primary { background-color: #28a745; color: white; flex: 1; }
+    .btn-clear { background-color: #6c757d; color: white; }
+    .btn-danger { background-color: #dc3545; color: white; padding: 5px 10px; font-size: 0.8rem; }
+    .btn-edit { background-color: #007bff; color: white; padding: 5px 10px; font-size: 0.8rem; margin-right: 5px; }
+    .table-container { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; }
+    th, td { padding: 10px; border-bottom: 1px solid #ddd; }
+    th { background-color: #f1f3f5; font-weight: bold; }
+    #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.7); display: none; justify-content: center; align-items: center; z-index: 9999; font-weight: bold; font-size: 1.2rem; color: #c29d38; }
   </style>
 </head>
 <body>
 
-  <iframe id="timecard-frame" src="" allow="geolocation"></iframe>
+<div id="protection-overlay">認証確認中...</div>
 
-  <script>
-    window.onload = function() {
-      document.getElementById('timecard-frame').src = "https://script.google.com/macros/s/AKfycbzzg2vSgy_St-cVF009bFOIQ1Rms-R9fQvVIkws_fpIIeVi2zpPO-fcRUoNqQ9Ai_9p/exec";
-    };
-  </script>
+<div class="header">
+  <h1>⚙️ OFSタイムカード 管理画面 (Hosted)</h1>
+</div>
 
+<div class="container">
+  <div class="tabs">
+    <button id="tab-staff-btn" class="tab-btn active" onclick="switchTab('staff')">👤 スタッフ一覧メンテ</button>
+    <button id="tab-store-btn" class="tab-btn" onclick="switchTab('store')">🏪 店舗一覧メンテ</button>
+  </div>
+
+  <div id="tab-staff" class="tab-content active">
+    <div class="view-grid">
+      <div class="form-box">
+        <h3 id="staff-form-title">スタッフ登録・編集</h3>
+        <input type="hidden" id="staff-row-index" value="">
+        <div class="form-group">
+          <label for="staff-name">氏名</label>
+          <input type="text" id="staff-name" placeholder="例: 山田太郎">
+        </div>
+        <div class="form-group">
+          <label for="staff-stores">出勤店舗 (カンマ区切り)</label>
+          <input type="text" id="staff-stores" placeholder="例: 新米, 銭函">
+        </div>
+        <div class="form-group">
+          <label for="staff-hours">標準勤務時間 (時間数)</label>
+          <input type="text" id="staff-hours" value="8:00">
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-clear" onclick="clearStaffForm()">クリア</button>
+          <button class="btn btn-primary" onclick="submitStaffForm()">保存する</button>
+        </div>
+      </div>
+      <div>
+        <h3>登録スタッフ一覧</h3>
+        <div class="table-container">
+          <table>
+            <thead><tr><th>氏名</th><th>所属・出勤店舗</th><th>標準勤務時間</th><th>操作</th></tr></thead>
+            <tbody id="staff-table-body"><tr><td colspan="4">読み込み中...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="tab-store" class="tab-content">
+    <div class="view-grid">
+      <div class="form-box">
+        <h3 id="store-form-title">店舗登録・編集</h3>
+        <input type="hidden" id="store-row-index" value="">
+        <div class="form-group">
+          <label for="store-name">店舗名</label>
+          <input type="text" id="store-name" placeholder="例: 新米">
+        </div>
+        <div class="form-group">
+          <label for="store-lat">緯度</label>
+          <input type="number" step="any" id="store-lat">
+        </div>
+        <div class="form-group">
+          <label for="store-lng">経度</label>
+          <input type="number" step="any" id="store-lng">
+        </div>
+        <div class="form-group">
+          <label for="store-radius">GPS許容範囲(m)</label>
+          <input type="number" id="store-radius" value="100">
+        </div>
+        <div class="form-group">
+          <label for="store-in-marume">INまるめ(分)</label>
+          <input type="number" id="store-in-marume" value="15">
+        </div>
+        <div class="form-group">
+          <label for="store-out-marume">OUTまるめ(分)</label>
+          <input type="number" id="store-out-marume" value="15">
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-clear" onclick="clearStoreForm()">クリア</button>
+          <button class="btn btn-primary" onclick="submitStoreForm()">保存する</button>
+        </div>
+      </div>
+      <div>
+        <h3>登録店舗一覧</h3>
+        <div class="table-container">
+          <table>
+            <thead><tr><th>店舗名</th><th>位置情報</th><th>許容径</th><th>まるめ</th><th>操作</th></tr></thead>
+            <tbody id="store-table-body"><tr><td colspan="5">読み込み中...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="loading">処理中...</div>
+
+<script>
+  // ⚠️ ご自身のGASのウェブアプリURLに書き換えてください
+  const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyofC_6lP3T4PZsNdtfly3iUu3x-DR1F9N1fqlL9uQzfV88ffVx3hl5NZSIQOkGSUL2/exec";
+  
+  // 入力されたパスワードを一時保存する変数
+  let currentPassword = sessionStorage.getItem("admin_session_password") || "";
+
+  window.onload = async function() {
+    await runAuthentication();
+  };
+
+  /**
+   * 認証の実行ルーチン
+   */
+  async function runAuthentication() {
+    const overlay = document.getElementById("protection-overlay");
+    
+    while (!currentPassword) {
+      const input = prompt("管理用パスワードを入力してください：");
+      if (input === null) {
+        overlay.innerText = "パスワードが入力されなかったため、画面を表示できません。ブラウザをリロードしてください。";
+        return;
+      }
+      if (input.trim() !== "") {
+        currentPassword = input.trim();
+      }
+    }
+
+    // 入力されたパスワードが正しいか一度GASに投げて確認する
+    showLoading(true);
+    try {
+      const res = await fetch(GAS_API_URL, {
+        method: "POST",
+        body: JSON.stringify({ action: "checkAuth", password: currentPassword })
+      });
+      const resData = await responseToJson(res);
+      
+      if (resData.success) {
+        // 認証成功：パスワードをブラウザに記憶し、マスクを解除してデータをロード
+        sessionStorage.setItem("admin_session_password", currentPassword);
+        overlay.style.display = "none";
+        showLoading(false);
+        loadStaffList();
+        loadStoreList();
+      } else {
+        // パスワード間違い
+        sessionStorage.removeItem("admin_session_password");
+        currentPassword = "";
+        alert("パスワードが違います。");
+        runAuthentication(); // 再試行
+      }
+    } catch (e) {
+      overlay.innerText = "通信エラーが発生しました。リロードしてください。";
+    }
+  }
+
+  /**
+   * GASへの通信用共通関数（パスワードを毎回自動添付）
+   */
+  async function callGas(action, data = null) {
+    const payload = { action: action, password: currentPassword };
+    if (data) payload.data = data;
+    if (data && data.rowIndex) { payload.rowIndex = data.rowIndex; delete data.rowIndex; }
+    if (action === "deleteStaff" || action === "deleteStore") payload.rowIndex = data;
+
+    try {
+      const response = await fetch(GAS_API_URL, { method: "POST", body: JSON.stringify(payload) });
+      const resData = await responseToJson(response);
+      return resData;
+    } catch (error) {
+      alert("通信エラーが発生しました:\n" + error.message);
+      showLoading(false);
+      throw error;
+    }
+  }
+
+  async function responseToJson(response) {
+    const resData = await response.json();
+    if (resData.authError) {
+      sessionStorage.removeItem("admin_session_password");
+      alert("セッションが切れたか、パスワードが変更されました。再入力してください。");
+      location.reload();
+      throw new Error("Auth Error");
+    }
+    if (!resData.success) throw new Error(resData.error);
+    return resData;
+  }
+
+  function showLoading(show) { document.getElementById('loading').style.display = show ? 'flex' : 'none'; }
+  function switchTab(type) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.getElementById(`tab-${type}-btn`).classList.add('active');
+    document.getElementById(`tab-${type}`).classList.add('active');
+  }
+
+  // --- スタッフ機能 ---
+  let globalStaffList = [];
+  async function loadStaffList() {
+    const res = await callGas("getStaffList");
+    globalStaffList = res.data;
+    const tbody = document.getElementById('staff-table-body');
+    tbody.innerHTML = '';
+    if(globalStaffList.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4">登録スタッフはいません</td></tr>';
+      return;
+    }
+    globalStaffList.forEach(item => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td><strong>${item.name}</strong></td><td>${item.stores}</td><td>${item.standardHours}</td>
+        <td>
+          <button class="btn btn-edit" onclick="editStaff(${item.rowIndex})">編集</button>
+          <button class="btn btn-danger" onclick="deleteStaff(${item.rowIndex}, '${item.name}')">削除</button>
+        </td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function editStaff(rowIndex) {
+    const item = globalStaffList.find(s => s.rowIndex === rowIndex);
+    if(!item) return;
+    document.getElementById('staff-row-index').value = item.rowIndex;
+    document.getElementById('staff-name').value = item.name;
+    document.getElementById('staff-stores').value = item.stores;
+    document.getElementById('staff-hours').value = item.standardHours;
+    document.getElementById('staff-form-title').innerText = "スタッフ編集 (上書き)";
+  }
+
+  function clearStaffForm() {
+    document.getElementById('staff-row-index').value = "";
+    document.getElementById('staff-name').value = "";
+    document.getElementById('staff-stores').value = "";
+    document.getElementById('staff-hours').value = "8:00";
+    document.getElementById('staff-form-title').innerText = "スタッフ登録・編集";
+  }
+
+  async function submitStaffForm() {
+    const name = document.getElementById('staff-name').value;
+    const stores = document.getElementById('staff-stores').value;
+    const hours = document.getElementById('staff-hours').value;
+    const rowIndex = document.getElementById('staff-row-index').value;
+    if(!name || !stores) { alert("氏名と出勤店舗は必須です"); return; }
+    showLoading(true);
+    const res = await callGas("saveStaff", { rowIndex: rowIndex ? Number(rowIndex) : null, name: name, stores: stores, standardHours: hours });
+    showLoading(false); alert(res.message); clearStaffForm(); loadStaffList();
+  }
+
+  async function deleteStaff(rowIndex, name) {
+    if(!confirm(`本当に ${name} さんを削除しますか？`)) return;
+    showLoading(true);
+    const res = await callGas("deleteStaff", rowIndex);
+    showLoading(false); alert(res.message); clearStaffForm(); loadStaffList();
+  }
+
+  // --- 店舗機能 ---
+  let globalStoreList = [];
+  async function loadStoreList() {
+    const res = await callGas("getStoreList");
+    globalStoreList = res.data;
+    const tbody = document.getElementById('store-table-body');
+    tbody.innerHTML = '';
+    if(globalStoreList.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5">登録店舗はありません</td></tr>';
+      return;
+    }
+    globalStoreList.forEach(item => {
+      const tr = document.createElement('tr');
+      const geo = (item.lat && item.lng) ? `${item.lat}, ${item.lng}` : '未設定';
+      tr.innerHTML = `<td><strong>${item.storeName}</strong></td><td><small>${geo}</small></td><td>${item.radius}m</td><td>IN:${item.inMarume}分/OUT:${item.outMarume}分</td>
+        <td>
+          <button class="btn btn-edit" onclick="editStore(${item.rowIndex})">編集</button>
+          <button class="btn btn-danger" onclick="deleteStore(${item.rowIndex}, '${item.storeName}')">削除</button>
+        </td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function editStore(rowIndex) {
+    const item = globalStoreList.find(s => s.rowIndex === rowIndex);
+    if(!item) return;
+    document.getElementById('store-row-index').value = item.rowIndex;
+    document.getElementById('store-name').value = item.storeName;
+    document.getElementById('store-lat').value = item.lat;
+    document.getElementById('store-lng').value = item.lng;
+    document.getElementById('store-radius').value = item.radius;
+    document.getElementById('store-in-marume').value = item.inMarume;
+    document.getElementById('store-out-marume').value = item.outMarume;
+    document.getElementById('store-form-title').innerText = "店舗編集 (上書き)";
+  }
+
+  function clearStoreForm() {
+    document.getElementById('store-row-index').value = "";
+    document.getElementById('store-name').value = "";
+    document.getElementById('store-lat').value = "";
+    document.getElementById('store-lng').value = "";
+    document.getElementById('store-radius').value = "100";
+    document.getElementById('store-in-marume').value = "15";
+    document.getElementById('store-out-marume').value = "15";
+    document.getElementById('store-form-title').innerText = "店舗登録・編集";
+  }
+
+  async function submitStoreForm() {
+    const storeName = document.getElementById('store-name').value;
+    const lat = document.getElementById('store-lat').value;
+    const lng = document.getElementById('store-lng').value;
+    const radius = document.getElementById('store-radius').value;
+    const inMarume = document.getElementById('store-in-marume').value;
+    const outMarume = document.getElementById('store-out-marume').value;
+    const rowIndex = document.getElementById('store-row-index').value;
+    if(!storeName) { alert("店舗名は必須です"); return; }
+    showLoading(true);
+    const res = await callGas("saveStore", { rowIndex: rowIndex ? Number(rowIndex) : null, storeName: storeName, lat: lat, lng: lng, radius: radius, inMarume: inMarume, outMarume: outMarume });
+    showLoading(false); alert(res.message); clearStoreForm(); loadStoreList();
+  }
+
+  async function deleteStore(rowIndex, storeName) {
+    if(!confirm(`本当に店舗「${storeName}」を削除しますか？`)) return;
+    showLoading(true);
+    const res = await callGas("deleteStore", rowIndex);
+    showLoading(false); alert(res.message); clearStoreForm(); loadStoreList();
+  }
+</script>
 </body>
 </html>
