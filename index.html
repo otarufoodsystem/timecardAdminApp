@@ -77,10 +77,12 @@
         <div class="form-group">
           <label for="staff-stores">出勤店舗 (カンマ区切り)</label>
           <input type="text" id="staff-stores" placeholder="例: 真兵衛,小樽坂">
+          <small>※店舗一覧にある正確な店舗名を入力してください</small>
         </div>
         <div class="form-group">
           <label for="staff-hours">標準勤務時間 (時間数)</label>
-          <input type="text" id="staff-hours" value="8:00">
+          <input type="text" id="staff-hours" value="8:00" placeholder="例: 8:00">
+          <small>※1日あたりの所定労働時間数です</small>
         </div>
         <div class="btn-row">
           <button class="btn btn-clear" onclick="clearStaffForm()">クリア</button>
@@ -91,7 +93,7 @@
         <h3>登録スタッフ一覧</h3>
         <div class="table-container">
           <table>
-            <thead><tr><th>氏名</th><th>所属・出勤店舗</th><th>標準勤務時間</th><th>操作</th></tr></thead>
+            <thead><tr><th>氏名</th><th>所属・出勤店舗</th><th>標準勤務時間 (時間数)</th><th>操作</th></tr></thead>
             <tbody id="staff-table-body"><tr><td colspan="4">読み込み中...</td></tr></tbody>
           </table>
         </div>
@@ -110,11 +112,11 @@
         </div>
         <div class="form-group">
           <label for="store-lat">緯度</label>
-          <input type="number" step="any" id="store-lat">
+          <input type="number" step="any" id="store-lat" placeholder="例: 43.1907">
         </div>
         <div class="form-group">
           <label for="store-lng">経度</label>
-          <input type="number" step="any" id="store-lng">
+          <input type="number" step="any" id="store-lng" placeholder="例: 141.005">
         </div>
         <div class="form-group">
           <label for="store-radius">GPS許容範囲(m)</label>
@@ -137,7 +139,7 @@
         <h3>登録店舗一覧</h3>
         <div class="table-container">
           <table>
-            <thead><tr><th>店舗名</th><th>位置情報</th><th>許容径</th><th>まるめ</th><th>操作</th></tr></thead>
+            <thead><tr><th>店舗名</th><th>位置情報</th><th>許容径</th><th>まるめ(IN/OUT)</th><th>操作</th></tr></thead>
             <tbody id="store-table-body"><tr><td colspan="5">登録データを読み込み中...</td></tr></tbody>
           </table>
         </div>
