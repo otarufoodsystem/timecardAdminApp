@@ -138,7 +138,7 @@
         <div class="table-container">
           <table>
             <thead><tr><th>店舗名</th><th>位置情報</th><th>許容径</th><th>まるめ</th><th>操作</th></tr></thead>
-            <tbody id="store-table-body"><tr><td colspan="5">読み込み中...</td></tr></tbody>
+            <tbody id="store-table-body"><tr><td colspan="5">登録データを読み込み中...</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -150,21 +150,36 @@
 
 <script>
   // ⚠️ ご自身のGASのウェブアプリURLに書き換えてください
-  const GAS_API_URL = "https://script.google.com/macros/s/AKfycbySC3W3Ph1g-DENo5E3e30_Ko0VnbWdrajnUR7o0epKE5GNSuFve8cq3mTmq6vgZFIj/exec";
+  const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzzg2vSgy_St-cVF009bFOIQ1Rms-R9fQvVIkws_fpIIeVi2zpPO-fcRUoNqQ9Ai_9p/exec";
   
-  let currentPassword = sessionStorage.getItem("admin_session_password") || "";
+  // 💡ブラウザの長期記憶（localStorage）からパスワードと前回の打刻時刻を読み込む
+  let currentPassword = localStorage.getItem("admin_saved_password") || "";
+  let lastAuthTime = localStorage.getItem("admin_last_auth_time") || "0";
 
   window.onload = async function() {
     await runAuthentication();
   };
 
+  /**
+   * 10分の有効期限つき認証実行ルーチン
+   */
   async function runAuthentication() {
     const overlay = document.getElementById("protection-overlay");
+    const now = Date.now();
+    const tenMinutes = 10 * 60 * 1000; // 💡 10分（ミリ秒換算）
+
+    // 💡 前回の認証から10分以上経過している場合は、記憶をリセットして再入力を求める
+    if (now - parseInt(lastAuthTime, 10) > tenMinutes) {
+      currentPassword = "";
+      localStorage.removeItem("admin_saved_password");
+      localStorage.removeItem("admin_last_auth_time");
+    }
     
+    // パスワードが未入力、または期限切れの場合はポップアップを出す
     while (!currentPassword) {
-      const input = prompt("管理用パスワードを入力してください：");
+      const input = prompt("管理用パスワードを入力してください（10分間有効）：");
       if (input === null) {
-        overlay.innerText = "パスワードが入力されなかったため、画面を表示できません。ブラウザをリロードしてください。";
+        overlay.innerText = "パスワードが入力されなかったため、画面を表示できません。再読込してください。";
         return;
       }
       if (input.trim() !== "") {
@@ -174,16 +189,17 @@
 
     showLoading(true);
     try {
-      const res = await fetch(GAS_API_URL, {
+      const response = await fetch(GAS_API_URL, {
         method: "POST",
         body: JSON.stringify({ action: "checkAuth", password: currentPassword })
       });
-      const resData = await responseToJson(res);
+      const resData = await responseToJson(response);
       
       if (resData.success) {
-        sessionStorage.setItem("admin_session_password", currentPassword);
+        // 💡 認証成功：パスワードと「現在の時刻」をブラウザに記憶
+        localStorage.setItem("admin_saved_password", currentPassword);
+        localStorage.setItem("admin_last_auth_time", Date.now().toString());
         
-        // 💡【追加】GASから受け取ったバージョンをヘッダーに反映
         if (resData.version) {
           document.getElementById("app-version").innerText = resData.version;
         }
@@ -193,16 +209,20 @@
         loadStaffList();
         loadStoreList();
       } else {
-        sessionStorage.removeItem("admin_session_password");
+        // パスワード間違い
+        clearAuthStorage();
         currentPassword = "";
         alert("パスワードが違います。");
-        runAuthentication();
+        runAuthentication(); // 再試行
       }
     } catch (e) {
       overlay.innerText = "通信エラーが発生しました。リロードしてください。";
     }
   }
 
+  /**
+   * GASへの通信用共通関数（通信成功のたびに有効期限を10分延長します）
+   */
   async function callGas(action, data = null) {
     const payload = { action: action, password: currentPassword };
     if (data) payload.data = data;
@@ -212,6 +232,10 @@
     try {
       const response = await fetch(GAS_API_URL, { method: "POST", body: JSON.stringify(payload) });
       const resData = await responseToJson(response);
+      
+      // 💡 操作（通信）に成功するたびに、有効期限のタイマーをそこから10分間に「延長」する
+      localStorage.setItem("admin_last_auth_time", Date.now().toString());
+      
       return resData;
     } catch (error) {
       alert("通信エラーが発生しました:\n" + error.message);
@@ -223,13 +247,18 @@
   async function responseToJson(response) {
     const resData = await response.json();
     if (resData.authError) {
-      sessionStorage.removeItem("admin_session_password");
-      alert("セッションが切れたか、パスワードが変更されました。再入力してください。");
+      clearAuthStorage();
+      alert("セッションの有効期限が切れたか、パスワードが変更されました。再入力してください。");
       location.reload();
       throw new Error("Auth Error");
     }
     if (!resData.success) throw new Error(resData.error);
     return resData;
+  }
+
+  function clearAuthStorage() {
+    localStorage.removeItem("admin_saved_password");
+    localStorage.removeItem("admin_last_auth_time");
   }
 
   function showLoading(show) { document.getElementById('loading').style.display = show ? 'flex' : 'none'; }
