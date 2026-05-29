@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>OFSタイムカード 管理画面</title>
   <style>
-    /* パスワードが通るまで画面全体を隠すためのスタイル */
     #protection-overlay {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background-color: #22252a; z-index: 99999;
@@ -13,8 +12,18 @@
       color: white; font-weight: bold; font-size: 1.2rem;
     }
     body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #f4f6f9; margin: 0; padding: 0; color: #333; }
-    .header { background-color: #22252a; color: white; padding: 15px 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+    .header { 
+      background-color: #22252a; 
+      color: white; 
+      padding: 15px 20px; 
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
     .header h1 { margin: 0; font-size: 1.4rem; letter-spacing: 1px; }
+    .header .version { font-size: 0.9rem; color: #c29d38; font-family: monospace; font-weight: bold; }
+
     .container { max-width: 1100px; margin: 20px auto; padding: 0 15px; box-sizing: border-box; }
     .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #ccc; padding-bottom: 5px; }
     .tab-btn { padding: 10px 20px; font-size: 1rem; font-weight: bold; background: none; border: none; cursor: pointer; color: #666; border-radius: 5px 5px 0 0; transition: 0.2s; }
@@ -47,6 +56,7 @@
 
 <div class="header">
   <h1>⚙️ OFSタイムカード 管理画面 (Hosted)</h1>
+  <span class="version" id="app-version">...</span>
 </div>
 
 <div class="container">
@@ -140,18 +150,14 @@
 
 <script>
   // ⚠️ ご自身のGASのウェブアプリURLに書き換えてください
-  const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyofC_6lP3T4PZsNdtfly3iUu3x-DR1F9N1fqlL9uQzfV88ffVx3hl5NZSIQOkGSUL2/exec";
+  const GAS_API_URL = "https://script.google.com/macros/s/AKfycbySC3W3Ph1g-DENo5E3e30_Ko0VnbWdrajnUR7o0epKE5GNSuFve8cq3mTmq6vgZFIj/exec";
   
-  // 入力されたパスワードを一時保存する変数
   let currentPassword = sessionStorage.getItem("admin_session_password") || "";
 
   window.onload = async function() {
     await runAuthentication();
   };
 
-  /**
-   * 認証の実行ルーチン
-   */
   async function runAuthentication() {
     const overlay = document.getElementById("protection-overlay");
     
@@ -166,7 +172,6 @@
       }
     }
 
-    // 入力されたパスワードが正しいか一度GASに投げて確認する
     showLoading(true);
     try {
       const res = await fetch(GAS_API_URL, {
@@ -176,27 +181,28 @@
       const resData = await responseToJson(res);
       
       if (resData.success) {
-        // 認証成功：パスワードをブラウザに記憶し、マスクを解除してデータをロード
         sessionStorage.setItem("admin_session_password", currentPassword);
+        
+        // 💡【追加】GASから受け取ったバージョンをヘッダーに反映
+        if (resData.version) {
+          document.getElementById("app-version").innerText = resData.version;
+        }
+
         overlay.style.display = "none";
         showLoading(false);
         loadStaffList();
         loadStoreList();
       } else {
-        // パスワード間違い
         sessionStorage.removeItem("admin_session_password");
         currentPassword = "";
         alert("パスワードが違います。");
-        runAuthentication(); // 再試行
+        runAuthentication();
       }
     } catch (e) {
       overlay.innerText = "通信エラーが発生しました。リロードしてください。";
     }
   }
 
-  /**
-   * GASへの通信用共通関数（パスワードを毎回自動添付）
-   */
   async function callGas(action, data = null) {
     const payload = { action: action, password: currentPassword };
     if (data) payload.data = data;
