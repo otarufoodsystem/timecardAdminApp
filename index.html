@@ -12,7 +12,6 @@
       color: white; font-weight: bold; font-size: 1.2rem;
     }
     
-    /* 💡 画面全体の基本構造（PCでははみ出しスクロールを防止） */
     html, body {
       margin: 0;
       padding: 0;
@@ -40,18 +39,21 @@
     .header h1 { margin: 0; font-size: 1.2rem; letter-spacing: 1px; }
     .header .version { font-size: 0.8rem; color: #c29d38; font-family: monospace; font-weight: bold; }
     
-    /* タブメニュー（全端末で上部固定） */
+    /* タブメニュー（横スクロール可能に調整） */
     .tabs { 
       display: flex; 
       gap: 5px; 
       border-bottom: 2px solid #ccc; 
       padding: 8px 15px 0 15px; 
       background-color: #fff;
+      overflow-x: auto;
+      white-space: nowrap;
     }
+    .tabs::-webkit-scrollbar { display: none; } /* タブのスクロールバーは隠す */
     .tab-btn { padding: 8px 12px; font-size: 0.9rem; font-weight: bold; background: none; border: none; cursor: pointer; color: #666; border-radius: 5px 5px 0 0; transition: 0.2s; white-space: nowrap; }
     .tab-btn.active { color: #c29d38; border-bottom: 4px solid #c29d38; background-color: #fff; }
     
-    /* 💡 メインコンテナ：PCでは高さを画面ぴったりに、スマホではなりゆきに */
+    /* メインコンテナ */
     .container { 
       max-width: 1300px; 
       margin: 0 auto; 
@@ -59,7 +61,7 @@
       box-sizing: border-box; 
     }
     @media (min-width: 768px) {
-      .container { height: calc(100% - 95px); } /* ヘッダーとタブを除いた高さ */
+      .container { height: calc(100% - 95px); } 
     }
     
     /* タブの中身 */
@@ -76,7 +78,7 @@
     }
     .tab-content.active { display: block; }
 
-    /* 💡 レイアウト格子：スマホは縦1列、PCは横2列 */
+    /* レイアウト格子 */
     .view-grid { 
       display: flex;
       flex-direction: column;
@@ -95,7 +97,8 @@
     .form-box h3 { margin-top: 0; border-bottom: 2px solid #ddd; padding-bottom: 5px; color: #444; font-size: 1rem; }
     .form-group { margin-bottom: 12px; }
     .form-group label { display: block; font-weight: bold; font-size: 0.85rem; margin-bottom: 4px; color: #555; }
-    .form-group input { width: 100%; padding: 8px; font-size: 0.9rem; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+    .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 8px; font-size: 0.9rem; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-family: inherit; }
+    .form-group textarea { resize: vertical; height: 70px; }
     .form-group small { color: #777; font-size: 0.75rem; display: block; margin-top: 2px; }
     .btn-row { display: flex; gap: 10px; margin-top: 15px; }
     
@@ -117,7 +120,7 @@
     }
     .list-area-container h3 { margin-top: 0; margin-bottom: 10px; font-size: 1rem; }
 
-    /* 💡 テーブルのスクロール設定（PCでは独立スクロール、スマホでは自動伸縮） */
+    /* テーブルのスクロール設定 */
     .table-container { 
       overflow-x: auto;
       border: 1px solid #eee;
@@ -131,19 +134,17 @@
       }
     }
     
-    /* スクロールバーのデザイン */
     .table-container::-webkit-scrollbar { width: 6px; height: 6px; }
     .table-container::-webkit-scrollbar-track { background: #f1f1f1; }
     .table-container::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
 
-    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; min-width: 500px; } /* スマホでも表がつぶれないよう最小横幅を確保 */
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; min-width: 550px; } 
     
-    /* 見出し行（PCのみ上部固定） */
     th { background-color: #f1f3f5; font-weight: bold; }
     @media (min-width: 768px) {
       th { position: sticky; top: 0; z-index: 10; box-shadow: 0 1px 0 #ddd; }
     }
-    th, td { padding: 8px 10px; border-bottom: 1px solid #ddd; }
+    th, td { padding: 8px 10px; border-bottom: 1px solid #ddd; word-break: break-all; }
     tr:hover { background-color: #f8f9fa; }
 
     #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.7); display: none; justify-content: center; align-items: center; z-index: 9999; font-weight: bold; font-size: 1.2rem; color: #c29d38; }
@@ -161,6 +162,7 @@
 <div class="tabs">
   <button id="tab-staff-btn" class="tab-btn active" onclick="switchTab('staff')">👤 スタッフ一覧メンテ</button>
   <button id="tab-store-btn" class="tab-btn" onclick="switchTab('store')">🏪 店舗一覧メンテ</button>
+  <button id="tab-comment-btn" class="tab-btn" onclick="switchTab('comment')">💬 コメント一覧メンテ</button>
 </div>
 
 <div class="container">
@@ -246,6 +248,46 @@
       </div>
     </div>
   </div>
+
+  <div id="tab-comment" class="tab-content">
+    <div class="view-grid">
+      <div class="form-box">
+        <h3 id="comment-form-title">コメント登録・編集</h3>
+        <input type="hidden" id="comment-row-index" value="">
+        <div class="form-group">
+          <label for="comment-target">通知対象</label>
+          <input type="text" id="comment-target" placeholder="全員 または 店舗名 または 個人名">
+          <small>※「全員」以外を指定する場合は正確な名称を入れてください</small>
+        </div>
+        <div class="form-group">
+          <label for="comment-text">コメント内容</label>
+          <textarea id="comment-text" placeholder="ポップアップで表示させたい文章を入力してください"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="comment-from">表示期間 From</label>
+          <input type="date" id="comment-from">
+        </div>
+        <div class="form-group">
+          <label for="comment-to">表示期間 To</label>
+          <input type="date" id="comment-to">
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-clear" onclick="clearCommentForm()">クリア</button>
+          <button class="btn btn-primary" onclick="submitCommentForm()">保存する</button>
+        </div>
+      </div>
+      <div class="list-area-container">
+        <h3>登録コメント通知一覧</h3>
+        <div class="table-container">
+          <table>
+            <thead><tr><th>通知対象</th><th>コメント内容</th><th>表示期間</th><th>操作</th></tr></thead>
+            <tbody id="comment-table-body"><tr><td colspan="4">登録データを読み込み中...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <div id="loading">処理中...</div>
@@ -299,8 +341,11 @@
 
         overlay.style.display = "none";
         showLoading(false);
+        
+        // 全データを裏でロード
         loadStaffList();
         loadStoreList();
+        loadCommentList();
       } else {
         clearAuthStorage();
         currentPassword = "";
@@ -316,7 +361,7 @@
     const payload = { action: action, password: currentPassword };
     if (data) payload.data = data;
     if (data && data.rowIndex) { payload.rowIndex = data.rowIndex; delete data.rowIndex; }
-    if (action === "deleteStaff" || action === "deleteStore") payload.rowIndex = data;
+    if (action.startsWith("delete")) payload.rowIndex = data; // deleteStaff, deleteStore, deleteComment
 
     try {
       const response = await fetch(GAS_API_URL, { method: "POST", body: JSON.stringify(payload) });
@@ -359,25 +404,26 @@
   // --- スタッフ機能 ---
   let globalStaffList = [];
   async function loadStaffList() {
-    const res = await callGas("getStaffList");
-    globalStaffList = res.data;
-    const tbody = document.getElementById('staff-table-body');
-    tbody.innerHTML = '';
-    if(globalStaffList.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="4">登録スタッフはいません</td></tr>';
-      return;
-    }
-    globalStaffList.forEach(item => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `<td><strong>${item.name}</strong></td><td>${item.stores}</td><td>${item.standardHours}</td>
-        <td>
-          <button class="btn btn-edit" onclick="editStaff(${item.rowIndex})">編集</button>
-          <button class="btn btn-danger" onclick="deleteStaff(${item.rowIndex}, '${item.name}')">削除</button>
-        </td>`;
-      tbody.appendChild(tr);
-    });
+    try {
+      const res = await callGas("getStaffList");
+      globalStaffList = res.data;
+      const tbody = document.getElementById('staff-table-body');
+      tbody.innerHTML = '';
+      if(globalStaffList.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4">登録スタッフはいません</td></tr>';
+        return;
+      }
+      globalStaffList.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td><strong>${item.name}</strong></td><td>${item.stores}</td><td>${item.standardHours}</td>
+          <td>
+            <button class="btn btn-edit" onclick="editStaff(${item.rowIndex})">編集</button>
+            <button class="btn btn-danger" onclick="deleteStaff(${item.rowIndex}, '${item.name}')">削除</button>
+          </td>`;
+        tbody.appendChild(tr);
+      });
+    } catch(e) {}
   }
-
   function editStaff(rowIndex) {
     const item = globalStaffList.find(s => s.rowIndex === rowIndex);
     if(!item) return;
@@ -386,13 +432,8 @@
     document.getElementById('staff-stores').value = item.stores;
     document.getElementById('staff-hours').value = item.standardHours;
     document.getElementById('staff-form-title').innerText = "スタッフ編集 (上書き)";
-    
-    // 💡 スマホ・iPadでの編集時、フォーム位置（一番上）へ自動でスクロールさせる
-    if (window.innerWidth < 768) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    if (window.innerWidth < 768) { window.scrollTo({ top: 0, behavior: 'smooth' }); }
   }
-
   function clearStaffForm() {
     document.getElementById('staff-row-index').value = "";
     document.getElementById('staff-name').value = "";
@@ -400,7 +441,6 @@
     document.getElementById('staff-hours').value = "08:00";
     document.getElementById('staff-form-title').innerText = "スタッフ登録・編集";
   }
-
   async function submitStaffForm() {
     const name = document.getElementById('staff-name').value;
     const stores = document.getElementById('staff-stores').value;
@@ -411,7 +451,6 @@
     const res = await callGas("saveStaff", { rowIndex: rowIndex ? Number(rowIndex) : null, name: name, stores: stores, standardHours: hours });
     showLoading(false); alert(res.message); clearStaffForm(); loadStaffList();
   }
-
   async function deleteStaff(rowIndex, name) {
     if(!confirm(`本当に ${name} さんを削除しますか？`)) return;
     showLoading(true);
@@ -422,26 +461,27 @@
   // --- 店舗機能 ---
   let globalStoreList = [];
   async function loadStoreList() {
-    const res = await callGas("getStoreList");
-    globalStoreList = res.data;
-    const tbody = document.getElementById('store-table-body');
-    tbody.innerHTML = '';
-    if(globalStoreList.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="5">登録店舗はありません</td></tr>';
-      return;
-    }
-    globalStoreList.forEach(item => {
-      const tr = document.createElement('tr');
-      const geo = (item.lat && item.lng) ? `${item.lat}, ${item.lng}` : '未設定';
-      tr.innerHTML = `<td><strong>${item.storeName}</strong></td><td><small>${geo}</small></td><td>${item.radius}m</td><td>IN:${item.inMarume}分/OUT:${item.outMarume}分</td>
-        <td>
-          <button class="btn btn-edit" onclick="editStore(${item.rowIndex})">編集</button>
-          <button class="btn btn-danger" onclick="deleteStore(${item.rowIndex}, '${item.storeName}')">削除</button>
-        </td>`;
-      tbody.appendChild(tr);
-    });
+    try {
+      const res = await callGas("getStoreList");
+      globalStoreList = res.data;
+      const tbody = document.getElementById('store-table-body');
+      tbody.innerHTML = '';
+      if(globalStoreList.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5">登録店舗はありません</td></tr>';
+        return;
+      }
+      globalStoreList.forEach(item => {
+        const tr = document.createElement('tr');
+        const geo = (item.lat && item.lng) ? `${item.lat}, ${item.lng}` : '未設定';
+        tr.innerHTML = `<td><strong>${item.storeName}</strong></td><td><small>${geo}</small></td><td>${item.radius}m</td><td>IN:${item.inMarume}分/OUT:${item.outMarume}分</td>
+          <td>
+            <button class="btn btn-edit" onclick="editStore(${item.rowIndex})">編集</button>
+            <button class="btn btn-danger" onclick="deleteStore(${item.rowIndex}, '${item.storeName}')">削除</button>
+          </td>`;
+        tbody.appendChild(tr);
+      });
+    } catch(e) {}
   }
-
   function editStore(rowIndex) {
     const item = globalStoreList.find(s => s.rowIndex === rowIndex);
     if(!item) return;
@@ -453,13 +493,8 @@
     document.getElementById('store-in-marume').value = item.inMarume;
     document.getElementById('store-out-marume').value = item.outMarume;
     document.getElementById('store-form-title').innerText = "店舗編集 (上書き)";
-    
-    // 💡 スマホ・iPadでの編集時、フォーム位置（一番上）へ自動でスクロールさせる
-    if (window.innerWidth < 768) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    if (window.innerWidth < 768) { window.scrollTo({ top: 0, behavior: 'smooth' }); }
   }
-
   function clearStoreForm() {
     document.getElementById('store-row-index').value = "";
     document.getElementById('store-name').value = "";
@@ -470,7 +505,6 @@
     document.getElementById('store-out-marume').value = "15";
     document.getElementById('store-form-title').innerText = "店舗登録・編集";
   }
-
   async function submitStoreForm() {
     const storeName = document.getElementById('store-name').value;
     const lat = document.getElementById('store-lat').value;
@@ -484,12 +518,92 @@
     const res = await callGas("saveStore", { rowIndex: rowIndex ? Number(rowIndex) : null, storeName: storeName, lat: lat, lng: lng, radius: radius, inMarume: inMarume, outMarume: outMarume });
     showLoading(false); alert(res.message); clearStoreForm(); loadStoreList();
   }
-
   async function deleteStore(rowIndex, storeName) {
     if(!confirm(`本当に店舗「${storeName}」を削除しますか？`)) return;
     showLoading(true);
     const res = await callGas("deleteStore", rowIndex);
     showLoading(false); alert(res.message); clearStoreForm(); loadStoreList();
+  }
+
+  // --- 🆕 コメント機能 ---
+  let globalCommentList = [];
+  async function loadCommentList() {
+    try {
+      const res = await callGas("getCommentList");
+      globalCommentList = res.data;
+      const tbody = document.getElementById('comment-table-body');
+      tbody.innerHTML = '';
+      if(globalCommentList.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4">登録されたコメント通知はありません</td></tr>';
+        return;
+      }
+      globalCommentList.forEach(item => {
+        const tr = document.createElement('tr');
+        const period = (item.from || item.to) ? `${item.from || '制限なし'} ～ ${item.to || '制限なし'}` : '常時表示';
+        // 改行をブラウザ用に<br>へ変換して一覧表示
+        const cleanComment = item.comment.replace(/\n/g, '<br>');
+        tr.innerHTML = `<td><strong>${item.target}</strong></td><td>${cleanComment}</td><td><small>${period}</small></td>
+          <td>
+            <button class="btn btn-edit" onclick="editComment(${item.rowIndex})">編集</button>
+            <button class="btn btn-danger" onclick="deleteComment(${item.rowIndex})">削除</button>
+          </td>`;
+        tbody.appendChild(tr);
+      });
+    } catch(e) {}
+  }
+
+  function editComment(rowIndex) {
+    const item = globalCommentList.find(c => c.rowIndex === rowIndex);
+    if(!item) return;
+    document.getElementById('comment-row-index').value = item.rowIndex;
+    document.getElementById('comment-target').value = item.target;
+    document.getElementById('comment-text').value = item.comment;
+    document.getElementById('comment-from').value = item.from;
+    document.getElementById('comment-to').value = item.to;
+    document.getElementById('comment-form-title').innerText = "コメント編集 (上書き)";
+    if (window.innerWidth < 768) { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+  }
+
+  function clearCommentForm() {
+    document.getElementById('comment-row-index').value = "";
+    document.getElementById('comment-target').value = "全員";
+    document.getElementById('comment-text').value = "";
+    document.getElementById('comment-from').value = "";
+    document.getElementById('comment-to').value = "";
+    document.getElementById('comment-form-title').innerText = "コメント登録・編集";
+  }
+
+  async function submitCommentForm() {
+    const target = document.getElementById('comment-target').value;
+    const comment = document.getElementById('comment-text').value;
+    const from = document.getElementById('comment-from').value;
+    const to = document.getElementById('comment-to').value;
+    const rowIndex = document.getElementById('comment-row-index').value;
+    
+    if(!comment) { alert("コメント内容は必須項目です"); return; }
+    
+    showLoading(true);
+    const res = await callGas("saveComment", {
+      rowIndex: rowIndex ? Number(rowIndex) : null,
+      target: target ? target : "全員",
+      comment: comment,
+      from: from,
+      to: to
+    });
+    showLoading(false);
+    alert(res.message);
+    clearCommentForm();
+    loadCommentList();
+  }
+
+  async function deleteComment(rowIndex) {
+    if(!confirm(`本当にこのコメント通知を削除しますか？`)) return;
+    showLoading(true);
+    const res = await callGas("deleteComment", rowIndex);
+    showLoading(false);
+    alert(res.message);
+    clearCommentForm();
+    loadCommentList();
   }
 </script>
 </body>
