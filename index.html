@@ -39,7 +39,7 @@
     .header h1 { margin: 0; font-size: 1.2rem; letter-spacing: 1px; }
     .header .version { font-size: 0.8rem; color: #c29d38; font-family: monospace; font-weight: bold; }
     
-    /* タブメニュー（横スクロール可能に調整） */
+    /* タブメニュー */
     .tabs { 
       display: flex; 
       gap: 5px; 
@@ -49,7 +49,7 @@
       overflow-x: auto;
       white-space: nowrap;
     }
-    .tabs::-webkit-scrollbar { display: none; } /* タブのスクロールバーは隠す */
+    .tabs::-webkit-scrollbar { display: none; }
     .tab-btn { padding: 8px 12px; font-size: 0.9rem; font-weight: bold; background: none; border: none; cursor: pointer; color: #666; border-radius: 5px 5px 0 0; transition: 0.2s; white-space: nowrap; }
     .tab-btn.active { color: #c29d38; border-bottom: 4px solid #c29d38; background-color: #fff; }
     
@@ -230,7 +230,7 @@
         </div>
         <div class="form-group">
           <label for="store-out-marume">OUTまるめ(分)</label>
-          <input type="number" id="store-out-marume" value="1">
+          <input type="number" id="store-out-marume" value="15">
         </div>
         <div class="btn-row">
           <button class="btn btn-clear" onclick="clearStoreForm()">クリア</button>
@@ -256,7 +256,7 @@
         <input type="hidden" id="comment-row-index" value="">
         <div class="form-group">
           <label for="comment-target">通知対象</label>
-          <input type="text" id="comment-target" placeholder="全員 または 店舗名 または 個人名">
+          <input type="text" id="comment-target" value="全員" placeholder="全員 または 店舗名 または 個人名">
           <small>※「全員」以外を指定する場合は正確な名称を入れてください</small>
         </div>
         <div class="form-group">
@@ -293,7 +293,7 @@
 <div id="loading">処理中...</div>
 
 <script>
-  const GAS_API_URL = "https://script.google.com/macros/s/AKfycbw3uMu5pRF26lIFx2gH9xSl-C0_G9P-f3DeFFvbvRfelODV05osh6fMLmhHJkgttf4L/exec";
+  const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyWTvbQPKqLPiBelqtnzFugJohEUYPdQsgo_AqB-RGbTTOm3iqSVPmcxpMWT62Di-Zj/exec";
   
   let currentPassword = localStorage.getItem("admin_saved_password") || "";
   let lastAuthTime = localStorage.getItem("admin_last_auth_time") || "0";
@@ -361,7 +361,7 @@
     const payload = { action: action, password: currentPassword };
     if (data) payload.data = data;
     if (data && data.rowIndex) { payload.rowIndex = data.rowIndex; delete data.rowIndex; }
-    if (action.startsWith("delete")) payload.rowIndex = data; // deleteStaff, deleteStore, deleteComment
+    if (action.startsWith("delete")) payload.rowIndex = data;
 
     try {
       const response = await fetch(GAS_API_URL, { method: "POST", body: JSON.stringify(payload) });
@@ -448,14 +448,18 @@
     const rowIndex = document.getElementById('staff-row-index').value;
     if(!name || !stores) { alert("氏名と出勤店舗は必須です"); return; }
     showLoading(true);
-    const res = await callGas("saveStaff", { rowIndex: rowIndex ? Number(rowIndex) : null, name: name, stores: stores, standardHours: hours });
-    showLoading(false); alert(res.message); clearStaffForm(); loadStaffList();
+    try {
+      const res = await callGas("saveStaff", { rowIndex: rowIndex ? Number(rowIndex) : null, name: name, stores: stores, standardHours: hours });
+      showLoading(false); alert(res.message); clearStaffForm(); loadStaffList();
+    } catch(e) { showLoading(false); }
   }
   async function deleteStaff(rowIndex, name) {
     if(!confirm(`本当に ${name} さんを削除しますか？`)) return;
     showLoading(true);
-    const res = await callGas("deleteStaff", rowIndex);
-    showLoading(false); alert(res.message); clearStaffForm(); loadStaffList();
+    try {
+      const res = await callGas("deleteStaff", rowIndex);
+      showLoading(false); alert(res.message); clearStaffForm(); loadStaffList();
+    } catch(e) { showLoading(false); }
   }
 
   // --- 店舗機能 ---
@@ -515,17 +519,21 @@
     const rowIndex = document.getElementById('store-row-index').value;
     if(!storeName) { alert("店舗名は必須です"); return; }
     showLoading(true);
-    const res = await callGas("saveStore", { rowIndex: rowIndex ? Number(rowIndex) : null, storeName: storeName, lat: lat, lng: lng, radius: radius, inMarume: inMarume, outMarume: outMarume });
-    showLoading(false); alert(res.message); clearStoreForm(); loadStoreList();
+    try {
+      const res = await callGas("saveStore", { rowIndex: rowIndex ? Number(rowIndex) : null, storeName: storeName, lat: lat, lng: lng, radius: radius, inMarume: inMarume, outMarume: outMarume });
+      showLoading(false); alert(res.message); clearStoreForm(); loadStoreList();
+    } catch(e) { showLoading(false); }
   }
   async function deleteStore(rowIndex, storeName) {
     if(!confirm(`本当に店舗「${storeName}」を削除しますか？`)) return;
     showLoading(true);
-    const res = await callGas("deleteStore", rowIndex);
-    showLoading(false); alert(res.message); clearStoreForm(); loadStoreList();
+    try {
+      const res = await callGas("deleteStore", rowIndex);
+      showLoading(false); alert(res.message); clearStoreForm(); loadStoreList();
+    } catch(e) { showLoading(false); }
   }
 
-  // --- 🆕 コメント機能 ---
+  // --- コメント機能 ---
   let globalCommentList = [];
   async function loadCommentList() {
     try {
@@ -533,14 +541,13 @@
       globalCommentList = res.data;
       const tbody = document.getElementById('comment-table-body');
       tbody.innerHTML = '';
-      if(globalCommentList.length === 0) {
+      if(!globalCommentList || globalCommentList.length === 0) {
         tbody.innerHTML = '<tr><td colspan="4">登録されたコメント通知はありません</td></tr>';
         return;
       }
       globalCommentList.forEach(item => {
         const tr = document.createElement('tr');
         const period = (item.from || item.to) ? `${item.from || '制限なし'} ～ ${item.to || '制限なし'}` : '常時表示';
-        // 改行をブラウザ用に<br>へ変換して一覧表示
         const cleanComment = item.comment.replace(/\n/g, '<br>');
         tr.innerHTML = `<td><strong>${item.target}</strong></td><td>${cleanComment}</td><td><small>${period}</small></td>
           <td>
@@ -558,8 +565,8 @@
     document.getElementById('comment-row-index').value = item.rowIndex;
     document.getElementById('comment-target').value = item.target;
     document.getElementById('comment-text').value = item.comment;
-    document.getElementById('comment-from').value = item.from;
-    document.getElementById('comment-to').value = item.to;
+    document.getElementById('comment-from').value = item.from || "";
+    document.getElementById('comment-to').value = item.to || "";
     document.getElementById('comment-form-title').innerText = "コメント編集 (上書き)";
     if (window.innerWidth < 768) { window.scrollTo({ top: 0, behavior: 'smooth' }); }
   }
@@ -583,27 +590,35 @@
     if(!comment) { alert("コメント内容は必須項目です"); return; }
     
     showLoading(true);
-    const res = await callGas("saveComment", {
-      rowIndex: rowIndex ? Number(rowIndex) : null,
-      target: target ? target : "全員",
-      comment: comment,
-      from: from,
-      to: to
-    });
-    showLoading(false);
-    alert(res.message);
-    clearCommentForm();
-    loadCommentList();
+    try {
+      const res = await callGas("saveComment", {
+        rowIndex: rowIndex ? Number(rowIndex) : null,
+        target: target ? target : "全員",
+        comment: comment,
+        from: from,
+        to: to
+      });
+      showLoading(false);
+      alert(res.message);
+      clearCommentForm();
+      loadCommentList();
+    } catch(e) {
+      showLoading(false);
+    }
   }
 
   async function deleteComment(rowIndex) {
     if(!confirm(`本当にこのコメント通知を削除しますか？`)) return;
     showLoading(true);
-    const res = await callGas("deleteComment", rowIndex);
-    showLoading(false);
-    alert(res.message);
-    clearCommentForm();
-    loadCommentList();
+    try {
+      const res = await callGas("deleteComment", rowIndex);
+      showLoading(false);
+      alert(res.message);
+      clearCommentForm();
+      loadCommentList();
+    } catch(e) {
+      showLoading(false);
+    }
   }
 </script>
 </body>
