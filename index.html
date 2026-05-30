@@ -256,7 +256,7 @@
         <input type="hidden" id="comment-row-index" value="">
         <div class="form-group">
           <label for="comment-target">通知対象</label>
-          <input type="text" id="comment-target" value="全員" placeholder="全員 または 店舗名 または 個人名">
+          <input type="text" id="comment-target" placeholder="全員 または 店舗名 または 個人名">
           <small>※「全員」以外を指定する場合は正確な名称を入れてください</small>
         </div>
         <div class="form-group">
@@ -293,7 +293,7 @@
 <div id="loading">処理中...</div>
 
 <script>
-  const GAS_API_URL = "https://script.google.com/macros/s/AKfycbySLLyFv3fzv0ca-HyQ7iswQrNUvJn1e69gBwX1tKPF0o53CQe7nXgJQlPhjPtIG4jt/exec";
+  const GAS_API_URL = "https://script.google.com/macros/s/AKfycbwwe0ZYs5B88-IvJF8yKInIwN2-sYS0UeLbTSX-m8nSPrpzMp2BjF60yobHKzXoAcVH/exec";
   
   let currentPassword = localStorage.getItem("admin_saved_password") || "";
   let lastAuthTime = localStorage.getItem("admin_last_auth_time") || "0";
@@ -547,6 +547,7 @@
       }
       globalCommentList.forEach(item => {
         const tr = document.createElement('tr');
+        // 💡 FromとToが存在する場合の表示を「/」区切りに最適化
         const period = (item.from || item.to) ? `${item.from || '制限なし'} ～ ${item.to || '制限なし'}` : '常時表示';
         const cleanComment = item.comment.replace(/\n/g, '<br>');
         tr.innerHTML = `<td><strong>${item.target}</strong></td><td>${cleanComment}</td><td><small>${period}</small></td>
@@ -558,7 +559,7 @@
       });
     } catch(e) {}
   }
-
+  
   function editComment(rowIndex) {
     const item = globalCommentList.find(c => c.rowIndex === rowIndex);
     if(!item) return;
