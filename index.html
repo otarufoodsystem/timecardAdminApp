@@ -12,132 +12,138 @@
       color: white; font-weight: bold; font-size: 1.2rem;
     }
     
-    /* 💡 画面全体が上下にガタガタスクロールするのを防ぎ、すっきり固定します */
+    /* 💡 画面全体の基本構造（PCでははみ出しスクロールを防止） */
     html, body {
-      height: 100%;
       margin: 0;
       padding: 0;
-      overflow: hidden; /* 画面全体の大枠スクロールは禁止 */
       font-family: 'Helvetica Neue', Arial, sans-serif; 
       background-color: #f4f6f9; 
       color: #333; 
+      height: 100%;
     }
 
-    /* ヘッダーのデザイン */
+    /* パソコンなどの大画面でのみ全体スクロールを禁止 */
+    @media (min-width: 768px) {
+      html, body { overflow: hidden; }
+    }
+
+    /* ヘッダー */
     .header { 
       background-color: #22252a; 
       color: white; 
-      padding: 15px 20px; 
+      padding: 10px 20px; 
       display: flex;
       justify-content: space-between;
       align-items: center;
-      height: 30px; /* 高さを一定に固定 */
+      box-sizing: border-box;
     }
-    .header h1 { margin: 0; font-size: 1.4rem; letter-spacing: 1px; }
-    .header .version { font-size: 0.9rem; color: #c29d38; font-family: monospace; font-weight: bold; }
+    .header h1 { margin: 0; font-size: 1.2rem; letter-spacing: 1px; }
+    .header .version { font-size: 0.8rem; color: #c29d38; font-family: monospace; font-weight: bold; }
     
-    /* 💡 メインコンテナ：画面下の残りスペースいっぱいに広げます */
-    .container { 
-      max-width: 1200px; 
-      margin: 0 auto; 
-      padding: 0 15px; 
-      box-sizing: border-box; 
-      height: calc(100% - 115px); /* ヘッダーとタブを除いた残りの高さ */
-    }
-    
-    /* タブメニューのデザイン（上部に据え置き） */
+    /* タブメニュー（全端末で上部固定） */
     .tabs { 
       display: flex; 
-      gap: 10px; 
+      gap: 5px; 
       border-bottom: 2px solid #ccc; 
-      padding: 10px 20px 0 20px; 
+      padding: 8px 15px 0 15px; 
       background-color: #fff;
-      height: 40px;
     }
-    .tab-btn { padding: 10px 20px; font-size: 1rem; font-weight: bold; background: none; border: none; cursor: pointer; color: #666; border-radius: 5px 5px 0 0; transition: 0.2s; }
+    .tab-btn { padding: 8px 12px; font-size: 0.9rem; font-weight: bold; background: none; border: none; cursor: pointer; color: #666; border-radius: 5px 5px 0 0; transition: 0.2s; white-space: nowrap; }
     .tab-btn.active { color: #c29d38; border-bottom: 4px solid #c29d38; background-color: #fff; }
     
-    /* 💡 各タブの中身もコンテナの高さ100%に合わせる */
+    /* 💡 メインコンテナ：PCでは高さを画面ぴったりに、スマホではなりゆきに */
+    .container { 
+      max-width: 1300px; 
+      margin: 0 auto; 
+      padding: 15px; 
+      box-sizing: border-box; 
+    }
+    @media (min-width: 768px) {
+      .container { height: calc(100% - 95px); } /* ヘッダーとタブを除いた高さ */
+    }
+    
+    /* タブの中身 */
     .tab-content { 
       display: none; 
       background: white; 
-      padding: 20px; 
-      border-radius: 0 0 8px 8px; 
+      padding: 15px; 
+      border-radius: 8px; 
       box-shadow: 0 2px 8px rgba(0,0,0,0.05); 
-      height: calc(100% - 40px); /* 内側の高さをフルに使う */
       box-sizing: border-box;
+    }
+    @media (min-width: 768px) {
+      .tab-content { height: 100%; }
     }
     .tab-content.active { display: block; }
 
-    /* 💡 グリッドレイアウトを画面の高さに固定する */
+    /* 💡 レイアウト格子：スマホは縦1列、PCは横2列 */
     .view-grid { 
-      display: grid; 
-      grid-template-columns: 1fr; 
+      display: flex;
+      flex-direction: column;
       gap: 20px; 
-      height: 100%;
     }
     @media (min-width: 768px) { 
       .view-grid { 
-        grid-template-columns: 350px 1fr; 
+        display: grid;
+        grid-template-columns: 320px 1fr; 
         height: 100%;
       } 
     }
 
-    /* 左側のフォームボックス（スクロールせずその場に固定） */
-    .form-box { background: #f8f9fa; padding: 15px; border-radius: 6px; border: 1px solid #ddd; height: fit-content; }
-    .form-box h3 { margin-top: 0; border-bottom: 2px solid #ddd; padding-bottom: 5px; color: #444; }
+    /* 左側：フォームボックス */
+    .form-box { background: #f8f9fa; padding: 15px; border-radius: 6px; border: 1px solid #ddd; height: fit-content; box-sizing: border-box; }
+    .form-box h3 { margin-top: 0; border-bottom: 2px solid #ddd; padding-bottom: 5px; color: #444; font-size: 1rem; }
     .form-group { margin-bottom: 12px; }
-    .form-group label { display: block; font-weight: bold; font-size: 0.9rem; margin-bottom: 4px; color: #555; }
-    .form-group input { width: 100%; padding: 8px; font-size: 0.95rem; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-    .form-group small { color: #777; font-size: 0.8rem; }
+    .form-group label { display: block; font-weight: bold; font-size: 0.85rem; margin-bottom: 4px; color: #555; }
+    .form-group input { width: 100%; padding: 8px; font-size: 0.9rem; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+    .form-group small { color: #777; font-size: 0.75rem; display: block; margin-top: 2px; }
     .btn-row { display: flex; gap: 10px; margin-top: 15px; }
     
-    .btn { padding: 10px 15px; font-size: 0.9rem; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; transition: 0.2s; text-align: center; }
+    .btn { padding: 8px 12px; font-size: 0.85rem; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; transition: 0.2s; text-align: center; }
     .btn-primary { background-color: #28a745; color: white; flex: 1; }
     .btn-primary:hover { background-color: #218838; }
     .btn-clear { background-color: #6c757d; color: white; }
-    .btn-danger { background-color: #dc3545; color: white; padding: 5px 10px; font-size: 0.8rem; }
-    .btn-edit { background-color: #007bff; color: white; padding: 5px 10px; font-size: 0.8rem; margin-right: 5px; }
+    .btn-danger { background-color: #dc3545; color: white; padding: 4px 8px; font-size: 0.75rem; }
+    .btn-edit { background-color: #007bff; color: white; padding: 4px 8px; font-size: 0.75rem; margin-right: 3px; }
 
-    /* 💡 【最重要】右側のリストエリア全体を、縦方向のスクロール専用にする設定 */
+    /* 右側：リストエリアコンテナ */
     .list-area-container {
       display: flex;
       flex-direction: column;
-      height: 100%;
-      overflow: hidden;
+      box-sizing: border-box;
     }
-    .list-area-container h3 {
-      margin-top: 0;
-      margin-bottom: 10px;
+    @media (min-width: 768px) {
+      .list-area-container { height: 100%; overflow: hidden; }
     }
+    .list-area-container h3 { margin-top: 0; margin-bottom: 10px; font-size: 1rem; }
 
-    /* 💡 テーブルのコンテナ部分だけが、はみ出た時に縦スクロールします */
+    /* 💡 テーブルのスクロール設定（PCでは独立スクロール、スマホでは自動伸縮） */
     .table-container { 
-      overflow-y: auto;  /* 👈 縦スクロールを許可 */
-      overflow-x: auto;  /* 👈 横スクロール（レスポンシブ用）も維持 */
-      flex: 1;           /* 👈 残りの高さを限界まで使う */
+      overflow-x: auto;
       border: 1px solid #eee;
       border-radius: 4px;
+      box-sizing: border-box;
+    }
+    @media (min-width: 768px) {
+      .table-container { 
+        overflow-y: auto;  
+        flex: 1;           
+      }
     }
     
-    /* スクロールバーの見た目を少しスタイリッシュ（細め）にして邪魔にならないようにする */
+    /* スクロールバーのデザイン */
     .table-container::-webkit-scrollbar { width: 6px; height: 6px; }
     .table-container::-webkit-scrollbar-track { background: #f1f1f1; }
     .table-container::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
-    .table-container::-webkit-scrollbar-thumb:hover { background: #aaa; }
 
-    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; min-width: 500px; } /* スマホでも表がつぶれないよう最小横幅を確保 */
     
-    /* 💡 テーブルのヘッダー（見出し行）をスクロール時も一番上に固定する */
-    th { 
-      background-color: #f1f3f5; 
-      font-weight: bold; 
-      position: sticky; 
-      top: 0; 
-      z-index: 10;
-      box-shadow: 0 1px 0 #ddd; /* 境界線をきれいに見せる */
+    /* 見出し行（PCのみ上部固定） */
+    th { background-color: #f1f3f5; font-weight: bold; }
+    @media (min-width: 768px) {
+      th { position: sticky; top: 0; z-index: 10; box-shadow: 0 1px 0 #ddd; }
     }
-    th, td { padding: 10px; border-bottom: 1px solid #ddd; }
+    th, td { padding: 8px 10px; border-bottom: 1px solid #ddd; }
     tr:hover { background-color: #f8f9fa; }
 
     #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.7); display: none; justify-content: center; align-items: center; z-index: 9999; font-weight: bold; font-size: 1.2rem; color: #c29d38; }
@@ -187,7 +193,7 @@
         <h3>登録スタッフ一覧</h3>
         <div class="table-container">
           <table>
-            <thead><tr><th>氏名</th><th>所属・出勤店舗</th><th>標準勤務時間 (時間数)</th><th>操作</th></tr></thead>
+            <thead><tr><th>氏名</th><th>所属・出勤店舗</th><th>標準勤務時間</th><th>操作</th></tr></thead>
             <tbody id="staff-table-body"><tr><td colspan="4">読み込み中...</td></tr></tbody>
           </table>
         </div>
@@ -245,7 +251,6 @@
 <div id="loading">処理中...</div>
 
 <script>
-  // ⚠️ 最新のGASウェブアプリURLに書き換えてください
   const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyWTvbQPKqLPiBelqtnzFugJohEUYPdQsgo_AqB-RGbTTOm3iqSVPmcxpMWT62Di-Zj/exec";
   
   let currentPassword = localStorage.getItem("admin_saved_password") || "";
@@ -381,6 +386,11 @@
     document.getElementById('staff-stores').value = item.stores;
     document.getElementById('staff-hours').value = item.standardHours;
     document.getElementById('staff-form-title').innerText = "スタッフ編集 (上書き)";
+    
+    // 💡 スマホ・iPadでの編集時、フォーム位置（一番上）へ自動でスクロールさせる
+    if (window.innerWidth < 768) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }
 
   function clearStaffForm() {
@@ -443,6 +453,11 @@
     document.getElementById('store-in-marume').value = item.inMarume;
     document.getElementById('store-out-marume').value = item.outMarume;
     document.getElementById('store-form-title').innerText = "店舗編集 (上書き)";
+    
+    // 💡 スマホ・iPadでの編集時、フォーム位置（一番上）へ自動でスクロールさせる
+    if (window.innerWidth < 768) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }
 
   function clearStoreForm() {
