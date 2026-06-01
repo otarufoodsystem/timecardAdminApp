@@ -588,13 +588,15 @@
     const to = document.getElementById('comment-to').value;
     const rowIndex = document.getElementById('comment-row-index').value;
     
-    if(!comment) { alert("コメント内容は必須項目です"); return; }
+    // 💡 必須入力チェック（通知対象とコメント内容）
+    if (!target) { alert("通知対象は必須項目です\n（全員、店舗名、個人名などを入力してください）"); return; }
+    if (!comment) { alert("コメント内容は必須項目です"); return; }
     
     showLoading(true);
     try {
       const res = await callGas("saveComment", {
         rowIndex: rowIndex ? Number(rowIndex) : null,
-        target: target ? target : "全員",
+        target: target,
         comment: comment,
         from: from,
         to: to
