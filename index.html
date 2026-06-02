@@ -152,6 +152,24 @@
     .badge-important { background-color: #dc3545; }
     .badge-normal { background-color: #6c757d; }
 
+    /* 💡 確認状況用ボタンのデザイン */
+    .btn-status-all { background-color: #28a745; color: white; padding: 4px 8px; font-size: 0.75rem; border-radius: 4px; border: none; cursor: pointer; font-weight: bold; }
+    .btn-status-all:hover { background-color: #218838; }
+    .btn-status-wait { background-color: #ffc107; color: #212529; padding: 4px 8px; font-size: 0.75rem; border-radius: 4px; border: none; cursor: pointer; font-weight: bold; }
+    .btn-status-wait:hover { background-color: #e0a800; }
+    
+    /* 💡 確認状況詳細ポップアップ（モーダルウィンドウ） */
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; justify-content: center; align-items: center; }
+    .modal-content { background: white; padding: 20px; border-radius: 8px; width: 95%; max-width: 480px; max-height: 80%; overflow-y: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.2); box-sizing: border-box; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
+    .modal-header h4 { margin: 0; font-size: 1.05rem; color: #333; }
+    .modal-close { font-size: 1.5rem; cursor: pointer; border: none; background: none; color: #aaa; padding: 0; line-height: 1; }
+    .modal-close:hover { color: #333; }
+    .status-list { list-style: none; padding: 0; margin: 0; }
+    .status-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 5px; border-bottom: 1px solid #f1f1f1; font-size: 0.85rem; }
+    .status-ok { color: #28a745; font-weight: bold; }
+    .status-ng { color: #dc3545; font-weight: bold; }
+
     #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.7); display: none; justify-content: center; align-items: center; z-index: 9999; font-weight: bold; font-size: 1.2rem; color: #c29d38; }
   </style>
 </head>
@@ -292,8 +310,8 @@
         <h3>登録コメント通知一覧</h3>
         <div class="table-container">
           <table>
-            <thead><tr><th>番号</th><th>対象</th><th>重要度</th><th>コメント内容</th><th>表示期間</th><th>操作</th></tr></thead>
-            <tbody id="comment-table-body"><tr><td colspan="6">登録データを読み込み中...</td></tr></tbody>
+            <thead><tr><th>番号</th><th>対象</th><th>確認状況</th><th>重要度</th><th>コメント内容</th><th>表示期間</th><th>操作</th></tr></thead>
+            <tbody id="comment-table-body"><tr><td colspan="7">登録データを読み込み中...</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -304,8 +322,19 @@
 
 <div id="loading">処理中...</div>
 
+<div id="statusModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h4 id="modalCommentTitle">確認状況詳細</h4>
+      <button class="modal-close" onclick="closeStatusModal()">&times;</button>
+    </div>
+    <div id="modalStatusBody">
+      </div>
+  </div>
+</div>
+
 <script>
-  const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyFTo-jvWDb489AbGyFGBlrspIde4uFjVYRC_foryYSOy5r4tozZJVYh_AzecTnBy2x/exec";
+  const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzaskZmPL3nqfDgZZiupkaN_ycJRzfPEd62XF5sLRBna_IQdJ9iGumKJj1W6Y3aTunn/exec";
   
   let currentPassword = localStorage.getItem("admin_saved_password") || "";
   let lastAuthTime = localStorage.getItem("admin_last_auth_time") || "0";
@@ -560,20 +589,48 @@
       const tbody = document.getElementById('comment-table-body');
       tbody.innerHTML = '';
       if(!globalCommentList || globalCommentList.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6">登録されたコメント通知はありません</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7">登録されたコメント通知はありません</td></tr>';
         return;
       }
-      globalCommentList.forEach(item => {
+      
+      // 💡 非同期で各コメントの既読カウントを確認しながら、1行ずつ組み立てる処理に修正
+      for (const item of globalCommentList) {
         const tr = document.createElement('tr');
         const period = (item.from || item.to) ? `${item.from || '制限なし'} ～ ${item.to || '制限なし'}` : '常時表示';
         const cleanComment = item.comment.replace(/\n/g, '<br>');
         
-        // 重要度バッジの出し分け
         const badgeClass = item.importance === "重要" ? "badge badge-important" : "badge badge-normal";
+
+        // 💡 GASに対して、現在のコメント番号(#id)に紐づく確認件数を問い合わせる
+        let statusButtonHtml = `<span class="text-muted">算出中...</span>`;
+        if (item.id) {
+          try {
+            const statusRes = await callGas("getCommentStatus", { commentId: item.id });
+            if (statusRes.success) {
+              const confirmed = statusRes.confirmedCount || 0;
+              const total = statusRes.totalCount || 0;
+              
+              if (total > 0 && confirmed === total) {
+                // パターンA: 配信対象全員が確認済み
+                statusButtonHtml = `<button class="btn-status-all" onclick="openStatusModal(${item.id})">全員確認済み</button>`;
+              } else {
+                // パターンB: まだ未確認のスタッフがいる場合
+                statusButtonHtml = `<button class="btn-status-wait" onclick="openStatusModal(${item.id})">確認中 (${confirmed}/${total})</button>`;
+              }
+            } else {
+              statusButtonHtml = `<button class="btn" style="padding:4px 8px; font-size:0.75rem;" onclick="openStatusModal(${item.id})">確認状況</button>`;
+            }
+          } catch(err) {
+            statusButtonHtml = `<button class="btn" style="padding:4px 8px; font-size:0.75rem;" onclick="openStatusModal(${item.id})">確認状況</button>`;
+          }
+        } else {
+          statusButtonHtml = `<span class="text-muted">-</span>`;
+        }
 
         tr.innerHTML = `
           <td><small class="text-muted">#${item.id || '-'}</small></td>
           <td><strong>${item.target}</strong></td>
+          <td>${statusButtonHtml}</td>
           <td><span class="${badgeClass}">${item.importance || '普通'}</span></td>
           <td>${cleanComment}</td>
           <td><small>${period}</small></td>
@@ -582,7 +639,7 @@
             <button class="btn btn-danger" onclick="deleteComment(${item.rowIndex})">削除</button>
           </td>`;
         tbody.appendChild(tr);
-      });
+      }
     } catch(e) {}
   }
 
@@ -661,6 +718,60 @@
       showLoading(false);
     }
   }
+
+  // 💡 【追加】確認状況モーダルポップアップを開く処理
+  async function openStatusModal(commentId) {
+    if(!commentId) return;
+    showLoading(true);
+    try {
+      const res = await callGas("getCommentStatus", { commentId: commentId });
+      showLoading(false);
+      
+      if (!res.success) { alert("確認状況の取得に失敗しました"); return; }
+      
+      document.getElementById("modalCommentTitle").innerText = `コメント通知 #${commentId} スタッフ確認状況`;
+      
+      const body = document.getElementById("modalStatusBody");
+      body.innerHTML = "";
+      
+      if (!res.data || res.data.length === 0) {
+        body.innerHTML = "<p class='text-muted' style='text-align:center; padding:10px;'>このコメントに対する配信対象スタッフがいません。</p>";
+      } else {
+        const ul = document.createElement("ul");
+        ul.className = "status-list";
+        
+        res.data.forEach(staff => {
+          const li = document.createElement("li");
+          li.className = "status-item";
+          
+          const statusBadge = staff.confirmed 
+            ? `<span class="status-ok">● 確認済</span> <small class="text-muted" style="font-size:0.75rem;">(${staff.time})</small>` 
+            : `<span class="status-ng">○ 未確認</span>`;
+            
+          li.innerHTML = `<span><strong>${staff.name}</strong></span> <span>${statusBadge}</span>`;
+          ul.appendChild(li);
+        });
+        body.appendChild(ul);
+      }
+      
+      document.getElementById("statusModal").style.display = "flex";
+    } catch(e) {
+      showLoading(false);
+    }
+  }
+
+  // 💡 【追加】確認状況モーダルポップアップを閉じる処理
+  function closeStatusModal() {
+    document.getElementById("statusModal").style.display = "none";
+  }
+  
+  // モーダルの外側をクリックしたときにも閉じる親切設計
+  window.onclick = function(event) {
+    const modal = document.getElementById("statusModal");
+    if (event.target === modal) {
+      modal.style.display = "none";
+    }
+  };
 </script>
 </body>
 </html>
