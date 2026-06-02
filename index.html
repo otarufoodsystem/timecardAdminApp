@@ -605,7 +605,7 @@
         let statusButtonHtml = `<span class="text-muted">算出中...</span>`;
         if (item.id) {
           try {
-            const statusRes = await callGas("getCommentStatus", { commentId: item.id });
+            const statusRes = await callGas("getCommentStatus", { data: { commentId: item.id } });
             if (statusRes.success) {
               const confirmed = statusRes.confirmedCount || 0;
               const total = statusRes.totalCount || 0;
@@ -724,7 +724,7 @@
     if(!commentId) return;
     showLoading(true);
     try {
-      const res = await callGas("getCommentStatus", { commentId: commentId });
+      const res = await callGas("getCommentStatus", { data: { commentId: commentId } });
       showLoading(false);
       
       if (!res.success) { alert("確認状況の取得に失敗しました"); return; }
