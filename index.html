@@ -138,7 +138,7 @@
     .table-container::-webkit-scrollbar-track { background: #f1f1f1; }
     .table-container::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
 
-    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; min-width: 550px; } 
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; min-width: 600px; } 
     
     th { background-color: #f1f3f5; font-weight: bold; }
     @media (min-width: 768px) {
@@ -146,6 +146,11 @@
     }
     th, td { padding: 8px 10px; border-bottom: 1px solid #ddd; word-break: break-all; }
     tr:hover { background-color: #f8f9fa; }
+
+    /* バッジ用スタイル */
+    .badge { padding: 3px 6px; font-size: 0.75rem; font-weight: bold; border-radius: 3px; color: #fff; }
+    .badge-important { background-color: #dc3545; }
+    .badge-normal { background-color: #6c757d; }
 
     #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.7); display: none; justify-content: center; align-items: center; z-index: 9999; font-weight: bold; font-size: 1.2rem; color: #c29d38; }
   </style>
@@ -255,12 +260,12 @@
         <h3 id="comment-form-title">コメント登録・編集</h3>
         <input type="hidden" id="comment-row-index" value="">
         <div class="form-group">
-          <label for="comment-target">通知対象</label>
-          <input type="text" id="comment-target" placeholder="全員 または 店舗名 または 個人名">
-          <small>※「全員」以外を指定する場合は正確な名称を入れてください</small>
+          <label for="comment-target">通知対象 <span style="color:red">*</span></label>
+          <input type="text" id="comment-target" value="全員" placeholder="全員 または 店舗名 または 個人名">
+          <small>※全員、店舗、個人のいずれかを正確に入力してください</small>
         </div>
         <div class="form-group">
-          <label for="comment-text">コメント内容</label>
+          <label for="comment-text">コメント内容 <span style="color:red">*</span></label>
           <textarea id="comment-text" placeholder="ポップアップで表示させたい文章を入力してください"></textarea>
         </div>
         <div class="form-group">
@@ -271,6 +276,13 @@
           <label for="comment-to">表示期間 To</label>
           <input type="date" id="comment-to">
         </div>
+        <div class="form-group">
+          <label for="comment-importance">重要度</label>
+          <select id="comment-importance">
+            <option value="普通">普通</option>
+            <option value="重要">重要</option>
+          </select>
+        </div>
         <div class="btn-row">
           <button class="btn btn-clear" onclick="clearCommentForm()">クリア</button>
           <button class="btn btn-primary" onclick="submitCommentForm()">保存する</button>
@@ -280,8 +292,8 @@
         <h3>登録コメント通知一覧</h3>
         <div class="table-container">
           <table>
-            <thead><tr><th>通知対象</th><th>コメント内容</th><th>表示期間</th><th>操作</th></tr></thead>
-            <tbody id="comment-table-body"><tr><td colspan="4">登録データを読み込み中...</td></tr></tbody>
+            <thead><tr><th>番号</th><th>対象</th><th>重要度</th><th>コメント内容</th><th>表示期間</th><th>操作</th></tr></thead>
+            <tbody id="comment-table-body"><tr><td colspan="6">登録データを読み込み中...</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -293,7 +305,7 @@
 <div id="loading">処理中...</div>
 
 <script>
-  const GAS_API_URL = "https://script.google.com/macros/s/AKfycbwwe0ZYs5B88-IvJF8yKInIwN2-sYS0UeLbTSX-m8nSPrpzMp2BjF60yobHKzXoAcVH/exec";
+  const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxDvM6pDDF9GW2WyCL6yVsWv1ik8PTJ8eK8F9abCnXUdF44dWhL224apgVtqcEtfpDI/exec";
   
   let currentPassword = localStorage.getItem("admin_saved_password") || "";
   let lastAuthTime = localStorage.getItem("admin_last_auth_time") || "0";
@@ -342,7 +354,6 @@
         overlay.style.display = "none";
         showLoading(false);
         
-        // 全データを裏でロード
         loadStaffList();
         loadStoreList();
         loadCommentList();
@@ -359,9 +370,16 @@
 
   async function callGas(action, data = null) {
     const payload = { action: action, password: currentPassword };
-    if (data) payload.data = data;
-    if (data && data.rowIndex) { payload.rowIndex = data.rowIndex; delete data.rowIndex; }
-    if (action.startsWith("delete")) payload.rowIndex = data;
+    if (data !== null) {
+      if (action.startsWith("delete")) {
+        payload.rowIndex = data;
+      } else {
+        payload.data = data;
+        if (data.rowIndex) {
+          payload.rowIndex = data.rowIndex;
+        }
+      }
+    }
 
     try {
       const response = await fetch(GAS_API_URL, { method: "POST", body: JSON.stringify(payload) });
@@ -542,15 +560,23 @@
       const tbody = document.getElementById('comment-table-body');
       tbody.innerHTML = '';
       if(!globalCommentList || globalCommentList.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4">登録されたコメント通知はありません</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6">登録されたコメント通知はありません</td></tr>';
         return;
       }
       globalCommentList.forEach(item => {
         const tr = document.createElement('tr');
-        // 💡 FromとToが存在する場合の表示を「/」区切りに最適化
         const period = (item.from || item.to) ? `${item.from || '制限なし'} ～ ${item.to || '制限なし'}` : '常時表示';
         const cleanComment = item.comment.replace(/\n/g, '<br>');
-        tr.innerHTML = `<td><strong>${item.target}</strong></td><td>${cleanComment}</td><td><small>${period}</small></td>
+        
+        // 重要度バッジの出し分け
+        const badgeClass = item.importance === "重要" ? "badge badge-important" : "badge badge-normal";
+
+        tr.innerHTML = `
+          <td><small class="text-muted">#${item.id || '-'}</small></td>
+          <td><strong>${item.target}</strong></td>
+          <td><span class="${badgeClass}">${item.importance || '普通'}</span></td>
+          <td>${cleanComment}</td>
+          <td><small>${period}</small></td>
           <td>
             <button class="btn btn-edit" onclick="editComment(${item.rowIndex})">編集</button>
             <button class="btn btn-danger" onclick="deleteComment(${item.rowIndex})">削除</button>
@@ -559,38 +585,49 @@
       });
     } catch(e) {}
   }
-  
+
   function editComment(rowIndex) {
     const item = globalCommentList.find(c => c.rowIndex === rowIndex);
     if(!item) return;
     document.getElementById('comment-row-index').value = item.rowIndex;
     document.getElementById('comment-target').value = item.target;
     document.getElementById('comment-text').value = item.comment;
-    document.getElementById('comment-from').value = item.from || "";
-    document.getElementById('comment-to').value = item.to || "";
+    
+    // 期限なし文字列をフォーム上は空欄に戻す
+    document.getElementById('comment-from').value = (item.from === "開始期限なし" || item.from === "制限なし") ? "" : item.from;
+    document.getElementById('comment-to').value = (item.to === "終了期限なし" || item.to === "制限なし") ? "" : item.to;
+    
+    document.getElementById('comment-importance').value = item.importance || "普通";
+    
     document.getElementById('comment-form-title').innerText = "コメント編集 (上書き)";
     if (window.innerWidth < 768) { window.scrollTo({ top: 0, behavior: 'smooth' }); }
   }
 
   function clearCommentForm() {
     document.getElementById('comment-row-index').value = "";
-    document.getElementById('comment-target').value = "";
+    document.getElementById('comment-target').value = "全員";
     document.getElementById('comment-text').value = "";
     document.getElementById('comment-from').value = "";
     document.getElementById('comment-to').value = "";
+    document.getElementById('comment-importance').value = "普通";
     document.getElementById('comment-form-title').innerText = "コメント登録・編集";
   }
 
   async function submitCommentForm() {
-    const target = document.getElementById('comment-target').value;
-    const comment = document.getElementById('comment-text').value;
-    const from = document.getElementById('comment-from').value;
-    const to = document.getElementById('comment-to').value;
+    const target = document.getElementById('comment-target').value.trim();
+    const comment = document.getElementById('comment-text').value.trim();
+    let from = document.getElementById('comment-from').value;
+    let to = document.getElementById('comment-to').value;
+    const importance = document.getElementById('comment-importance').value;
     const rowIndex = document.getElementById('comment-row-index').value;
     
-    // 💡 必須入力チェック（通知対象とコメント内容）
+    // 💡 必須チェック
     if (!target) { alert("通知対象は必須項目です\n（全員、店舗名、個人名などを入力してください）"); return; }
     if (!comment) { alert("コメント内容は必須項目です"); return; }
+    
+    // 空欄時はデフォルト値を指定
+    if (!from) from = "開始期限なし";
+    if (!to) to = "終了期限なし";
     
     showLoading(true);
     try {
@@ -599,7 +636,8 @@
         target: target,
         comment: comment,
         from: from,
-        to: to
+        to: to,
+        importance: importance
       });
       showLoading(false);
       alert(res.message);
@@ -611,7 +649,7 @@
   }
 
   async function deleteComment(rowIndex) {
-    if(!confirm(`本当にこのコメント通知を削除しますか？`)) return;
+    if(!confirm(`本当にこのコメント通知を削除しますか？\n（関連するスタッフの確認状況データも一括削除されます）`)) return;
     showLoading(true);
     try {
       const res = await callGas("deleteComment", rowIndex);
