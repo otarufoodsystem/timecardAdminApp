@@ -337,7 +337,7 @@
 </div>
 
 <script>
-  const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxcT2E3QFwtlRvtfgTrvTbBEvtTFN-VdIkBBqpJquT-YMYhdnX5ZPcw7JsykxYSra4l/exec";
+  const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzmtSE06AzNTiUOJtsMLpCqsDW8dzlFmOt3GnHuMU7p9FN5RnyqoM2QSMS4yqQBVKnd/exec";
   
   let currentPassword = localStorage.getItem("admin_saved_password") || "";
   let lastAuthTime = localStorage.getItem("admin_last_auth_time") || "0";
@@ -775,6 +775,26 @@
       modal.style.display = "none";
     }
   };
+  // 💡【追加】更新ボタンを押したときに手動で同期する関数
+  async function refreshCommentList(btnElement) {
+    if (!btnElement) return;
+    
+    // 連打防止のためにボタンを一時的に無効化
+    const originalText = btnElement.innerText;
+    btnElement.disabled = true;
+    btnElement.innerText = "🔄 更新中...";
+    
+    try {
+      // 画面のテーブル一覧を最新データで再描画（中で tbody.innerHTML = '' されるため綺麗に書き換わります）
+      await loadCommentList();
+    } catch (err) {
+      console.error("更新エラー:", err);
+    } finally {
+      // 処理が終わったらボタンを元に戻す
+      btnElement.disabled = false;
+      btnElement.innerText = originalText;
+    }
+  }
 </script>
 </body>
 </html>
