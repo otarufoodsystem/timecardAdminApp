@@ -307,7 +307,10 @@
         </div>
       </div>
       <div class="list-area-container">
-        <h3>登録コメント通知一覧</h3>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <h3>💬 コメント通知一覧</h3>
+          <button type="button" class="btn" style="background-color: #17a2b8; color: white; padding: 6px 12px; font-size: 0.85rem;" onclick="refreshCommentList(this)">🔄 最新の状況に更新</button>
+        </div>
         <div class="table-container">
           <table>
             <thead><tr><th>番号</th><th>対象</th><th>確認状況</th><th>重要度</th><th>コメント内容</th><th>表示期間</th><th>操作</th></tr></thead>
@@ -334,7 +337,7 @@
 </div>
 
 <script>
-  const GAS_API_URL = "https://script.google.com/macros/s/AKfycbwSGbdmTjBzk6wNlSaoIGYMCHjrFEpdJtSKnY5xG0sL74Otuql_Bv8Boy7ZJcoqhq8/exec";
+  const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxcT2E3QFwtlRvtfgTrvTbBEvtTFN-VdIkBBqpJquT-YMYhdnX5ZPcw7JsykxYSra4l/exec";
   
   let currentPassword = localStorage.getItem("admin_saved_password") || "";
   let lastAuthTime = localStorage.getItem("admin_last_auth_time") || "0";
