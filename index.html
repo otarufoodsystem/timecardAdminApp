@@ -287,12 +287,12 @@
           <textarea id="comment-text" placeholder="ポップアップで表示させたい文章を入力してください"></textarea>
         </div>
         <div class="form-group">
-          <label for="comment-from">表示期間 From</label>
-          <input type="date" id="comment-from">
+          <label for="comment-from">表示開始日時（From）</label>
+          <input type="datetime-local" id="comment-from">
         </div>
         <div class="form-group">
-          <label for="comment-to">表示期間 To</label>
-          <input type="date" id="comment-to">
+          <label for="comment-to">表示開始日時（To）</label>
+          <input type="datetime-local" id="comment-to">
         </div>
         <div class="form-group">
           <label for="comment-importance">重要度</label>
@@ -337,7 +337,7 @@
 </div>
 
 <script>
-  const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzmtSE06AzNTiUOJtsMLpCqsDW8dzlFmOt3GnHuMU7p9FN5RnyqoM2QSMS4yqQBVKnd/exec";
+  const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzbE8e4taH4O4C9sl0mjWj1dLmZfUPmpdaHIqzb02kXH_nhiMCJZJj63RxRMdfDE-6d/exec";
   
   let currentPassword = localStorage.getItem("admin_saved_password") || "";
   let lastAuthTime = localStorage.getItem("admin_last_auth_time") || "0";
@@ -653,12 +653,25 @@
     document.getElementById('comment-target').value = item.target;
     document.getElementById('comment-text').value = item.comment;
     
-    // 期限なし文字列をフォーム上は空欄に戻す
-    document.getElementById('comment-from').value = (item.from === "開始期限なし" || item.from === "制限なし") ? "" : item.from;
-    document.getElementById('comment-to').value = (item.to === "終了期限なし" || item.to === "制限なし") ? "" : item.to;
+    // 💡 スムーズに日付型に変換できる場合のみ、datetime-local の形式に成形する
+    const formatToInputDateTime = (dateStr) => {
+      if (!dateStr) return "";
+      const d = new Date(String(dateStr).replace(/-/g, "/"));
+      if (isNaN(d.getTime())) return ""; // 日付としてパースできない文字（古いデータなど）なら空欄にする
+      
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const hours = String(d.getHours()).padStart(2, '0');
+      const minutes = String(d.getMinutes()).padStart(2, '0');
+      return `${year}-${month}-${day}T${hours}:${minutes}`;
+    };
+    
+    // 値をセット
+    document.getElementById('comment-from').value = formatToInputDateTime(item.from);
+    document.getElementById('comment-to').value = formatToInputDateTime(item.to);
     
     document.getElementById('comment-importance').value = item.importance || "普通";
-    
     document.getElementById('comment-form-title').innerText = "コメント編集 (上書き)";
     if (window.innerWidth < 768) { window.scrollTo({ top: 0, behavior: 'smooth' }); }
   }
@@ -686,8 +699,8 @@
     if (!comment) { alert("コメント内容は必須項目です"); return; }
     
     // 空欄時はデフォルト値を指定
-    if (!from) from = "開始期限なし";
-    if (!to) to = "終了期限なし";
+    if (!from) from = "";
+    if (!to) to = "";
     
     showLoading(true);
     try {
