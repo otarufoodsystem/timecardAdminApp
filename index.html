@@ -147,27 +147,51 @@
     th, td { padding: 8px 10px; border-bottom: 1px solid #ddd; }
     tr:hover { background-color: #f8f9fa; }
 
-    /* 💡 特定の列だけ1行表示を強制し、改行させない */
-    #comment-table-body td:nth-child(1), /* 番号 */
-    #comment-table-body td:nth-child(2), /* 対象 */
-    #comment-table-body td:nth-child(3), /* 確認状況 */
-    #comment-table-body td:nth-child(4)  /* 重要度 */ {
+    /* 💡 コメント通知一覧テーブル 各列の横幅と折り返し制御 */
+    
+    /* 1番目：番号列（「番号」というタイトルも中身も1行で中央寄せ表示） */
+    #comment-table-body td:nth-child(1), 
+    th:nth-child(1) {
+      width: 55px;
+      white-space: nowrap;
+      text-align: center;
+    }
+
+    /* 2番目：対象列 / 3番目：確認状況 */
+    #comment-table-body td:nth-child(2), th:nth-child(2),
+    #comment-table-body td:nth-child(3), th:nth-child(3) {
       white-space: nowrap;
     }
 
-    /* 💡 コメント本文の列だけは、幅を広めに確保して綺麗に自動改行させる */
-    #comment-table-body td:nth-child(5) {
-      max-width: 400px;       /* 画面幅に応じて最大400pxまで広げる */
-      min-width: 250px;       /* 最低でも250pxは確保する */
-      white-space: normal;    /* 自動改行を許可 */
-      word-break: break-all;  /* 英語の長文なども枠内で強制改行 */
-      line-height: 1.4;       /* 行間を少し広げて読みやすく */
+    /* 4番目：重要度列（「重要度」の文字とバッジを絶対に割らずに1行で中央寄せ表示） */
+    #comment-table-body td:nth-child(4),
+    th:nth-child(4) {
+      width: 70px;
+      white-space: nowrap;
+      text-align: center;
     }
 
-    /* 💡 表示期間の列も2行表示（折り返し）を綺麗に見せる */
-    #comment-table-body td:nth-child(6) {
-      white-space: nowrap;    /* FromやToの途中で変に改行されるのを防ぐ */
+    /* 5番目：コメント内容（長文を自動改行させるメインエリア） */
+    #comment-table-body td:nth-child(5), th:nth-child(5) {
+      max-width: 450px;       /* 横幅が広がりすぎないよう制限 */
+      min-width: 250px;       /* 狭くなりすぎないよう確保 */
+      white-space: normal;    /* 長い文章は自動で改行 */
+      word-break: break-all;  /* 枠線での強制折り返し */
+      line-height: 1.4;
+    }
+
+    /* 6番目：表示期間（From/To を2行でスマートに表示するエリア） */
+    #comment-table-body td:nth-child(6), th:nth-child(6) {
+      width: 140px;
+      white-space: nowrap;    /* 日時単体が途中で変に崩れるのを防ぐ */
       line-height: 1.3;
+    }
+
+    /* 7番目：操作列（「編集」「削除」のボタンを絶対にズラさず1行横並びで固定） */
+    #comment-table-body td:nth-child(7), th:nth-child(7) {
+      width: 130px;           /* ボタン2つが無理なく収まる幅 */
+      white-space: nowrap;    /* 絶対に途中で改行させない */
+      text-align: center;     /* 中央に寄せて綺麗に整列 */
     }
     
     /* バッジ用スタイル */
