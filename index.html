@@ -201,6 +201,10 @@
       min-width: 240px;       /* 「北とうがらし出抜き小路」が1行に収まる幅 */
       white-space: nowrap;
     }
+    #tab-store td:nth-child(2),
+    #tab-store th:nth-child(2) {
+      white-space: nowrap;    /* 💡 追加：位置情報（緯度・経度）も絶対に改行させない */
+    }
     #tab-store td:nth-child(4),
     #tab-store th:nth-child(4) {
       min-width: 180px;       /* 「IN:〇〇分/OUT:〇〇分」が1行に収まる幅 */
