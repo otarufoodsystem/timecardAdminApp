@@ -147,8 +147,58 @@
     th, td { padding: 8px 10px; border-bottom: 1px solid #ddd; }
     tr:hover { background-color: #f8f9fa; }
 
-    /* 💡 コメント通知一覧テーブル 各列の横幅と折り返し制御 */
+    /* 🏢 💡 追加：店舗一覧テーブル 各列の横幅と折り返し制御 */
+    #tab-store th:nth-child(1),
+    #tab-store td:nth-child(1) {
+      min-width: 240px;       /* 「北とうがらし出抜き小路」が1行に収まる幅 */
+      white-space: nowrap;
+      text-align: left;       /* 💡 ヘッダー・中身ともに左寄せ */
+    }
+    #tab-store th:nth-child(2),
+    #tab-store td:nth-child(2) {
+      white-space: nowrap;    /* 位置情報も1行で表示 */
+      text-align: left;
+    }
+    #tab-store th:nth-child(4),
+    #tab-store td:nth-child(4) {
+      min-width: 180px;       /* 「IN:〇〇分/OUT:〇〇分」が1行に収まる幅 */
+      white-space: nowrap;
+      text-align: left;       /* 💡 ヘッダー・中身ともに左寄せ */
+    }
+    #tab-store th:nth-child(5),
+    #tab-store td:nth-child(5) {
+      width: 140px;           /* 「編集」「削除」ボタン用 */
+      white-space: nowrap;
+      text-align: center;     /* 💡 ヘッダー・ボタンともに中央寄せ */
+    }
     
+    /* 👤 💡 追加：スタッフ一覧テーブル 各列の横幅と折り返し制御 */
+    #staff-table-body td:nth-child(1),
+    #tab-staff th:nth-child(1) {
+      min-width: 160px;       /* 10文字程度が綺麗に入る幅 */
+      white-space: nowrap;    
+      text-align: left;       /* 💡 ヘッダー・中身ともに左寄せ */
+    }
+    #staff-table-body td:nth-child(2),
+    #tab-staff th:nth-child(2) {
+      white-space: normal;    /* 店舗名が長い場合は自動改行を許可 */
+      word-break: break-all;
+      text-align: left;
+    }
+    #staff-table-body td:nth-child(3),
+    #tab-staff th:nth-child(3) {
+      width: 120px;           /* ヘッダー文字が一列に表示できる幅に固定 */
+      white-space: nowrap;    
+      text-align: center;     /* 時間数を中央寄せ */
+    }
+    #staff-table-body td:nth-child(4),
+    #tab-staff th:nth-child(4) {
+      width: 140px;           /* 「編集」「削除」ボタンが1列に綺麗に並ぶ幅 */
+      white-space: nowrap;    
+      text-align: center;     /* 中央寄せ */
+    }
+    
+    /* 💡 コメント通知一覧テーブル 各列の横幅と折り返し制御 */
     /* 1番目：番号列（「番号」というタイトルも中身も1行で中央寄せ表示） */
     #comment-table-body td:nth-child(1), 
     th:nth-child(1) {
@@ -192,52 +242,6 @@
       width: 130px;           /* ボタン2つが無理なく収まる幅 */
       white-space: nowrap;    /* 絶対に途中で改行させない */
       text-align: center;     /* 中央に寄せて綺麗に整列 */
-    }
-    
-    /* バッジ用スタイル */
-    /* 🏢 💡 追加：店舗一覧テーブル 各列の横幅と折り返し制御 */
-    #tab-store td:nth-child(1),
-    #tab-store th:nth-child(1) {
-      min-width: 240px;       /* 「北とうがらし出抜き小路」が1行に収まる幅 */
-      white-space: nowrap;
-    }
-    #tab-store td:nth-child(2),
-    #tab-store th:nth-child(2) {
-      white-space: nowrap;    /* 💡 追加：位置情報（緯度・経度）も絶対に改行させない */
-    }
-    #tab-store td:nth-child(4),
-    #tab-store th:nth-child(4) {
-      min-width: 180px;       /* 「IN:〇〇分/OUT:〇〇分」が1行に収まる幅 */
-      white-space: nowrap;
-    }
-    #tab-store td:nth-child(5),
-    #tab-store th:nth-child(5) {
-      width: 140px;           /* 「編集」「削除」ボタン用 */
-      white-space: nowrap;
-    }
-    
-    /* 👤 💡 追加：スタッフ一覧テーブル 各列の横幅と折り返し制御 */
-    #staff-table-body td:nth-child(1),
-    #tab-staff th:nth-child(1) {
-      min-width: 160px;       /* 10文字程度が綺麗に入る幅 */
-      white-space: nowrap;    /* 途中で変に改行させない */
-    }
-    #staff-table-body td:nth-child(2),
-    #tab-staff th:nth-child(2) {
-      white-space: normal;    /* 店舗名が長い場合は自動改行を許可 */
-      word-break: break-all;
-    }
-    #staff-table-body td:nth-child(3),
-    #tab-staff th:nth-child(3) {
-      width: 120px;           /* ヘッダー文字が一列に表示できる幅に固定 */
-      white-space: nowrap;    /* 絶対に改行させない */
-      text-align: center;     /* 時間数を中央寄せ */
-    }
-    #staff-table-body td:nth-child(4),
-    #tab-staff th:nth-child(4) {
-      width: 140px;           /* 「編集」「削除」ボタンが1列に綺麗に並ぶ幅 */
-      white-space: nowrap;    /* ボタンの途中で改行させない */
-      text-align: center;     /* 中央寄せ */
     }
     
     .badge { padding: 3px 6px; font-size: 0.75rem; font-weight: bold; border-radius: 3px; color: #fff; }
