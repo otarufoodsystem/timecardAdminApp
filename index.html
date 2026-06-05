@@ -195,6 +195,29 @@
     }
     
     /* バッジ用スタイル */
+    /* 👤 💡 追加：スタッフ一覧テーブル 各列の横幅と折り返し制御 */
+    #staff-table-body td:nth-child(1),
+    #tab-staff th:nth-child(1) {
+      min-width: 160px;       /* 10文字程度が綺麗に入る幅 */
+      white-space: nowrap;    /* 途中で変に改行させない */
+    }
+    #staff-table-body td:nth-child(2),
+    #tab-staff th:nth-child(2) {
+      white-space: normal;    /* 店舗名が長い場合は自動改行を許可 */
+      word-break: break-all;
+    }
+    #staff-table-body td:nth-child(3),
+    #tab-staff th:nth-child(3) {
+      width: 120px;           /* ヘッダー文字が一列に表示できる幅に固定 */
+      white-space: nowrap;    /* 絶対に改行させない */
+      text-align: center;     /* 時間数を中央寄せ */
+    }
+    #staff-table-body td:nth-child(4),
+    #tab-staff th:nth-child(4) {
+      width: 140px;           /* 「編集」「削除」ボタンが1列に綺麗に並ぶ幅 */
+      white-space: nowrap;    /* ボタンの途中で改行させない */
+    }
+    
     .badge { padding: 3px 6px; font-size: 0.75rem; font-weight: bold; border-radius: 3px; color: #fff; }
     .badge-important { background-color: #dc3545; }
     .badge-normal { background-color: #6c757d; }
