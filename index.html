@@ -195,6 +195,23 @@
     }
     
     /* バッジ用スタイル */
+    /* 🏢 💡 追加：店舗一覧テーブル 各列の横幅と折り返し制御 */
+    #shop-table-body td:nth-child(1),
+    #tab-shop th:nth-child(1) {
+      min-width: 200px;       /* 「北とうがらし出抜き小路」が1行で収まる広さに設定 */
+      white-space: nowrap;    /* 途中で改行させない */
+    }
+    #shop-table-body td:nth-child(2),
+    #tab-shop th:nth-child(2) {
+      min-width: 180px;       /* 「IN:〇〇分/OUT:〇〇分」が1行で綺麗に収まる広さに設定 */
+      white-space: nowrap;    /* 途中で改行させない */
+    }
+    #shop-table-body td:nth-child(3),
+    #tab-shop th:nth-child(3) {
+      width: 140px;           /* 「編集」「削除」ボタンが1列に綺麗に並ぶ幅 */
+      white-space: nowrap;    /* ボタンの途中で改行させない */
+    }
+    
     /* 👤 💡 追加：スタッフ一覧テーブル 各列の横幅と折り返し制御 */
     #staff-table-body td:nth-child(1),
     #tab-staff th:nth-child(1) {
@@ -216,6 +233,7 @@
     #tab-staff th:nth-child(4) {
       width: 140px;           /* 「編集」「削除」ボタンが1列に綺麗に並ぶ幅 */
       white-space: nowrap;    /* ボタンの途中で改行させない */
+      text-align: center;     /* 中央寄せ */
     }
     
     .badge { padding: 3px 6px; font-size: 0.75rem; font-weight: bold; border-radius: 3px; color: #fff; }
