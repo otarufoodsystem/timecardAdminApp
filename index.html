@@ -633,6 +633,7 @@
   // --- コメント機能 ---
   let globalCommentList = [];
   async function loadCommentList() {
+    showLoading(true); // 🚀 1. 読み込み開始時に「処理中...」ダイアログを表示
     try {
       const res = await callGas("getCommentList");
       globalCommentList = res.data;
@@ -696,7 +697,11 @@
           </td>`;
         tbody.appendChild(tr);
       }
-    } catch(e) {}
+    } catch(e) {
+      console.error(e);
+    } finally {
+      showLoading(false); // 🚀 2. 正常終了・エラー終了問わず、最後に必ずダイアログを非表示にする
+    }
   }
 
   function editComment(rowIndex) {
