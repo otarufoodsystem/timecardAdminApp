@@ -564,11 +564,10 @@
     // 10分期限切れチェック
     if (now - parseInt(lastAuthTime, 10) > tenMinutes) {
       currentPassword = "";
-      localStorage.removeItem("admin_saved_username"); // ユーザー名もクリア
+      localStorage.removeItem("admin_saved_username");
       clearAuthStorage();
     }
     
-    // ブラウザに保存されたユーザー名とパスワードを読み込む
     const savedUser = localStorage.getItem("admin_saved_username") || "";
     
     if (savedUser && currentPassword) {
@@ -577,12 +576,11 @@
       
       showLoading(true);
       try {
-        // GASへユーザー名とパスワードを両方送信して自動認証
         const response = await fetch(GAS_API_URL, {
           method: "POST",
           body: JSON.stringify({ action: "checkAuth", username: savedUser, password: currentPassword })
         });
-        const resData = await responseToJson(response);
+        const resData = await response.json(); // 安全のため直接json解析
         
         if (resData.success) {
           localStorage.setItem("admin_last_auth_time", Date.now().toString());
@@ -594,9 +592,10 @@
           if (overlay) overlay.style.display = "none";
           showLoading(false);
           
-          loadStaffList();
-          loadStoreList();
-          loadCommentList();
+          // 💡 callGas側も両方送るようになったので、安全に読み込めるようになります
+          await loadStaffList();
+          await loadStoreList();
+          await loadCommentList();
           return;
         } else {
           clearAuthStorage();
@@ -663,7 +662,16 @@
   }  
   
   async function callGas(action, data = null) {
-    const payload = { action: action, username: currentUsername, password: currentPassword };
+    // 💡 ブラウザに記憶されているユーザー名も一緒に取得する
+    const savedUser = localStorage.getItem("admin_saved_username") || "";
+    
+    // 💡 送信データ（共通ペイロード）に username と password を両方確実に含める
+    const payload = { 
+      action: action, 
+      username: savedUser, 
+      password: currentPassword 
+    };
+
     if (data !== null) {
       if (action.startsWith("delete")) {
         payload.rowIndex = data;
@@ -678,8 +686,7 @@
     try {
       const response = await fetch(GAS_API_URL, { method: "POST", body: JSON.stringify(payload) });
       const resData = await responseToJson(response);
-      
-      resetTimeoutTimer();
+      localStorage.setItem("admin_last_auth_time", Date.now().toString());
       return resData;
     } catch (error) {
       alert("通信エラーが発生しました:\n" + error.message);
