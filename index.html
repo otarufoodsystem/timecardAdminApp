@@ -495,24 +495,24 @@
       return;
     }
 
-    showLoading(true); // 右下の「処理中...」を表示
+    showLoading(true);
     if (errMsg) errMsg.style.display = "none";
 
     try {
-      // 💡 GAS側の「const clientUsername = params.username;」「const clientPassword = params.password;」に100%合わせる
       const response = await fetch(GAS_API_URL, {
         method: "POST",
         body: JSON.stringify({ 
           action: "checkAuth", 
-          username: userInput,  // 全小文字の 'username' で送信
-          password: passInput   // 全小文字の 'password' で送信
+          username: userInput,  
+          password: passInput   
         })
       });
       
       const resData = await response.json();
 
       if (resData.success) {
-        // 認証成功：ブラウザの保存領域（LocalStorage）に確実に記憶させる
+        // 🔑【修正ポイント】変数とストレージの両方に確実に「ユーザー名」と「パスワード」をセットする
+        currentUsername = userInput; 
         currentPassword = passInput;
         localStorage.setItem("admin_saved_username", userInput);
         localStorage.setItem("admin_saved_password", currentPassword);
@@ -522,16 +522,17 @@
           document.getElementById("app-version").innerText = resData.version;
         }
 
-        // ログイン画面と暗転 overlay を非表示にして、管理画面を表示
         if (loginScreen) loginScreen.style.display = "none";
         if (overlay) overlay.style.display = "none";
         
-        // 各種データを安全に読み込む
         await loadStaffList();
         await loadStoreList();
         await loadCommentList();
         
         showLoading(false);
+
+        // 🔥 これで確実に10分タイマーが起動します
+        resetTimeoutTimer();
       } else {
         showLoading(false);
         if (errMsg) {
@@ -563,16 +564,16 @@
     const loginScreen = document.getElementById("login-screen");
     const now = Date.now();
 
-    // 10分期限切れチェック
     if (now - parseInt(lastAuthTime, 10) > TEN_MINUTES) {
+      currentUsername = "";
       currentPassword = "";
-      localStorage.removeItem("admin_saved_username");
       clearAuthStorage();
     }
     
     const savedUser = localStorage.getItem("admin_saved_username") || "";
+    const savedPass = localStorage.getItem("admin_saved_password") || ""; // 💡 パスワードもストレージから取得
     
-    if (savedUser && currentPassword) {
+    if (savedUser && savedPass) {
       if (loginScreen) loginScreen.style.display = "none";
       if (overlay) overlay.style.display = "flex";
       
@@ -580,11 +581,14 @@
       try {
         const response = await fetch(GAS_API_URL, {
           method: "POST",
-          body: JSON.stringify({ action: "checkAuth", username: savedUser, password: currentPassword })
+          body: JSON.stringify({ action: "checkAuth", username: savedUser, password: savedPass })
         });
-        const resData = await response.json(); // 安全のため直接json解析
+        const resData = await response.json(); 
         
         if (resData.success) {
+          // 🔑【修正ポイント】自動ログイン成功時も変数に値を確実に同期する
+          currentUsername = savedUser;
+          currentPassword = savedPass;
           localStorage.setItem("admin_last_auth_time", Date.now().toString());
           
           if (resData.version) {
@@ -594,14 +598,16 @@
           if (overlay) overlay.style.display = "none";
           showLoading(false);
           
-          // 💡 callGas側も両方送るようになったので、安全に読み込めるようになります
           await loadStaffList();
           await loadStoreList();
           await loadCommentList();
+
+          // 🔥 自動ログイン時も10分リアルタイム監視をスタート
+          resetTimeoutTimer();
           return;
         } else {
           clearAuthStorage();
-          localStorage.removeItem("admin_saved_username");
+          currentUsername = "";
           currentPassword = "";
         }
       } catch (e) {
@@ -614,18 +620,6 @@
     if (overlay) overlay.style.display = "none";
     if (loginScreen) loginScreen.style.display = "flex";
     showLoading(false);
-  }
-  
-  // 💡 操作があったら10分の期限を後ろに伸ばす関数
-  function handleUserActivity(event) {
-    // 確認状況モーダルの外側をクリックした時の既存処理もここに統合してコンフリクトを回避
-    const modal = document.getElementById("statusModal");
-    if (modal && event.target === modal) {
-      modal.style.display = "none";
-    }
-    
-    // タイマーのリセットと再始動
-    resetTimeoutTimer();
   }
 
   // 💡 タイマーをクリアして新しく10分測り直す
