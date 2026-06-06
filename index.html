@@ -479,6 +479,67 @@
   let timeoutTimer = null;
   const TEN_MINUTES = 1 * 60 * 1000; // 10分（ミリ秒）
 
+  // 💡 ログインボタンが押されたときの処理
+  async function handleLogin() {
+    const userInput = document.getElementById("login-user").value.trim();
+    const passInput = document.getElementById("login-pass").value.trim();
+    const errMsg = document.getElementById("login-err-msg");
+    const loginScreen = document.getElementById("login-screen");
+  
+    if (!userInput || !passInput) {
+      if (errMsg) {
+        errMsg.innerText = "ユーザー名とパスワードを入力してください";
+        errMsg.style.display = "block";
+      }
+      return;
+    }
+  
+    showLoading(true);
+    if (errMsg) errMsg.style.display = "none";
+  
+    try {
+      const response = await fetch(GAS_API_URL, {
+        method: "POST",
+        body: JSON.stringify({ action: "checkAuth", username: userInput, password: passInput })
+      });
+      const resData = await responseToJson(response);
+  
+      if (resData.success) {
+        // 変数に代入
+        currentUsername = userInput;
+        currentPassword = passInput;
+  
+        // ブラウザに保存
+        localStorage.setItem("admin_saved_username", currentUsername);
+        localStorage.setItem("admin_saved_password", currentPassword);
+        localStorage.setItem("admin_last_auth_time", Date.now().toString());
+  
+        if (resData.version) {
+          document.getElementById("app-version").innerText = resData.version;
+        }
+  
+        // 画面を切り替える
+        if (loginScreen) loginScreen.style.display = "none";
+        showLoading(false);
+        resetTimeoutTimer();
+  
+        // データの読み込み
+        loadStaffList();
+        loadStoreList();
+        loadCommentList();
+      } else {
+        showLoading(false);
+        if (errMsg) {
+          errMsg.innerText = "ユーザー名またはパスワードが違います";
+          errMsg.style.display = "block";
+        }
+      }
+    } catch (e) {
+      showLoading(false);
+      alert("通信エラーが発生しました。");
+    }
+  }
+  
   // ページ読み込み時の処理
   window.onload = async function() {
     // 💡 画面のどこをクリック・キー入力しても10分タイマーを延長するイベントを設定
@@ -514,102 +575,19 @@
   // 💡 10分経過（タイムアウト）した瞬間に実行される処理
   function triggerTimeout() {
     clearAuthStorage();
-    currentUsername = ""; // 💡 追加
+    currentUsername = "";
     currentPassword = "";
     if (timeoutTimer) clearTimeout(timeoutTimer);
-    
-    // 画面全体を覆う黒い保護マスクを表示状態に戻す
-    const overlay = document.getElementById("protection-overlay");
-    if (overlay) {
-      overlay.style.display = "flex";
-      overlay.innerHTML = `<div style="text-align:center;">
-        <p>🔒 10分間操作がなかったため安全のためロックされました。</p>
-        <button class="btn btn-primary" onclick="location.reload()" style="padding:10px 20px; font-size:1rem; margin-top:10px;">再度パスワードを入力する</button>
-      </div>`;
-    }
-    alert("一定時間操作がなかったため、タイムアウトになりました。\n再度パスワードを入力してください。");
-  }
-
-  async function runAuthentication() {
-    const overlay = document.getElementById("protection-overlay");
-    
-    // 💡 リロード直後に一瞬でもTOP画面が見えないよう、ここで強制的に目隠しをロックします
-    if (overlay) {
-      overlay.style.display = "flex";
-      overlay.style.opacity = "1";
-    }
   
-    const now = Date.now();
-    const savedTime = parseInt(lastAuthTime, 10) || 0;
+    // 💡 画面上の入力欄を空にする
+    if (document.getElementById("login-user")) document.getElementById("login-user").value = "";
+    if (document.getElementById("login-pass")) document.getElementById("login-pass").value = "";
+    if (document.getElementById("login-err-msg")) document.getElementById("login-err-msg").style.display = "none";
   
-    // 💡 既に有効な保存データがあり、かつ10分以内であれば入力をスキップしてそのまま進む
-    if (currentUsername && currentPassword && (now - savedTime < TEN_MINUTES)) {
-      // 保存期間内なのでそのまま裏の通信へ進む
-    } else {
-      // 10分以上経っている、またはデータがない場合はクリアして入力を求める
-      currentUsername = "";
-      currentPassword = "";
-      clearAuthStorage();
-    }
-    
-    // ユーザー名かパスワードのどちらかが無ければ入力を求める
-    while (!currentUsername || !currentPassword) {
-      const inputUser = prompt("【ログイン】管理用ユーザー名を入力してください：");
-      if (inputUser === null) {
-        showAuthCancelMessage(overlay);
-        return;
-      }
-      
-      const inputPass = prompt("【ログイン】管理用パスワードを入力してください：");
-      if (inputPass === null) {
-        showAuthCancelMessage(overlay);
-        return;
-      }
-      
-      if (inputUser.trim() !== "" && inputPass.trim() !== "") {
-        currentUsername = inputUser.trim();
-        currentPassword = inputPass.trim();
-      }
-    }
-
-    showLoading(true);
-    try {
-      // GAS側へ確認
-      const response = await fetch(GAS_API_URL, {
-        method: "POST",
-        body: JSON.stringify({ action: "checkAuth", username: currentUsername, password: currentPassword })
-      });
-      const resData = await responseToJson(response);
-      
-      if (resData.success) {
-        // 💡 認証に成功したら、ブラウザに確実に記憶させる
-        localStorage.setItem("admin_saved_username", currentUsername);
-        localStorage.setItem("admin_saved_password", currentPassword);
-        localStorage.setItem("admin_last_auth_time", Date.now().toString());
-        
-        if (resData.version) {
-          document.getElementById("app-version").innerText = resData.version;
-        }
-
-        overlay.style.display = "none";
-        showLoading(false);
-        
-        resetTimeoutTimer();
-        
-        // データの初期読み込み
-        loadStaffList();
-        loadStoreList();
-        loadCommentList();
-      } else {
-        // 認証失敗時はクリアして再起動
-        clearAuthStorage();
-        currentUsername = "";
-        currentPassword = "";
-        alert("ユーザー名またはパスワードが違います。");
-        setTimeout(runAuthentication, 100);
-      }
-    } catch (e) {
-      overlay.innerHTML = "<div style='padding:20px;'>通信エラーが発生しました。<br><button class='btn btn-primary' onclick='location.reload()' style='margin-top:10px;'>リロードする</button></div>";
+    // 💡 安全のためにログイン画面を強制表示する
+    const loginScreen = document.getElementById("login-screen");
+    if (loginScreen) {
+      loginScreen.style.display = "flex";
     }
   }
 
