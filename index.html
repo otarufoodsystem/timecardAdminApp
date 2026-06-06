@@ -495,20 +495,24 @@
       return;
     }
 
-    showLoading(true);
+    showLoading(true); // 右下の「処理中...」を表示
     if (errMsg) errMsg.style.display = "none";
 
     try {
-      // ユーザー名(username)とパスワード(password)を両方一緒にGASへ送信
+      // 💡 GAS側の「const clientUsername = params.username;」「const clientPassword = params.password;」に100%合わせる
       const response = await fetch(GAS_API_URL, {
         method: "POST",
-        body: JSON.stringify({ action: "checkAuth", username: userInput, password: passInput })
+        body: JSON.stringify({ 
+          action: "checkAuth", 
+          username: userInput,  // 全小文字の 'username' で送信
+          password: passInput   // 全小文字の 'password' で送信
+        })
       });
       
       const resData = await response.json();
 
       if (resData.success) {
-        // 認証成功：ユーザー名とパスワードをブラウザに記憶
+        // 認証成功：ブラウザの保存領域（LocalStorage）に確実に記憶させる
         currentPassword = passInput;
         localStorage.setItem("admin_saved_username", userInput);
         localStorage.setItem("admin_saved_password", currentPassword);
@@ -518,10 +522,11 @@
           document.getElementById("app-version").innerText = resData.version;
         }
 
+        // ログイン画面と暗転 overlay を非表示にして、管理画面を表示
         if (loginScreen) loginScreen.style.display = "none";
         if (overlay) overlay.style.display = "none";
         
-        // データを安全に読み込む
+        // 各種データを安全に読み込む
         await loadStaffList();
         await loadStoreList();
         await loadCommentList();
@@ -539,8 +544,8 @@
       console.error(e);
       alert("通信エラーが発生しました。");
     }
-  }  
-
+  }
+  
   // ページ読み込み時の処理
   window.onload = async function() {
     // 💡 画面のどこをクリック・キー入力しても10分タイマーを延長するイベントを設定
