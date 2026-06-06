@@ -267,11 +267,45 @@
     .status-ng { color: #dc3545; font-weight: bold; }
 
     #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.7); display: none; justify-content: center; align-items: center; z-index: 9999; font-weight: bold; font-size: 1.2rem; color: #c29d38; }
+    /* 🔒 追加：ログインTOP画面のスタイル */
+    #login-screen {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background-color: #22252a; z-index: 100000;
+      display: flex; justify-content: center; align-items: center;
+      color: white;
+    }
+    .login-box {
+      background: #33373e; padding: 30px; border-radius: 8px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3); width: 100%; max-width: 360px;
+      box-sizing: border-box; text-align: center;
+    }
+    .login-box h2 { margin-top: 0; margin-bottom: 20px; color: #c29d38; font-size: 1.4rem; letter-spacing: 1px; }
+    .login-box .form-group { margin-bottom: 15px; text-align: left; }
+    .login-box label { display: block; font-size: 0.85rem; margin-bottom: 5px; color: #ccc; }
+    .login-box input { width: 100%; padding: 10px; font-size: 1rem; border: 1px solid #555; background: #22252a; color: white; border-radius: 4px; box-sizing: border-box; }
+    .login-box .btn-login { width: 100%; padding: 10px; font-size: 1rem; font-weight: bold; background-color: #c29d38; color: #22252a; border: none; border-radius: 4px; cursor: pointer; margin-top: 10px; transition: 0.2s; }
+    .login-box .btn-login:hover { background-color: #e0b641; }
+    .login-error { color: #dc3545; font-size: 0.85rem; margin-top: 10px; display: none; }
   </style>
 </head>
 <body>
+  <div id="login-screen">
+    <div class="login-box">
+      <h2>OFS管理システム</h2>
+      <div class="form-group">
+        <label>ユーザー名</label>
+        <input type="text" id="login-user" placeholder="ユーザー名を入力">
+      </div>
+      <div class="form-group">
+        <label>パスワード</label>
+        <input type="password" id="login-pass" placeholder="パスワードを入力">
+      </div>
+      <button class="btn-login" onclick="handleLogin()">ログイン</button>
+      <div id="login-err-msg" class="login-error">ユーザー名またはパスワードが違います</div>
+    </div>
+  </div>
 
-<div id="protection-overlay">認証確認中...</div>
+  <div id="protection-overlay">認証確認中...</div>
 
 <div class="header">
   <h1>⚙️ OFSタイムカード 管理画面</h1>
@@ -435,69 +469,139 @@
 <script>
   const GAS_API_URL = "https://script.google.com/macros/s/AKfycbwJNu8kFvkORLPlQBY-lv8CebPJCQp6brLlUJhxQ6oIuko9vPjMuBGfm1HigKCAr4m8/exec";
   
+  // 💡 ユーザー名とパスワード、両方をローカルストレージで管理します
+  let currentUsername = localStorage.getItem("admin_saved_username") || "";
   let currentPassword = localStorage.getItem("admin_saved_password") || "";
   let lastAuthTime = localStorage.getItem("admin_last_auth_time") || "0";
+  
+  // 🔒 10分タイマー管理用の変数
+  let timeoutTimer = null;
+  const TEN_MINUTES = 1 * 60 * 1000; // 10分（ミリ秒）
 
+  // ページ読み込み時の処理
   window.onload = async function() {
+    // 💡 画面のどこをクリック・キー入力しても10分タイマーを延長するイベントを設定
+    window.addEventListener('click', handleUserActivity);
+    window.addEventListener('keypress', handleUserActivity);
+    
     await runAuthentication();
   };
+
+  // 💡 操作があったら10分の期限を後ろに伸ばす関数
+  function handleUserActivity(event) {
+    // 確認状況モーダルの外側をクリックした時の既存処理もここに統合してコンフリクトを回避
+    const modal = document.getElementById("statusModal");
+    if (modal && event.target === modal) {
+      modal.style.display = "none";
+    }
+    
+    // タイマーのリセットと再始動
+    resetTimeoutTimer();
+  }
+
+  // 💡 タイマーをクリアして新しく10分測り直す
+  function resetTimeoutTimer() {
+    if (timeoutTimer) clearTimeout(timeoutTimer);
+    
+    // ログイン状態（パスワードがある状態）のときだけタイマーを動かす
+    if (currentPassword) {
+      localStorage.setItem("admin_last_auth_time", Date.now().toString());
+      timeoutTimer = setTimeout(triggerTimeout, TEN_MINUTES);
+    }
+  }
+
+  // 💡 10分経過（タイムアウト）した瞬間に実行される処理
+  function triggerTimeout() {
+    clearAuthStorage();
+    currentUsername = ""; // 💡 追加
+    currentPassword = "";
+    if (timeoutTimer) clearTimeout(timeoutTimer);
+    
+    // 画面全体を覆う黒い保護マスクを表示状態に戻す
+    const overlay = document.getElementById("protection-overlay");
+    if (overlay) {
+      overlay.style.display = "flex";
+      overlay.innerHTML = `<div style="text-align:center;">
+        <p>🔒 10分間操作がなかったため安全のためロックされました。</p>
+        <button class="btn btn-primary" onclick="location.reload()" style="padding:10px 20px; font-size:1rem; margin-top:10px;">再度パスワードを入力する</button>
+      </div>`;
+    }
+    alert("一定時間操作がなかったため、タイムアウトになりました。\n再度パスワードを入力してください。");
+  }
 
   async function runAuthentication() {
     const overlay = document.getElementById("protection-overlay");
     const now = Date.now();
-    const tenMinutes = 10 * 60 * 1000;
 
-    if (now - parseInt(lastAuthTime, 10) > tenMinutes) {
+    // 10分以上経過していたら保存情報を消去
+  if (now - parseInt(lastAuthTime, 10) > TEN_MINUTES) {
+      currentUsername = ""; // 💡 追加
       currentPassword = "";
       clearAuthStorage();
     }
-    
-    while (!currentPassword) {
-      const input = prompt("管理用パスワードを入力してください（10分間有効）：");
-      if (input === null) {
-        overlay.innerText = "パスワードが入力されなかったため、画面を表示できません。再読込してください。";
+  
+    // 💡 ユーザー名かパスワードのどちらかが無ければ入力を求める
+    while (!currentUsername || !currentPassword) {
+      const inputUser = prompt("【ログイン】管理用ユーザー名を入力してください：");
+      if (inputUser === null) {
+        showAuthCancelMessage(overlay);
         return;
       }
-      if (input.trim() !== "") {
-        currentPassword = input.trim();
+  
+      const inputPass = prompt("【ログイン】管理用パスワードを入力してください：");
+      if (inputPass === null) {
+        showAuthCancelMessage(overlay);
+        return;
+      }
+  
+      if (inputUser.trim() !== "" && inputPass.trim() !== "") {
+        currentUsername = inputUser.trim();
+        currentPassword = inputPass.trim();
       }
     }
-
+  
     showLoading(true);
     try {
       const response = await fetch(GAS_API_URL, {
         method: "POST",
-        body: JSON.stringify({ action: "checkAuth", password: currentPassword })
+        // 💡 username と password を両方送信
+        body: JSON.stringify({ action: "checkAuth", username: currentUsername, password: currentPassword })
       });
       const resData = await responseToJson(response);
-      
+  
       if (resData.success) {
+        // 💡 ユーザー名もローカルストレージに保存
+        localStorage.setItem("admin_saved_username", currentUsername);
         localStorage.setItem("admin_saved_password", currentPassword);
         localStorage.setItem("admin_last_auth_time", Date.now().toString());
-        
+  
         if (resData.version) {
           document.getElementById("app-version").innerText = resData.version;
         }
-
+  
         overlay.style.display = "none";
         showLoading(false);
-        
+  
+        resetTimeoutTimer();
+  
         loadStaffList();
         loadStoreList();
         loadCommentList();
       } else {
         clearAuthStorage();
+        currentUsername = ""; // 💡 追加
         currentPassword = "";
-        alert("パスワードが違います。");
-        runAuthentication();
+        alert("ユーザー名またはパスワードが違います。"); // 💡 メッセージ変更
+        setTimeout(runAuthentication, 100);
       }
     } catch (e) {
-      overlay.innerText = "通信エラーが発生しました。リロードしてください。";
+      overlay.innerHTML = "<div style='padding:20px;'>通信エラーが発生しました。<br><button class='btn btn-primary' onclick='location.reload()' style='margin-top:10px;'>リロードする</button></div>";
     }
   }
 
   async function callGas(action, data = null) {
-    const payload = { action: action, password: currentPassword };
+    // 💡 リクエスト時に毎回 username と password を自動添付
+    const payload = { action: action, username: currentUsername, password: currentPassword };
     if (data !== null) {
       if (action.startsWith("delete")) {
         payload.rowIndex = data;
@@ -512,7 +616,9 @@
     try {
       const response = await fetch(GAS_API_URL, { method: "POST", body: JSON.stringify(payload) });
       const resData = await responseToJson(response);
-      localStorage.setItem("admin_last_auth_time", Date.now().toString());
+      
+      // 💡 データの保存・取得・削除などの通信が走るたびにも10分期限を延ばす
+      resetTimeoutTimer();
       return resData;
     } catch (error) {
       alert("通信エラーが発生しました:\n" + error.message);
@@ -534,6 +640,7 @@
   }
 
   function clearAuthStorage() {
+    localStorage.removeItem("admin_saved_username");
     localStorage.removeItem("admin_saved_password");
     localStorage.removeItem("admin_last_auth_time");
   }
@@ -682,7 +789,7 @@
   // --- コメント機能 ---
   let globalCommentList = [];
   async function loadCommentList() {
-    showLoading(true); // 🚀 1. 読み込み開始時に「処理中...」ダイアログを表示
+    showLoading(true);
     try {
       const res = await callGas("getCommentList");
       globalCommentList = res.data;
@@ -693,10 +800,8 @@
         return;
       }
       
-      // 💡 非同期で各コメントの既読カウントを確認しながら、1行ずつ組み立てる処理に修正
       for (const item of globalCommentList) {
         const tr = document.createElement('tr');
-        // 💡 From、To両方ある場合は「～」を挟んで2行（<br>）表示にする
         let period = '常時表示';
         if (item.from && item.to) {
           period = `${item.from}<br><span style="color:#888; font-size:0.8rem;">～</span><br>${item.to}`;
@@ -707,7 +812,6 @@
         
         const badgeClass = item.importance === "重要" ? "badge badge-important" : "badge badge-normal";
 
-        // 💡 GASに対して、現在のコメント番号(#id)に紐づく確認件数を問い合わせる
         let statusButtonHtml = `<span class="text-muted">算出中...</span>`;
         if (item.id) {
           try {
@@ -717,10 +821,8 @@
               const total = statusRes.totalCount || 0;
               
               if (total > 0 && confirmed === total) {
-                // パターンA: 配信対象全員が確認済み
                 statusButtonHtml = `<button class="btn-status-all" onclick="openStatusModal(${item.id})">全員確認済み</button>`;
               } else {
-                // パターンB: まだ未確認のスタッフがいる場合
                 statusButtonHtml = `<button class="btn-status-wait" onclick="openStatusModal(${item.id})">確認中 (${confirmed}/${total})</button>`;
               }
             } else {
@@ -749,7 +851,7 @@
     } catch(e) {
       console.error(e);
     } finally {
-      showLoading(false); // 🚀 2. 正常終了・エラー終了問わず、最後に必ずダイアログを非表示にする
+      showLoading(false);
     }
   }
 
@@ -760,11 +862,10 @@
     document.getElementById('comment-target').value = item.target;
     document.getElementById('comment-text').value = item.comment;
     
-    // 💡 スムーズに日付型に変換できる場合のみ、datetime-local の形式に成形する
     const formatToInputDateTime = (dateStr) => {
       if (!dateStr) return "";
       const d = new Date(String(dateStr).replace(/-/g, "/"));
-      if (isNaN(d.getTime())) return ""; // 日付としてパースできない文字（古いデータなど）なら空欄にする
+      if (isNaN(d.getTime())) return "";
       
       const year = d.getFullYear();
       const month = String(d.getMonth() + 1).padStart(2, '0');
@@ -774,7 +875,6 @@
       return `${year}-${month}-${day}T${hours}:${minutes}`;
     };
     
-    // 値をセット
     document.getElementById('comment-from').value = formatToInputDateTime(item.from);
     document.getElementById('comment-to').value = formatToInputDateTime(item.to);
     
@@ -801,11 +901,9 @@
     const importance = document.getElementById('comment-importance').value;
     const rowIndex = document.getElementById('comment-row-index').value;
     
-    // 💡 必須チェック
     if (!target) { alert("通知対象は必須項目です\n（全員、店舗名、個人名などを入力してください）"); return; }
     if (!comment) { alert("コメント内容は必須項目です"); return; }
     
-    // 空欄時はデフォルト値を指定
     if (!from) from = "";
     if (!to) to = "";
     
@@ -842,7 +940,6 @@
     }
   }
 
-  // 💡 【追加】確認状況モーダルポップアップを開く処理
   async function openStatusModal(commentId) {
     if(!commentId) return;
     showLoading(true);
@@ -883,34 +980,22 @@
     }
   }
 
-  // 💡 【追加】確認状況モーダルポップアップを閉じる処理
   function closeStatusModal() {
     document.getElementById("statusModal").style.display = "none";
   }
   
-  // モーダルの外側をクリックしたときにも閉じる親切設計
-  window.onclick = function(event) {
-    const modal = document.getElementById("statusModal");
-    if (event.target === modal) {
-      modal.style.display = "none";
-    }
-  };
-  // 💡【追加】更新ボタンを押したときに手動で同期する関数
   async function refreshCommentList(btnElement) {
     if (!btnElement) return;
     
-    // 連打防止のためにボタンを一時的に無効化
     const originalText = btnElement.innerText;
     btnElement.disabled = true;
     btnElement.innerText = "🔄 更新中...";
     
     try {
-      // 画面のテーブル一覧を最新データで再描画（中で tbody.innerHTML = '' されるため綺麗に書き換わります）
       await loadCommentList();
     } catch (err) {
       console.error("更新エラー:", err);
     } finally {
-      // 処理が終わったらボタンを元に戻す
       btnElement.disabled = false;
       btnElement.innerText = originalText;
     }
