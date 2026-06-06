@@ -494,19 +494,21 @@
       return;
     }
 
-    showLoading(true); // 右下の「処理中...」を出す
+    showLoading(true); // 右下の「処理中...」を表示
     if (errMsg) errMsg.style.display = "none";
 
     try {
-      // 入力されたパスワードでGASに認証リクエスト
+      // 1. 最初に入力されたパスワードが正しいか「一回限りの検証」を直接fetchで行う
       const response = await fetch(GAS_API_URL, {
         method: "POST",
         body: JSON.stringify({ action: "checkAuth", password: passInput })
       });
-      const resData = await responseToJson(response);
+      
+      // 💡 ここでは responseToJson を使わず、直接 json を解析してチェックする
+      const resData = await response.json();
 
       if (resData.success) {
-        // 認証成功：パスワードを記憶
+        // 2. 認証成功：データを読み込む【前】に、システム全体に新しいパスワードを確実に覚えさせる
         currentPassword = passInput;
         localStorage.setItem("admin_saved_password", currentPassword);
         localStorage.setItem("admin_last_auth_time", Date.now().toString());
@@ -515,15 +517,16 @@
           document.getElementById("app-version").innerText = resData.version;
         }
 
-        // 💡 ログイン画面と overlay を両方非表示にして、管理画面を表に出す
+        // 3. ログイン画面と overlay を両方非表示にして、管理画面を表に出す
         if (loginScreen) loginScreen.style.display = "none";
         if (overlay) overlay.style.display = "none";
+        
+        // 4. 正しいパスワードがシステムにセットされた状態で、安全にデータを読み込む
+        await loadStaffList();
+        await loadStoreList();
+        await loadCommentList();
+        
         showLoading(false);
-
-        // データを読み込む
-        loadStaffList();
-        loadStoreList();
-        loadCommentList();
       } else {
         showLoading(false);
         if (errMsg) {
@@ -533,7 +536,8 @@
       }
     } catch (e) {
       showLoading(false);
-      alert("通信エラーが発生しました。");
+      console.error(e);
+      alert("通信エラーが発生しました。パスワードをご確認いただくか、時間を置いて再度お試しください。");
     }
   }
   
