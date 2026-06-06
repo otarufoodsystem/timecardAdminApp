@@ -503,8 +503,8 @@
   function resetTimeoutTimer() {
     if (timeoutTimer) clearTimeout(timeoutTimer);
     
-    // ログイン状態（パスワードがある状態）のときだけタイマーを動かす
-    if (currentPassword) {
+    // ログイン状態（ユーザー名とパスワードがある状態）のときだけタイマーを動かす
+    if (currentUsername && currentPassword) {
       localStorage.setItem("admin_last_auth_time", Date.now().toString());
       timeoutTimer = setTimeout(triggerTimeout, TEN_MINUTES);
     }
@@ -532,66 +532,72 @@
   async function runAuthentication() {
     const overlay = document.getElementById("protection-overlay");
     const now = Date.now();
+    const savedTime = parseInt(lastAuthTime, 10) || 0;
 
-    // 10分以上経過していたら保存情報を消去
-  if (now - parseInt(lastAuthTime, 10) > TEN_MINUTES) {
-      currentUsername = ""; // 💡 追加
+    // 💡 既に有効な保存データがあり、かつ10分以内であれば入力をスキップしてそのまま進む
+    if (currentUsername && currentPassword && (now - savedTime < TEN_MINUTES)) {
+      // 保存期間内なのでそのまま裏の通信へ進む
+    } else {
+      // 10分以上経っている、またはデータがない場合はクリアして入力を求める
+      currentUsername = "";
       currentPassword = "";
       clearAuthStorage();
     }
-  
-    // 💡 ユーザー名かパスワードのどちらかが無ければ入力を求める
+    
+    // ユーザー名かパスワードのどちらかが無ければ入力を求める
     while (!currentUsername || !currentPassword) {
       const inputUser = prompt("【ログイン】管理用ユーザー名を入力してください：");
       if (inputUser === null) {
         showAuthCancelMessage(overlay);
         return;
       }
-  
+      
       const inputPass = prompt("【ログイン】管理用パスワードを入力してください：");
       if (inputPass === null) {
         showAuthCancelMessage(overlay);
         return;
       }
-  
+      
       if (inputUser.trim() !== "" && inputPass.trim() !== "") {
         currentUsername = inputUser.trim();
         currentPassword = inputPass.trim();
       }
     }
-  
+
     showLoading(true);
     try {
+      // GAS側へ確認
       const response = await fetch(GAS_API_URL, {
         method: "POST",
-        // 💡 username と password を両方送信
         body: JSON.stringify({ action: "checkAuth", username: currentUsername, password: currentPassword })
       });
       const resData = await responseToJson(response);
-  
+      
       if (resData.success) {
-        // 💡 ユーザー名もローカルストレージに保存
+        // 💡 認証に成功したら、ブラウザに確実に記憶させる
         localStorage.setItem("admin_saved_username", currentUsername);
         localStorage.setItem("admin_saved_password", currentPassword);
         localStorage.setItem("admin_last_auth_time", Date.now().toString());
-  
+        
         if (resData.version) {
           document.getElementById("app-version").innerText = resData.version;
         }
-  
+
         overlay.style.display = "none";
         showLoading(false);
-  
+        
         resetTimeoutTimer();
-  
+        
+        // データの初期読み込み
         loadStaffList();
         loadStoreList();
         loadCommentList();
       } else {
+        // 認証失敗時はクリアして再起動
         clearAuthStorage();
-        currentUsername = ""; // 💡 追加
+        currentUsername = "";
         currentPassword = "";
-        alert("ユーザー名またはパスワードが違います。"); // 💡 メッセージ変更
+        alert("ユーザー名またはパスワードが違います。");
         setTimeout(runAuthentication, 100);
       }
     } catch (e) {
@@ -599,8 +605,12 @@
     }
   }
 
+  // キャンセル時の共通メッセージ表示
+  function showAuthCancelMessage(overlay) {
+    overlay.innerHTML = "<div style='padding:20px;'>認証がキャンセルされたため、画面を表示できません。<br><button class='btn btn-primary' onclick='location.reload()' style='margin-top:10px;'>ログインする</button></div>";
+  }  
+  
   async function callGas(action, data = null) {
-    // 💡 リクエスト時に毎回 username と password を自動添付
     const payload = { action: action, username: currentUsername, password: currentPassword };
     if (data !== null) {
       if (action.startsWith("delete")) {
@@ -617,7 +627,6 @@
       const response = await fetch(GAS_API_URL, { method: "POST", body: JSON.stringify(payload) });
       const resData = await responseToJson(response);
       
-      // 💡 データの保存・取得・削除などの通信が走るたびにも10分期限を延ばす
       resetTimeoutTimer();
       return resData;
     } catch (error) {
@@ -642,6 +651,7 @@
   function clearAuthStorage() {
     localStorage.removeItem("admin_saved_username");
     localStorage.removeItem("admin_saved_password");
+    localStorage.removeItem("removeItem"); // タイポがあれば削除
     localStorage.removeItem("admin_last_auth_time");
   }
 
