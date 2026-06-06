@@ -551,6 +551,8 @@
     // 💡 画面のどこをクリック・キー入力しても10分タイマーを延長するイベントを設定
     window.addEventListener('click', handleUserActivity);
     window.addEventListener('keypress', handleUserActivity);
+    window.addEventListener('mousemove', handleUserActivity);
+    window.addEventListener('touchstart', handleUserActivity);
     
     await runAuthentication();
   };
@@ -562,7 +564,7 @@
     const now = Date.now();
 
     // 10分期限切れチェック
-    if (now - parseInt(lastAuthTime, 10) > tenMinutes) {
+    if (now - parseInt(lastAuthTime, 10) > TEN_MINUTES) {
       currentPassword = "";
       localStorage.removeItem("admin_saved_username");
       clearAuthStorage();
@@ -639,21 +641,21 @@
 
   // 💡 10分経過（タイムアウト）した瞬間に実行される処理
   function triggerTimeout() {
+    if (timeoutTimer) clearTimeout(timeoutTimer);
+    
+    // ✨ 放置された瞬間にアラートを出す
+    alert("セキュリティ保護のため、10分間操作がなかったため自動ログアウトしました。");
+    
     clearAuthStorage();
     currentUsername = "";
     currentPassword = "";
-    if (timeoutTimer) clearTimeout(timeoutTimer);
   
-    // 💡 画面上の入力欄を空にする
     if (document.getElementById("login-user")) document.getElementById("login-user").value = "";
     if (document.getElementById("login-pass")) document.getElementById("login-pass").value = "";
     if (document.getElementById("login-err-msg")) document.getElementById("login-err-msg").style.display = "none";
   
-    // 💡 安全のためにログイン画面を強制表示する
-    const loginScreen = document.getElementById("login-screen");
-    if (loginScreen) {
-      loginScreen.style.display = "flex";
-    }
+    // ✨ 画面を強制リロードして、表示されていた各種データをメモリから完全に消去
+    location.reload();
   }
 
   // キャンセル時の共通メッセージ表示
