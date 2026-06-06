@@ -481,56 +481,53 @@
 
   // 💡 ログインボタンが押されたときの処理
   async function handleLogin() {
-    const userInput = document.getElementById("login-user").value.trim();
     const passInput = document.getElementById("login-pass").value.trim();
     const errMsg = document.getElementById("login-err-msg");
     const loginScreen = document.getElementById("login-screen");
-  
-    if (!userInput || !passInput) {
+    const overlay = document.getElementById("protection-overlay");
+
+    if (!passInput) {
       if (errMsg) {
-        errMsg.innerText = "ユーザー名とパスワードを入力してください";
+        errMsg.innerText = "パスワードを入力してください";
         errMsg.style.display = "block";
       }
       return;
     }
-  
-    showLoading(true);
+
+    showLoading(true); // 右下の「処理中...」を出す
     if (errMsg) errMsg.style.display = "none";
-  
+
     try {
+      // 入力されたパスワードでGASに認証リクエスト
       const response = await fetch(GAS_API_URL, {
         method: "POST",
-        body: JSON.stringify({ action: "checkAuth", username: userInput, password: passInput })
+        body: JSON.stringify({ action: "checkAuth", password: passInput })
       });
       const resData = await responseToJson(response);
-  
+
       if (resData.success) {
-        // 変数に代入
-        currentUsername = userInput;
+        // 認証成功：パスワードを記憶
         currentPassword = passInput;
-  
-        // ブラウザに保存
-        localStorage.setItem("admin_saved_username", currentUsername);
         localStorage.setItem("admin_saved_password", currentPassword);
         localStorage.setItem("admin_last_auth_time", Date.now().toString());
-  
+
         if (resData.version) {
           document.getElementById("app-version").innerText = resData.version;
         }
-  
-        // 画面を切り替える
+
+        // 💡 ログイン画面と overlay を両方非表示にして、管理画面を表に出す
         if (loginScreen) loginScreen.style.display = "none";
+        if (overlay) overlay.style.display = "none";
         showLoading(false);
-        resetTimeoutTimer();
-  
-        // データの読み込み
+
+        // データを読み込む
         loadStaffList();
         loadStoreList();
         loadCommentList();
       } else {
         showLoading(false);
         if (errMsg) {
-          errMsg.innerText = "ユーザー名またはパスワードが違います";
+          errMsg.innerText = "パスワードが違います";
           errMsg.style.display = "block";
         }
       }
@@ -549,6 +546,64 @@
     await runAuthentication();
   };
 
+  // 🔒 認証実行関数 (起動・リロード時に自動で走る)
+  async function runAuthentication() {
+    const overlay = document.getElementById("protection-overlay");
+    const loginScreen = document.getElementById("login-screen");
+    const now = Date.now();
+
+    // 10分期限切れチェック：時間を過ぎていたら保存されているパスワードを消す
+    if (now - parseInt(lastAuthTime, 10) > tenMinutes) {
+      currentPassword = "";
+      clearAuthStorage();
+    }
+    
+    // 💡 パスワードがブラウザに記憶されている場合（自動ログイン）
+    if (currentPassword) {
+      if (loginScreen) loginScreen.style.display = "none"; // ログイン画面は隠す
+      if (overlay) overlay.style.display = "flex";          // 「認証確認中...」を出す
+      
+      try {
+        const response = await fetch(GAS_API_URL, {
+          method: "POST",
+          body: JSON.stringify({ action: "checkAuth", password: currentPassword })
+        });
+        const resData = await responseToJson(response);
+        
+        if (resData.success) {
+          localStorage.setItem("admin_saved_password", currentPassword);
+          localStorage.setItem("admin_last_auth_time", Date.now().toString());
+          
+          if (resData.version) {
+            document.getElementById("app-version").innerText = resData.version;
+          }
+
+          if (overlay) overlay.style.display = "none"; // 認証が成功したらグレー画面を消す
+          showLoading(false);
+          
+          // データの読み込みを開始
+          loadStaffList();
+          loadStoreList();
+          loadCommentList();
+          return; // 処理終了
+        } else {
+          clearAuthStorage();
+          currentPassword = "";
+        }
+      } catch (e) {
+        if (overlay) overlay.innerText = "通信エラーが発生しました。リロードしてください。";
+        showLoading(false);
+        return;
+      }
+    }
+
+    // 💡 パスワードがない、または無効な場合（★ここから元の prompt ループを廃止）
+    // ポップアップ（prompt）は一切出さず、 overlay を消してログイン画面を出現させます
+    if (overlay) overlay.style.display = "none";
+    if (loginScreen) loginScreen.style.display = "flex";
+    showLoading(false);
+  }
+  
   // 💡 操作があったら10分の期限を後ろに伸ばす関数
   function handleUserActivity(event) {
     // 確認状況モーダルの外側をクリックした時の既存処理もここに統合してコンフリクトを回避
