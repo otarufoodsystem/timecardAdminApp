@@ -10,8 +10,9 @@
       background-color: #22252a; z-index: 99999;
       display: flex; justify-content: center; align-items: center;
       color: white; font-weight: bold; font-size: 1.2rem;
-    }
-    
+      opacity: 1; /* 💡 確実に不透明にして後ろの画面を隠す */
+    }    
+
     html, body {
       margin: 0;
       padding: 0;
@@ -531,9 +532,16 @@
 
   async function runAuthentication() {
     const overlay = document.getElementById("protection-overlay");
+    
+    // 💡 リロード直後に一瞬でもTOP画面が見えないよう、ここで強制的に目隠しをロックします
+    if (overlay) {
+      overlay.style.display = "flex";
+      overlay.style.opacity = "1";
+    }
+  
     const now = Date.now();
     const savedTime = parseInt(lastAuthTime, 10) || 0;
-
+  
     // 💡 既に有効な保存データがあり、かつ10分以内であれば入力をスキップしてそのまま進む
     if (currentUsername && currentPassword && (now - savedTime < TEN_MINUTES)) {
       // 保存期間内なのでそのまま裏の通信へ進む
