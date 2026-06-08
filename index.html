@@ -287,6 +287,18 @@
     .login-box .btn-login { width: 100%; padding: 10px; font-size: 1rem; font-weight: bold; background-color: #c29d38; color: #22252a; border: none; border-radius: 4px; cursor: pointer; margin-top: 10px; transition: 0.2s; }
     .login-box .btn-login:hover { background-color: #e0b641; }
     .login-error { color: #dc3545; font-size: 0.85rem; margin-top: 10px; display: none; }
+    /* 📊 勤務表用スタイル */
+    #report-table th, #report-table td {
+      white-space: nowrap; /* 検索結果が綺麗に横一行に並ぶようにする */
+      text-align: center;
+    }
+    #report-table td:nth-child(1), #report-table th:nth-child(1), /* 氏名 */
+    #report-table td:nth-child(15), #report-table th:nth-child(15) { /* コメント */
+      text-align: left; /* 氏名とコメントだけは左寄せで見やすく */
+    }
+    .search-btn-container {
+      display: flex; gap: 10px; margin-top: 15px;
+    }
   </style>
 </head>
 <body>
@@ -314,14 +326,71 @@
 </div>
 
 <div class="tabs">
+  <button id="tab-report-btn" class="tab-btn active" onclick="switchTab('report')">📊 勤務表照会</button>
   <button id="tab-staff-btn" class="tab-btn active" onclick="switchTab('staff')">👤 スタッフ一覧メンテ</button>
   <button id="tab-store-btn" class="tab-btn" onclick="switchTab('store')">🏪 店舗一覧メンテ</button>
   <button id="tab-comment-btn" class="tab-btn" onclick="switchTab('comment')">💬 コメント一覧メンテ</button>
 </div>
 
 <div class="container">
-  
-  <div id="tab-staff" class="tab-content active">
+  <div id="tab-report" class="tab-content active">
+    <div class="view-grid">
+      <div class="form-box">
+        <h3>勤務表 検索条件</h3>
+        <div class="form-group">
+          <label for="report-month">対象月度</label>
+          <select id="report-month"></select>
+          <small>※16日〜翌15日締め基準</small>
+        </div>
+        <div class="form-group">
+          <label for="report-store">店舗名</label>
+          <select id="report-store">
+            <option value="すべての店舗">すべての店舗</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="report-name">氏名</label>
+          <select id="report-name">
+            <option value="すべてのスタッフ">すべてのスタッフ (全員)</option>
+          </select>
+        </div>
+        <div class="search-btn-container">
+          <button class="btn btn-primary" onclick="searchWorkReport()">🔍 検索する</button>
+        </div>
+      </div>
+      
+      <div class="list-area-container">
+        <h3>検索結果一覧 (横スクロール対応)</h3>
+        <div class="table-container">
+          <table id="report-table">
+            <thead>
+              <tr>
+                <th>氏名</th>
+                <th>日付</th>
+                <th>出勤店舗</th>
+                <th>出勤時刻</th>
+                <th>退勤時刻</th>
+                <th>休憩開始</th>
+                <th>休憩終了</th>
+                <th>IN1(まるめ)</th>
+                <th>OUT1(まるめ)</th>
+                <th>休憩時間</th>
+                <th>勤務時間</th>
+                <th>残業時間</th>
+                <th>総時間</th>
+                <th>食事</th>
+                <th>コメント</th>
+              </tr>
+            </thead>
+            <tbody id="report-table-body">
+              <tr><td colspan="15" class="text-muted" style="text-align:center; padding:20px;">検索条件を指定して「検索する」ボタンを押してください。</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="tab-staff" class="tab-content">  
     <div class="view-grid">
       <div class="form-box">
         <h3 id="staff-form-title">スタッフ登録・編集</h3>
@@ -468,7 +537,7 @@
 </div>
 
 <script>
-  const GAS_API_URL = "https://script.google.com/macros/s/AKfycbwxJzmhyMmuG44mwN5_VJA6ZuVhib5aybVjsbsTeGCfRSSrC5fNdgWrEQihtYJIKXfe/exec";
+  const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzqgG-1UXA_yg3126QXF0yJ5wwumCaZ_cfeRvZDJorOr68HjnTal90a-SCFl4ZMJvWe/exec";
   
   // 💡 ユーザー名とパスワード、両方をローカルストレージで管理します
   let currentUsername = localStorage.getItem("admin_saved_username") || "";
@@ -528,7 +597,7 @@
         await loadStaffList();
         await loadStoreList();
         await loadCommentList();
-        
+        initReportForm(); // 👈【追加】勤務表のセレクトボックス（月度・店舗・氏名）を初期化        
         showLoading(false);
 
         // 🔥 これで確実に10分タイマーが起動します
@@ -717,6 +786,159 @@
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     document.getElementById(`tab-${type}-btn`).classList.add('active');
     document.getElementById(`tab-${type}`).classList.add('active');
+  }
+
+  /**
+   * 📊 勤務表用：検索セレクトボックスの初期生成
+   */
+  function initReportForm() {
+    // ① 月度セレクトボックスの生成（当月を中心に前後6ヶ月分を生成）
+    const monthSelect = document.getElementById("report-month");
+    monthSelect.innerHTML = "";
+    
+    const now = new Date();
+    let defaultVal = "";
+    
+    // 現在が16日以降なら「当月度（先月16〜当月15日）」が先月締め実績、15日以下なら「先月度」が先月実績となるため
+    // 「デフォルトで先月度を選択。6/16であれば、5/16～6/15」という条件に自動合致させるロジック
+    let borderDate = new Date(now.getFullYear(), now.getMonth(), 16);
+    let targetDefaultIndex = 0; // デフォルト選択位置の調整用
+    
+    // 直近6ヶ月分の選択肢を用意
+    for (let i = -4; i <= 2; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
+      const y = d.getFullYear();
+      const m = d.getMonth() + 1;
+      
+      const mStr = m < 10 ? "0" + m : m;
+      const val = `${y}/${mStr}`;
+      
+      // 期間の表示用テキスト作成 (16日〜翌15日)
+      const nextD = new Date(y, m, 15);
+      const text = `${y}年${m}月度 (${m}/16 ～ ${m===12?1:m+1}/15)`;
+      
+      const opt = document.createElement("option");
+      opt.value = val;
+      opt.innerText = text;
+      monthSelect.appendChild(opt);
+    }
+
+    // デフォルト選択ロジック: 6/16 であれば 5/16~6/15 (5月度) を選ばせる
+    let currentMonthString = now.getFullYear() + "/" + ((now.getMonth() + 1) < 10 ? "0" + (now.getMonth() + 1) : (now.getMonth() + 1));
+    if (now.getDate() >= 16) {
+      // 16日以降は「当月マイナス1ケ月」をデフォルトにする (例:6/16 -> 05度(5/16~6/15))
+      const prevM = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      currentMonthString = prevM.getFullYear() + "/" + ((prevM.getMonth() + 1) < 10 ? "0" + (prevM.getMonth() + 1) : (prevM.getMonth() + 1));
+    } else {
+      // 15日以下は「当月マイナス2ヶ月」をデフォルトにする (例:6/10 -> 04度(4/16~5/15))
+      const prevM2 = new Date(now.getFullYear(), now.getMonth() - 2, 1);
+      currentMonthString = prevM2.getFullYear() + "/" + ((prevM2.getMonth() + 1) < 10 ? "0" + (prevM2.getMonth() + 1) : (prevM2.getMonth() + 1));
+    }
+    monthSelect.value = currentMonthString;
+
+    // ② 店舗名セレクトボックスの同期（店舗一覧マスタから構築）
+    const storeSelect = document.getElementById("report-store");
+    // 「すべての店舗」を残してリセット
+    storeSelect.innerHTML = '<option value="すべての店舗">すべての店舗</option>';
+    const storeRows = document.querySelectorAll("#store-table-body tr");
+    storeRows.forEach(row => {
+      const td = row.querySelector("td");
+      if (td && td.getAttribute("colspan") === null) {
+        const sName = td.innerText.trim();
+        if (sName) {
+          const opt = document.createElement("option");
+          opt.value = sName;
+          opt.innerText = sName;
+          storeSelect.appendChild(opt);
+        }
+      }
+    });
+
+    // ③ 氏名セレクトボックスの同期（スタッフ一覧マスタから構築）
+    const nameSelect = document.getElementById("report-name");
+    nameSelect.innerHTML = '<option value="すべてのスタッフ">すべてのスタッフ (全員)</option>';
+    const staffRows = document.querySelectorAll("#staff-table-body tr");
+    staffRows.forEach(row => {
+      const td = row.querySelector("td");
+      if (td && td.getAttribute("colspan") === null) {
+        const sName = td.innerText.trim();
+        if (sName) {
+          const opt = document.createElement("option");
+          opt.value = sName;
+          opt.innerText = sName;
+          nameSelect.appendChild(opt);
+        }
+      }
+    });
+  }
+
+  /**
+   * 🔍 勤務表の検索実行処理
+   */
+  async function searchWorkReport() {
+    const month = document.getElementById("report-month").value;
+    const store = document.getElementById("report-store").value;
+    const name = document.getElementById("report-name").value;
+    const tbody = document.getElementById("report-table-body");
+
+    tbody.innerHTML = `<tr><td colspan="15" style="text-align:center; padding:20px; color:#c29d38; font-weight:bold;">🔄 スプレッドシートから勤務実績を抽出中...</td></tr>`;
+    showLoading(true);
+
+    try {
+      const response = await fetch(GAS_API_URL, {
+        method: "POST",
+        body: JSON.stringify({
+          action: "getWorkReport",
+          username: currentUsername,
+          password: currentPassword,
+          month: month,
+          store: store,
+          name: name
+        })
+      });
+
+      const res = await response.json();
+      showLoading(false);
+
+      if (!res.success) {
+        tbody.innerHTML = `<tr><td colspan="15" style="text-align:center; padding:20px; color:red;">エラー: ${res.error || "データの取得に失敗しました"}</td></tr>`;
+        return;
+      }
+
+      if (!res.data || res.data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="15" style="text-align:center; padding:20px; class="text-muted">該当する勤務実績データが見つかりませんでした。</td></tr>`;
+        return;
+      }
+
+      // テーブルへのデータ展開
+      tbody.innerHTML = "";
+      res.data.forEach(item => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><strong>${item.name}</strong></td>
+          <td>${item.date}</td>
+          <td><small>${item.store}</small></td>
+          <td>${item.inTime || "-"}</td>
+          <td>${item.outTime || "-"}</td>
+          <td>${item.restIn || "-"}</td>
+          <td>${item.restOut || "-"}</td>
+          <td><span style="color:#007bff; font-weight:bold;">${item.in1 || "-"}</span></td>
+          <td><span style="color:#007bff; font-weight:bold;">${item.out1 || "-"}</span></td>
+          <td>${item.restTime || "-"}</td>
+          <td><strong>${item.workTime || "-"}</strong></td>
+          <td>${item.overTime || "-"}</td>
+          <td>${item.totalTime || "-"}</td>
+          <td>${item.meal ? `<span class="badge badge-normal" style="background-color:#cc8b15">${item.meal}</span>` : "-"}</td>
+          <td style="max-width:240px; white-space:normal; word-break:break-all;"><small>${item.comment || ""}</small></td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+    } catch (e) {
+      showLoading(false);
+      console.error(e);
+      tbody.innerHTML = `<tr><td colspan="15" style="text-align:center; padding:20px; color:red;">通信エラーが発生しました。時間をおいて再度お試しください。</td></tr>`;
+    }
   }
 
   // --- スタッフ機能 ---
