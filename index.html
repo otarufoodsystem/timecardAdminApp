@@ -82,34 +82,50 @@
     /* =======================================================
        📊 勤務表テーブルの列幅・見た目をすっきり整える設定
     ======================================================= */
-    #workReportTable {
+    #report-table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 10px;
+      table-layout: fixed; /* 指定した幅（%）を絶対に強制します */
+      min-width: 1200px;   /* 列が増えたため、全体の最低横幅を少し広げて確保 */
     }
 
-    #workReportTable th, 
-    #workReportTable td {
-      white-space: nowrap;  /* 文字の途中で勝手に改行されるのを防ぐ */
-      padding: 6px 8px;     /* 上下の余白を少しキュッと狭めにする */
-      text-align: center;   /* 文字を中央寄せにする */
-      font-size: 0.9rem;    /* 文字サイズを少しスマートに */
+    #report-table th, #report-table td {
+      white-space: nowrap; /* 検索結果が綺麗に横一行に並ぶようにする */
+      text-align: center;
+      padding: 6px 4px;    /* 左右の余白を少し詰めてスマートに */
+      font-size: 0.85rem;
+      overflow: hidden;    /* 万が一はみ出しても枠線を壊さない */
+      text-overflow: ellipsis;
+      box-sizing: border-box;
     }
 
-    /* ⏱️ 時刻や日付が入る列の幅を固定して、退勤時刻の横幅をキュッと狭くする */
-    #workReportTable th:nth-child(2), #workReportTable td:nth-child(2) { width: 90px;  } /* 日付 */
-    #workReportTable th:nth-child(3), #workReportTable td:nth-child(3) { width: 70px;  } /* 出勤時刻 */
-    #workReportTable th:nth-child(4), #workReportTable td:nth-child(4) { width: 70px;  } /* 退勤時刻（ここが狭くなります） */
-    #workReportTable th:nth-child(5), #workReportTable td:nth-child(5) { width: 70px;  } /* 休憩開始 */
-    #workReportTable th:nth-child(6), #workReportTable td:nth-child(6) { width: 70px;  } /* 休憩終了 */
-    #workReportTable th:nth-child(7), #workReportTable td:nth-child(7) { width: 70px;  } /* まるめIN */
-    #workReportTable th:nth-child(8), #workReportTable td:nth-child(8) { width: 70px;  } /* まるめOUT */
-    #workReportTable th:nth-child(9), #workReportTable td:nth-child(9) { width: 75px;  } /* 勤務・休憩時間 */
+    /* ⏱️ 実際の列順（出勤店舗あり）に合わせて横幅（％）を正しくロック */
+    #report-table th:nth-child(1),  #report-table td:nth-child(1)  { width: 9%; text-align: left; }  /* 1. メンバー名 */
+    #report-table th:nth-child(2),  #report-table td:nth-child(2)  { width: 8%; }                   /* 2. 日付 (yyyy/MM/dd) */
+    #report-table th:nth-child(3),  #report-table td:nth-child(3)  { width: 9%; text-align: left; }  /* 3. 出勤店舗 ✨ */
+    #report-table th:nth-child(4),  #report-table td:nth-child(4)  { width: 5%; }                   /* 4. 出勤時刻 (HH:mm) */
+    #report-table th:nth-child(5),  #report-table td:nth-child(5)  { width: 5%; }                   /* 5. 退勤時刻（★これでキュッと狭くなります） */
+    #report-table th:nth-child(6),  #report-table td:nth-child(6)  { width: 5%; }                   /* 6. 休憩開始 */
+    #report-table th:nth-child(7),  #report-table td:nth-child(7)  { width: 5%; }                   /* 7. 休憩終了 */
+    #report-table th:nth-child(8),  #report-table td:nth-child(8)  { width: 7%; }                   /* 8. IPアドレス */
+    #report-table th:nth-child(9),  #report-table td:nth-child(9)  { width: 5%; }                   /* 9. IN1(まるめ後) */
+    #report-table th:nth-child(10), #report-table td:nth-child(10) { width: 5%; }                   /* 10. OUT1(まるめ後) */
+    #report-table th:nth-child(11), #report-table td:nth-child(11) { width: 5%; }                   /* 11. 休憩時間 */
+    #report-table th:nth-child(12), #report-table td:nth-child(12) { width: 5%; }                   /* 12. 勤務時間 */
+    #report-table th:nth-child(13), #report-table td:nth-child(13) { width: 5%; }                   /* 13. 残業時間 */
+    #report-table th:nth-child(14), #report-table td:nth-child(14) { width: 5%; }                   /* 14. 総時間 */
+    #report-table th:nth-child(15), #report-table td:nth-child(15) { width: 8%; }                   /* 15. Ver */
+    #report-table th:nth-child(16), #report-table td:nth-child(16) { width: 4%; }                   /* 16. 食事 */
 
-    /* コメント列（一番右）だけは文章が入るので、残りの横幅をすべて使うように自動広げ */
-    #workReportTable th:last-child, #workReportTable td:last-child {
-      text-align: left;     /* コメントだけは左寄せで見やすく */
-      white-space: normal;  /* 長いコメントは自動で改行させる */
+    /* 💡 17番目以降（もしコメント列などがあれば）の幅自動調整と左寄せ */
+    #report-table th:nth-child(17), #report-table td:nth-child(17) {
+      width: auto;
+      text-align: left;
+      white-space: normal;
+    }
+
+    .search-btn-container {
+      display: flex; gap: 10px; margin-top: 15px;
     }
     
     /* レイアウト格子 */
