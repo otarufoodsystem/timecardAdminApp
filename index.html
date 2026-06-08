@@ -622,7 +622,7 @@
   
   // 🔒 10分タイマー管理用の変数
   let timeoutTimer = null;
-  const TEN_MINUTES = 10 * 60 * 1000; // 10分（ミリ秒）
+  const TEN_MINUTES = 1 * 60 * 1000; // 10分（ミリ秒）
 
   // 💡 ログインボタンが押されたときの処理
   async function handleLogin() {
@@ -700,9 +700,10 @@
     window.addEventListener('mousemove', handleUserActivity);
     window.addEventListener('touchstart', handleUserActivity);
     
-    // 💡 エラーに邪魔されることなく、確実にバージョン取得を実行
+    // 💡 ログイン画面のバージョンを取得
     fetchLoginVersion();
 
+    // 💡 自動ログインを実行
     await runAuthentication();
   };
 
@@ -1398,6 +1399,7 @@
       btnElement.innerText = originalText;
     }
   }
+
   function handleUserActivity() {
     if (typeof resetTimeoutTimer === "function") {
       resetTimeoutTimer();
