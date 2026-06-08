@@ -707,17 +707,31 @@
     try {
       const response = await fetch(GAS_API_URL, {
         method: "POST",
-        body: JSON.stringify({ action: "getAppVersion" })
+        body: JSON.stringify({ 
+          action: "checkAuth", // 💡確実に存在する認証用アクションを呼び出します
+          username: "",        // 空文字を送信して、安全にバージョンデータだけを返してもらいます
+          password: "" 
+        })
       });
+      
       const resData = await response.json();
-      if (resData.success && resData.version) {
-        const loginVerEl = document.getElementById("login-version");
-        if (loginVerEl) {
+      console.log("GASからのレスポンス確認:", resData); // 🔍確認用ログ
+  
+      // 💡 resData.version が存在すれば画面にセット
+      const loginVerEl = document.getElementById("login-version");
+      if (loginVerEl) {
+        if (resData.version) {
           loginVerEl.innerText = resData.version;
+        } else {
+          // 万が一、GAS側からバージョンが返ってきていない場合の保険
+          loginVerEl.innerText = "v1.4.0"; 
         }
       }
     } catch (e) {
       console.error("ログイン画面のバージョン取得に失敗しました:", e);
+      // 通信エラー時の保険
+      const loginVerEl = document.getElementById("login-version");
+      if (loginVerEl) loginVerEl.innerText = "v1.4.0";
     }
   }
   
