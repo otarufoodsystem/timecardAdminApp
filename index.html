@@ -1395,6 +1395,11 @@
       btnElement.innerText = originalText;
     }
   }
+  function handleUserActivity() {
+    if (typeof resetTimeoutTimer === "function") {
+      resetTimeoutTimer();
+    }
+  }
 </script>
 </body>
 </html>
