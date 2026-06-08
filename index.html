@@ -694,12 +694,26 @@
   
   // ページ読み込み時の処理
   window.onload = async function() {
-    // 💡 画面のどこをクリック・キー入力しても10分タイマーを延長するイベントを設定
-    window.addEventListener('click', handleUserActivity);
-    window.addEventListener('keypress', handleUserActivity);
-    window.addEventListener('mousemove', handleUserActivity);
-    window.addEventListener('touchstart', handleUserActivity);
+    // 💡 handleUserActivity が存在する場合のみイベントを登録（無ければスキップしてエラーを防ぐ）
+    if (typeof handleUserActivity === "function") {
+      window.addEventListener('click', handleUserActivity);
+      window.addEventListener('keypress', handleUserActivity);
+      window.addEventListener('mousemove', handleUserActivity);
+      window.addEventListener('touchstart', handleUserActivity);
+    } else {
+      // 💡 万が一関数が見つからない場合は、エラーにせずその場で代わりの処理を作る
+      window.handleUserActivity = function() {
+        if (typeof resetTimeoutTimer === "function") resetTimeoutTimer();
+      };
+      window.addEventListener('click', window.handleUserActivity);
+      window.addEventListener('keypress', window.handleUserActivity);
+      window.addEventListener('mousemove', window.handleUserActivity);
+      window.addEventListener('touchstart', window.handleUserActivity);
+    }
+    
+    // 💡 エラーに邪魔されることなく、確実にバージョン取得を実行
     fetchLoginVersion();
+
     await runAuthentication();
   };
 
