@@ -379,7 +379,7 @@
     <div class="login-box">
       <div style="position: relative; margin-bottom: 20px;">
         <h2 style="margin: 0; padding-bottom: 5px;">OFSタイムカード 管理画面</h2>
-        <span id="login-version" class="version" style="position: absolute; bottom: -12px; right: 0; font-size: 0.75rem; color: #ff0000; font-family: monospace; font-weight: bold;">テスト</span>
+        <span id="login-version" class="version" style="position: absolute; bottom: -12px; right: 0; font-size: 0.75rem; color: #ff0000; font-family: monospace; font-weight: bold;"></span>
       </div>
       <div class="form-group">
         <label>ユーザー名</label>
@@ -694,22 +694,11 @@
   
   // ページ読み込み時の処理
   window.onload = async function() {
-    // 💡 handleUserActivity が存在する場合のみイベントを登録（無ければスキップしてエラーを防ぐ）
-    if (typeof handleUserActivity === "function") {
-      window.addEventListener('click', handleUserActivity);
-      window.addEventListener('keypress', handleUserActivity);
-      window.addEventListener('mousemove', handleUserActivity);
-      window.addEventListener('touchstart', handleUserActivity);
-    } else {
-      // 💡 万が一関数が見つからない場合は、エラーにせずその場で代わりの処理を作る
-      window.handleUserActivity = function() {
-        if (typeof resetTimeoutTimer === "function") resetTimeoutTimer();
-      };
-      window.addEventListener('click', window.handleUserActivity);
-      window.addEventListener('keypress', window.handleUserActivity);
-      window.addEventListener('mousemove', window.handleUserActivity);
-      window.addEventListener('touchstart', window.handleUserActivity);
-    }
+    // 💡 画面のどこをクリック・キー入力しても10分タイマーを延長するイベントを設定
+    window.addEventListener('click', handleUserActivity);
+    window.addEventListener('keypress', handleUserActivity);
+    window.addEventListener('mousemove', handleUserActivity);
+    window.addEventListener('touchstart', handleUserActivity);
     
     // 💡 エラーに邪魔されることなく、確実にバージョン取得を実行
     fetchLoginVersion();
