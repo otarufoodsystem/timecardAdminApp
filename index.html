@@ -85,43 +85,38 @@
     #report-table {
       width: 100%;
       border-collapse: collapse;
-      table-layout: fixed; /* 指定した幅（%）を絶対に強制します */
-      min-width: 1200px;   /* 列が増えたため、全体の最低横幅を少し広げて確保 */
+      /* 💡 table-layout: fixed を解除し、文字数に応じた自然な最小幅を優先します */
     }
 
     #report-table th, #report-table td {
-      white-space: nowrap; /* 検索結果が綺麗に横一行に並ぶようにする */
+      white-space: nowrap; /* 検索結果とヘッダーを綺麗に横一行に並べ、絶対に改行・カットさせない */
       text-align: center;
-      padding: 6px 4px;    /* 左右の余白を少し詰めてスマートに */
+      padding: 8px 12px;   /* 文字が見やすくなるよう余白を少しゆったりに */
       font-size: 0.85rem;
-      overflow: hidden;    /* 万が一はみ出しても枠線を壊さない */
-      text-overflow: ellipsis;
-      box-sizing: border-box;
     }
 
-    /* ⏱️ 実際の列順（出勤店舗あり）に合わせて横幅（％）を正しくロック */
-    #report-table th:nth-child(1),  #report-table td:nth-child(1)  { width: 9%; text-align: left; }  /* 1. メンバー名 */
-    #report-table th:nth-child(2),  #report-table td:nth-child(2)  { width: 8%; }                   /* 2. 日付 (yyyy/MM/dd) */
-    #report-table th:nth-child(3),  #report-table td:nth-child(3)  { width: 9%; text-align: left; }  /* 3. 出勤店舗 ✨ */
-    #report-table th:nth-child(4),  #report-table td:nth-child(4)  { width: 5%; }                   /* 4. 出勤時刻 (HH:mm) */
-    #report-table th:nth-child(5),  #report-table td:nth-child(5)  { width: 5%; }                   /* 5. 退勤時刻（★これでキュッと狭くなります） */
-    #report-table th:nth-child(6),  #report-table td:nth-child(6)  { width: 5%; }                   /* 6. 休憩開始 */
-    #report-table th:nth-child(7),  #report-table td:nth-child(7)  { width: 5%; }                   /* 7. 休憩終了 */
-    #report-table th:nth-child(8),  #report-table td:nth-child(8)  { width: 7%; }                   /* 8. IPアドレス */
-    #report-table th:nth-child(9),  #report-table td:nth-child(9)  { width: 5%; }                   /* 9. IN1(まるめ後) */
-    #report-table th:nth-child(10), #report-table td:nth-child(10) { width: 5%; }                   /* 10. OUT1(まるめ後) */
-    #report-table th:nth-child(11), #report-table td:nth-child(11) { width: 5%; }                   /* 11. 休憩時間 */
-    #report-table th:nth-child(12), #report-table td:nth-child(12) { width: 5%; }                   /* 12. 勤務時間 */
-    #report-table th:nth-child(13), #report-table td:nth-child(13) { width: 5%; }                   /* 13. 残業時間 */
-    #report-table th:nth-child(14), #report-table td:nth-child(14) { width: 5%; }                   /* 14. 総時間 */
-    #report-table th:nth-child(15), #report-table td:nth-child(15) { width: 8%; }                   /* 15. Ver */
-    #report-table th:nth-child(16), #report-table td:nth-child(16) { width: 4%; }                   /* 16. 食事 */
+    /* ⏱️ ヘッダー全体の文字を最優先で見せつつ、各列の「最低限の幅」をpxでカチッと指定 */
+    #report-table th:nth-child(1),  #report-table td:nth-child(1)  { text-align: left; min-width: 120px; } /* 1. メンバー名 */
+    #report-table th:nth-child(2),  #report-table td:nth-child(2)  { min-width: 95px; }                   /* 2. 日付 */
+    #report-table th:nth-child(3),  #report-table td:nth-child(3)  { text-align: left; min-width: 140px; } /* 3. 出勤店舗 */
+    #report-table th:nth-child(4),  #report-table td:nth-child(4)  { min-width: 65px; width: 70px; }      /* 4. 出勤時刻 */
+    #report-table th:nth-child(5),  #report-table td:nth-child(5)  { min-width: 65px; width: 70px; }      /* 5. 退勤時刻（★文字を切らずに最小幅で固定） */
+    #report-table th:nth-child(6),  #report-table td:nth-child(6)  { min-width: 65px; width: 70px; }      /* 6. 休憩開始 */
+    #report-table th:nth-child(7),  #report-table td:nth-child(7)  { min-width: 65px; width: 70px; }      /* 7. 休憩終了 */
+    #report-table th:nth-child(8),  #report-table td:nth-child(8)  { min-width: 110px; }                  /* 8. IN1(まるめ後) */
+    #report-table th:nth-child(9),  #report-table td:nth-child(9)  { min-width: 110px; }                  /* 9. OUT1(まるめ後) */
+    #report-table th:nth-child(10), #report-table td:nth-child(10) { min-width: 70px; }                   /* 10. 休憩時間 */
+    #report-table th:nth-child(11), #report-table td:nth-child(11) { min-width: 70px; }                   /* 11. 勤務時間 */
+    #report-table th:nth-child(12), #report-table td:nth-child(12) { min-width: 70px; }                   /* 12. 残業時間 */
+    #report-table th:nth-child(13), #report-table td:nth-child(13) { min-width: 70px; }                   /* 13. 総時間 */
+    #report-table th:nth-child(14), #report-table td:nth-child(14) { min-width: 120px; }                  /* 14. Ver */
+    #report-table th:nth-child(15), #report-table td:nth-child(15) { min-width: 50px; }                   /* 15. 食事 */
 
-    /* 💡 17番目以降（もしコメント列などがあれば）の幅自動調整と左寄せ */
-    #report-table th:nth-child(17), #report-table td:nth-child(17) {
-      width: auto;
+    /* 💡 コメント列など16番目以降の調整 */
+    #report-table th:nth-child(16), #report-table td:nth-child(16) {
       text-align: left;
       white-space: normal;
+      min-width: 200px;
     }
 
     .search-btn-container {
