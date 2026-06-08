@@ -377,7 +377,10 @@
 <body>
   <div id="login-screen">
     <div class="login-box">
-      <h2>OFSタイムカード 管理画面</h2>
+    <div style="position: relative; margin-bottom: 20px;">
+      <h2 style="margin: 0; padding-bottom: 5px;">タイムカード管理システム</h2>
+      <span id="login-version" class="version" style="position: absolute; bottom: -12px; right: 0; font-size: 0.75rem; color: #c29d38; font-family: monospace; font-weight: bold;"></span>
+    </div>
       <div class="form-group">
         <label>ユーザー名</label>
         <input type="text" id="login-user" placeholder="ユーザー名を入力">
@@ -610,7 +613,7 @@
 </div>
 
 <script>
-  const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyDH56_Knv8kl5nIVx_L1HdL0jDY_ES1-t9yI7JdkF50A_aZJdUbhs8PaL5dk33YmEI/exec";
+  const GAS_API_URL = "https://script.google.com/macros/s/AKfycbwXiZ5bveSGeKcRidh8M8IefRWU8I6sgYaPHw2LBndcu2nelmCE2p_zn4tYUx5pu-3g/exec";
   
   // 💡 ユーザー名とパスワード、両方をローカルストレージで管理します
   let currentUsername = localStorage.getItem("admin_saved_username") || "";
@@ -696,10 +699,28 @@
     window.addEventListener('keypress', handleUserActivity);
     window.addEventListener('mousemove', handleUserActivity);
     window.addEventListener('touchstart', handleUserActivity);
-    
+    fetchLoginVersion();
     await runAuthentication();
   };
 
+  async function fetchLoginVersion() {
+    try {
+      const response = await fetch(GAS_API_URL, {
+        method: "POST",
+        body: JSON.stringify({ action: "getAppVersion" })
+      });
+      const resData = await response.json();
+      if (resData.success && resData.version) {
+        const loginVerEl = document.getElementById("login-version");
+        if (loginVerEl) {
+          loginVerEl.innerText = resData.version;
+        }
+      }
+    } catch (e) {
+      console.error("ログイン画面のバージョン取得に失敗しました:", e);
+    }
+  }
+  
   // 🔒 認証実行関数 (起動・リロード時に自動で走る)
   async function runAuthentication() {
     const overlay = document.getElementById("protection-overlay");
