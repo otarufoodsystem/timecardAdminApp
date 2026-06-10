@@ -419,6 +419,18 @@
           <small>※16日〜翌15日締め基準</small>
         </div>
         <div class="search-box" style="display: flex; gap: 15px; align-items: flex-end; margin-bottom: 20px;">
+          <div class="form-group">
+            <label for="report-store">店舗名 <span style="color: red; font-size: 0.8rem;">*必須</span></label>
+            <select id="report-store" onchange="handleReportStoreChange()">
+              <option value="">店舗を選択してください</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="report-name">氏名</label>
+            <select id="report-name" disabled>
+              <option value="">店舗を先に選択してください</option>
+            </select>
+          </div>
           <div class="form-group" style="margin: 0; flex: 1;">
             <label>店舗名 <span style="color: red;">*必須</span></label>
             <select id="search-store" onchange="handleSearchStoreChange()">
@@ -955,8 +967,9 @@
 
     // ② 店舗名セレクトボックスの同期（店舗一覧マスタから構築）
     const storeSelect = document.getElementById("report-store");
+    storeSelect.innerHTML = '<option value="">店舗を選択してください</option>';
     // 「すべての店舗」を残してリセット
-    storeSelect.innerHTML = '<option value="すべての店舗">すべての店舗</option>';
+//    storeSelect.innerHTML = '<option value="すべての店舗">すべての店舗</option>';
     const storeRows = document.querySelectorAll("#store-table-body tr");
     storeRows.forEach(row => {
       const td = row.querySelector("td");
@@ -1411,48 +1424,42 @@
     }
   }
 
-  // ⭕ 新しく追加する関数：店舗名が変更されたときの連動処理
-  function handleSearchStoreChange() {
-    const storeEl = document.getElementById("search-store");
-    const nameEl = document.getElementById("search-name");
-    const btnEl = document.getElementById("search-btn");
+  // ⭕ 新しく追加する関数：勤務表照会の店舗が変更されたときの連動処理
+  function handleReportStoreChange() {
+    const storeSelect = document.getElementById("report-store");
+    const nameSelect = document.getElementById("report-name");
     
-    const selectedStore = storeEl.value;
+    const selectedStore = storeSelect.value;
   
-    // 店舗名が選択されていない（空文字）の場合
+    // 1. 店舗が未選択（空文字）の場合の処理
     if (!selectedStore) {
-      nameEl.innerHTML = '<option value="">店舗を先に選択してください</option>';
-      nameEl.disabled = true;
-      btnEl.disabled = true; // 検索ボタンを無効化
+      nameSelect.innerHTML = '<option value="">店舗を先に選択してください</option>';
+      nameSelect.disabled = true;
       return;
     }
   
-    // 1. 店舗が選ばれたら、氏名プルダウンと検索ボタンを有効化
-    nameEl.disabled = false;
-    btnEl.disabled = false;
+    // 2. 店舗が選ばれたら氏名選択を有効化
+    nameSelect.disabled = false;
+    nameSelect.innerHTML = '<option value="すべてのスタッフ">すべてのスタッフ (選択した店舗の全員)</option>';
   
-    // 2. 氏名プルダウンの初期化
-    nameEl.innerHTML = '<option value="">全員（選択された店舗のみ）</option>';
-  
-    // 3. スタッフマスタ（保持されているデータ）から、選ばれた店舗に属する人のみを抽出
-    // ※システムの変数名に合わせて `staffMaster` や `globalData.staffs` 等に適宜書き換えてください
+    // 3. スタッフマスタから選ばれた店舗に所属する人のみを抽出してプルダウンにセット
     if (typeof staffMaster !== "undefined" && Array.isArray(staffMaster)) {
       
-      // 選ばれた店舗と一致するスタッフだけに絞り込み
+      // 店舗名が一致するスタッフだけをフィルター
       const filteredStaff = staffMaster.filter(staff => staff.store === selectedStore);
   
-      // プルダウンにセット
+      // 抽出したスタッフをプルダウンに追加
       filteredStaff.forEach(staff => {
         const option = document.createElement("option");
         option.value = staff.name;
         option.innerText = staff.name;
-        nameEl.appendChild(option);
+        nameSelect.appendChild(option);
       });
       
     } else {
-      console.warn("スタッフマスタ（staffMaster）が見つからないか、データが空です。");
+      console.warn("staffMaster が見つからないか、データが空です。");
     }
-  }  
+  }
 </script>
 </body>
 </html>
