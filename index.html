@@ -950,6 +950,9 @@
     monthSelect.value = currentMonthString;
     document.getElementById("report-store").options.length = 0;
     document.getElementById("report-name").options.length = 0;
+    // ⭕【追加】空っぽにした後、すぐに最新の店舗マスタからプルダウンを組み立て直す命令を実行する
+    const storeSelect = document.getElementById("report-store");
+    rebuildReportStoreSelect(storeSelect);
     // ② 店舗名セレクトボックスの初期化（★リロード時は一旦読み込み中にする）
 //    const storeSelect = document.getElementById("report-store");
 //    storeSelect.innerHTML = '<option value="">店舗データを読み込み中...</option>';
@@ -999,6 +1002,36 @@
         }
       }
     });*/
+  }
+
+  /**
+   * 🏢 勤務表の店舗プルダウンを現在の画面マスタから組み立て直す関数
+   */
+  function rebuildReportStoreSelect(storeSelect) {
+    if (!storeSelect) return;
+    storeSelect.innerHTML = ''; // クリア
+    
+    const storeRows = document.querySelectorAll("#store-table-body tr");
+    storeRows.forEach(row => {
+      const td = row.querySelector("td");
+      if (td && td.getAttribute("colspan") === null) {
+        const sName = td.innerText.trim();
+        if (sName) {
+          const opt = document.createElement("option");
+          opt.value = sName;
+          opt.innerText = sName;
+          storeSelect.appendChild(opt);
+        }
+      }
+    });
+    
+    // 店舗変更時の連動イベントを再設定
+    storeSelect.onchange = updateReportNameSelect;
+    
+    // 最後に、選ばれた店舗のスタッフを絞り込む
+    if (typeof updateReportNameSelect === "function") {
+      updateReportNameSelect();
+    }
   }
 
   /**
