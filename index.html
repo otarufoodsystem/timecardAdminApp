@@ -950,8 +950,9 @@
 
     // ② 店舗名セレクトボックスの同期（店舗一覧マスタから構築）
     const storeSelect = document.getElementById("report-store");
-    // 「すべての店舗」を残してリセット
-    storeSelect.innerHTML = '<option value="すべての店舗">すべての店舗</option>';
+//    // 「すべての店舗」を残してリセット
+//    storeSelect.innerHTML = '<option value="すべての店舗">すべての店舗</option>';
+    storeSelect.innerHTML = ''; // 完全にクリア
     const storeRows = document.querySelectorAll("#store-table-body tr");
     storeRows.forEach(row => {
       const td = row.querySelector("td");
@@ -966,7 +967,13 @@
       }
     });
 
-    // ③ 氏名セレクトボックスの同期（スタッフ一覧マスタから構築）
+    // ★店舗名が変更されたら、紐づくスタッフ一覧を動的に書き換えるイベントを設定
+    storeSelect.onchange = updateReportNameSelect;
+
+    // ③ 氏名セレクトボックスの同期（★選択されている店舗の所属スタッフのみで初期構築）
+    updateReportNameSelect();
+    
+/*    // ③ 氏名セレクトボックスの同期（スタッフ一覧マスタから構築）
     const nameSelect = document.getElementById("report-name");
     nameSelect.innerHTML = '<option value="すべてのスタッフ">すべてのスタッフ (全員)</option>';
     const staffRows = document.querySelectorAll("#staff-table-body tr");
@@ -981,9 +988,39 @@
           nameSelect.appendChild(opt);
         }
       }
-    });
+    });*/
   }
 
+  /**
+   * 👥 選択された店舗に所属するスタッフのみを氏名セレクトボックスに表示する
+   */
+  function updateReportNameSelect() {
+    const storeSelect = document.getElementById("report-store");
+    const nameSelect = document.getElementById("report-name");
+    
+    // 現在選択されている店舗名
+    const selectedStore = storeSelect.value;
+    
+    // 「すべてのスタッフ」の選択肢を初期配置
+    nameSelect.innerHTML = '<option value="すべてのスタッフ">すべてのスタッフ (店舗全員)</option>';
+    
+    if (!selectedStore) return;
+
+    // グローバル変数 globalStaffList から所属するスタッフを抽出
+    globalStaffList.forEach(staff => {
+      // 所属店舗（カンマ区切り文字列）を分解して配列化
+      const belongStores = staff.stores.split(',').map(s => s.trim());
+      
+      // 選択された店舗が配列に含まれている場合のみ、氏名選択肢に追加
+      if (belongStores.includes(selectedStore)) {
+        const opt = document.createElement("option");
+        opt.value = staff.name;
+        opt.innerText = staff.name;
+        nameSelect.appendChild(opt);
+      }
+    });
+  }
+  
   /**
    * 🔍 勤務表の検索実行処理
    */
