@@ -670,13 +670,11 @@
         if (loginScreen) loginScreen.style.display = "none";
         if (overlay) overlay.style.display = "none";
 
-        await Promise.all([
-          loadStoreList(),
-          loadStaffList(),
-          loadCommentList()
-        ]);
-        initReportForm(); // 👈【追加】勤務表のセレクトボックス（月度・店舗・氏名）を初期化        
+        await loadStoreList();   // 1. 店舗を読み込む
+        await loadStaffList();   // 2. スタッフを読み込む（検索に必須のデータです）
+        await loadCommentList(); // 3. コメントを読み込む
         showLoading(false);
+        initReportForm(); // 👈【追加】勤務表のセレクトボックス（月度・店舗・氏名）を初期化        
 
         // 🔥 これで確実に10分タイマーが起動します
         resetTimeoutTimer();
@@ -779,13 +777,11 @@
           }
 
           if (overlay) overlay.style.display = "none";
-          showLoading(false);
           
-          await Promise.all([
-            loadStoreList(),
-            loadStaffList(),
-            loadCommentList()
-          ]);
+          await loadStoreList();   // 1. 店舗を読み込む
+          await loadStaffList();   // 2. スタッフを読み込む（検索に必須のデータです）
+          await loadCommentList(); // 3. コメントを読み込む
+          showLoading(false);
           initReportForm();
 
           // 🔥 自動ログイン時も10分リアルタイム監視をスタート
