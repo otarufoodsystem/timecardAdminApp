@@ -670,9 +670,11 @@
         if (loginScreen) loginScreen.style.display = "none";
         if (overlay) overlay.style.display = "none";
 
-        await loadStoreList();
-        await loadStaffList();
-        await loadCommentList();
+        await Promise.all([
+          loadStoreList(),
+          loadStaffList(),
+          loadCommentList()
+        ]);
         initReportForm(); // 👈【追加】勤務表のセレクトボックス（月度・店舗・氏名）を初期化        
         showLoading(false);
 
@@ -779,9 +781,11 @@
           if (overlay) overlay.style.display = "none";
           showLoading(false);
           
-          await loadStoreList();
-          await loadStaffList();
-          await loadCommentList();
+          await Promise.all([
+            loadStoreList(),
+            loadStaffList(),
+            loadCommentList()
+          ]);
           initReportForm();
 
           // 🔥 自動ログイン時も10分リアルタイム監視をスタート
