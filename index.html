@@ -670,10 +670,10 @@
         if (loginScreen) loginScreen.style.display = "none";
         if (overlay) overlay.style.display = "none";
 
-        initReportForm(); // 👈【追加】勤務表のセレクトボックス（月度・店舗・氏名）を初期化        
-        await loadStaffList();
         await loadStoreList();
+        await loadStaffList();
         await loadCommentList();
+        initReportForm(); // 👈【追加】勤務表のセレクトボックス（月度・店舗・氏名）を初期化        
         showLoading(false);
 
         // 🔥 これで確実に10分タイマーが起動します
