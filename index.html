@@ -971,7 +971,7 @@
     storeSelect.onchange = updateReportNameSelect;
 
     // ③ 氏名セレクトボックスの同期（★選択されている店舗の所属スタッフのみで初期構築）
-    updateReportNameSelect();
+//    updateReportNameSelect();
     
 /*    // ③ 氏名セレクトボックスの同期（スタッフ一覧マスタから構築）
     const nameSelect = document.getElementById("report-name");
@@ -1111,6 +1111,9 @@
           </td>`;
         tbody.appendChild(tr);
       });
+      if (typeof updateReportNameSelect === "function") {
+        updateReportNameSelect();
+      }
     } catch(e) {}
   }
   function editStaff(rowIndex) {
@@ -1175,6 +1178,7 @@
       });
     } catch(e) {}
   }
+  
   function editStore(rowIndex) {
     const item = globalStoreList.find(s => s.rowIndex === rowIndex);
     if(!item) return;
@@ -1188,6 +1192,7 @@
     document.getElementById('store-form-title').innerText = "店舗編集 (上書き)";
     if (window.innerWidth < 768) { window.scrollTo({ top: 0, behavior: 'smooth' }); }
   }
+  
   function clearStoreForm() {
     document.getElementById('store-row-index').value = "";
     document.getElementById('store-name').value = "";
@@ -1198,6 +1203,7 @@
     document.getElementById('store-out-marume').value = "15";
     document.getElementById('store-form-title').innerText = "店舗登録・編集";
   }
+  
   async function submitStoreForm() {
     const storeName = document.getElementById('store-name').value;
     const lat = document.getElementById('store-lat').value;
@@ -1213,6 +1219,7 @@
       showLoading(false); alert(res.message); clearStoreForm(); loadStoreList();
     } catch(e) { showLoading(false); }
   }
+  
   async function deleteStore(rowIndex, storeName) {
     if(!confirm(`本当に店舗「${storeName}」を削除しますか？`)) return;
     showLoading(true);
