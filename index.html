@@ -673,7 +673,7 @@
         await loadStaffList();
         await loadStoreList();
         await loadCommentList();
-        (); // 👈【追加】勤務表のセレクトボックス（月度・店舗・氏名）を初期化        
+        initReportForm(); // 👈【追加】勤務表のセレクトボックス（月度・店舗・氏名）を初期化        
         showLoading(false);
 
         // 🔥 これで確実に10分タイマーが起動します
@@ -899,11 +899,11 @@
     document.getElementById(`tab-${type}-btn`).classList.add('active');
     document.getElementById(`tab-${type}`).classList.add('active');
   }
-  
+
   /**
    * 📊 勤務表用：検索セレクトボックスの初期生成
    */
-/*  function initReportForm() {
+  function initReportForm() {
     // ① 月度セレクトボックスの生成（当月を中心に前後6ヶ月分を生成）
     const monthSelect = document.getElementById("report-month");
     monthSelect.innerHTML = "";
@@ -982,106 +982,8 @@
         }
       }
     });
-  }*/
-  function initReportForm() {
-    // ① 月度セレクトボックスの生成（当月を中心に前後6ヶ月分を生成）
-    const monthSelect = document.getElementById("report-month");
-    monthSelect.innerHTML = "";
-    
-    const now = new Date();
-    let defaultVal = "";
-    
-    // 現在が16日以降なら「当月度（先月16〜当月15日）」が先月締め実績、15日以下なら「先月度」が先月実績となるため
-    // 「デフォルトで先月度を選択。6/16であれば、5/16～6/15」という条件に自動合致させるロジック
-    let borderDate = new Date(now.getFullYear(), now.getMonth(), 16);
-    let targetDefaultIndex = 0; // デフォルト選択位置の調整用
-    
-    // 直近6ヶ月分の選択肢を用意
-    for (let i = -4; i <= 2; i++) {
-      const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
-      const y = d.getFullYear();
-      const m = d.getMonth() + 1;
-      
-      const mStr = m < 10 ? "0" + m : m;
-      const val = `${y}/${mStr}`;
-      
-      // 期間の表示用テキスト作成 (16日〜翌15日)
-      const nextD = new Date(y, m, 15);
-      const text = `${y}年${m}月度 (${m}/16 ～ ${m===12?1:m+1}/15)`;
-      
-      const opt = document.createElement("option");
-      opt.value = val;
-      opt.innerText = text;
-      monthSelect.appendChild(opt);
-    }
-
-    // デフォルト選択ロジック: 6/16 であれば 5/16~6/15 (5月度) を選ばせる
-    let currentMonthString = now.getFullYear() + "/" + ((now.getMonth() + 1) < 10 ? "0" + (now.getMonth() + 1) : (now.getMonth() + 1));
-    if (now.getDate() >= 16) {
-      // 16日以降は「当月マイナス1ケ月」をデフォルトにする (例:6/16 -> 05度(5/16~6/15))
-      const prevM = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-      currentMonthString = prevM.getFullYear() + "/" + ((prevM.getMonth() + 1) < 10 ? "0" + (prevM.getMonth() + 1) : (prevM.getMonth() + 1));
-    } else {
-      // 15日以下は「当月マイナス2ヶ月」をデフォルトにする (例:6/10 -> 04度(4/16~5/15))
-      const prevM2 = new Date(now.getFullYear(), now.getMonth() - 2, 1);
-      currentMonthString = prevM2.getFullYear() + "/" + ((prevM2.getMonth() + 1) < 10 ? "0" + (prevM2.getMonth() + 1) : (prevM2.getMonth() + 1));
-    }
-    monthSelect.value = currentMonthString;
-
-    // ② 店舗名セレクトボックスの同期（★「すべての店舗」を削除して必須化）
-    const storeSelect = document.getElementById("report-store");
-    storeSelect.innerHTML = ''; // 完全にクリア
-    const storeRows = document.querySelectorAll("#store-table-body tr");
-    storeRows.forEach(row => {
-      const td = row.querySelector("td");
-      if (td && td.getAttribute("colspan") === null) {
-        const sName = td.innerText.trim();
-        if (sName) {
-          const opt = document.createElement("option");
-          opt.value = sName;
-          opt.innerText = sName;
-          storeSelect.appendChild(opt);
-        }
-      }
-    });
-
-    // ★店舗名が変更されたら、紐づくスタッフ一覧を動的に書き換えるイベントを設定
-    storeSelect.onchange = updateReportNameSelect;
-
-    // ③ 氏名セレクトボックスの同期（★選択されている店舗の所属スタッフのみで初期構築）
-    updateReportNameSelect();
   }
-  
-  /**
-   * 👥 選択された店舗に所属するスタッフのみを氏名セレクトボックスに表示する
-   */
-  function updateReportNameSelect() {
-    const storeSelect = document.getElementById("report-store");
-    const nameSelect = document.getElementById("report-name");
-    
-    // 現在選択されている店舗名
-    const selectedStore = storeSelect.value;
-    
-    // 「すべてのスタッフ」の選択肢を初期配置
-    nameSelect.innerHTML = '<option value="すべてのスタッフ">すべてのスタッフ (店舗全員)</option>';
-    
-    if (!selectedStore) return;
 
-    // グローバル変数 globalStaffList（loadStaffListで取得済み）から所属するスタッフを抽出
-    globalStaffList.forEach(staff => {
-      // 所属店舗（カンマ区切り文字列）を分解して配列化し、前後の空白を除去
-      const belongStores = staff.stores.split(',').map(s => s.trim());
-      
-      // 選択された店舗が配列に含まれている場合のみ、選択肢に追加
-      if (belongStores.includes(selectedStore)) {
-        const opt = document.createElement("option");
-        opt.value = staff.name;
-        opt.innerText = staff.name;
-        nameSelect.appendChild(opt);
-      }
-    });
-  }
-  
   /**
    * 🔍 勤務表の検索実行処理
    */
