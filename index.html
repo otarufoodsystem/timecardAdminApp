@@ -12,7 +12,7 @@
       color: white; font-weight: bold; font-size: 1.2rem;
       opacity: 1; /* 💡 確実に不透明にして後ろの画面を隠す */
     }    
-  
+
     html, body {
       margin: 0;
       padding: 0;
@@ -21,12 +21,12 @@
       color: #333; 
       height: 100%;
     }
-  
+
     /* パソコンなどの大画面でのみ全体スクロールを禁止 */
     @media (min-width: 768px) {
       html, body { overflow: hidden; }
     }
-  
+
     /* ヘッダー */
     .header { 
       background-color: #22252a; 
@@ -78,27 +78,29 @@
       .tab-content { height: 100%; }
     }
     .tab-content.active { display: block; }
-  
+
     /* =======================================================
-        📊 勤務表テーブルの列幅・見た目をすっきり整える設定
+       📊 勤務表テーブルの列幅・見た目をすっきり整える設定
     ======================================================= */
     #report-table {
       width: 100%;
       border-collapse: collapse;
+      /* 💡 table-layout: fixed を解除し、文字数に応じた自然な最小幅を優先します */
     }
-  
+
     #report-table th, #report-table td {
       white-space: nowrap; /* 検索結果とヘッダーを綺麗に横一行に並べ、絶対に改行・カットさせない */
       text-align: center;
       padding: 8px 12px;   /* 文字が見やすくなるよう余白を少しゆったりに */
       font-size: 0.85rem;
     }
-  
+
+    /* ⏱️ ヘッダー全体の文字を最優先で見せつつ、各列の「最低限の幅」をpxでカチッと指定 */
     #report-table th:nth-child(1),  #report-table td:nth-child(1)  { text-align: left; min-width: 120px; } /* 1. メンバー名 */
     #report-table th:nth-child(2),  #report-table td:nth-child(2)  { min-width: 95px; }                   /* 2. 日付 */
     #report-table th:nth-child(3),  #report-table td:nth-child(3)  { text-align: left; min-width: 140px; } /* 3. 出勤店舗 */
     #report-table th:nth-child(4),  #report-table td:nth-child(4)  { min-width: 65px; width: 70px; }      /* 4. 出勤時刻 */
-    #report-table th:nth-child(5),  #report-table td:nth-child(5)  { min-width: 65px; width: 70px; }      /* 5. 退勤時刻 */
+    #report-table th:nth-child(5),  #report-table td:nth-child(5)  { min-width: 65px; width: 70px; }      /* 5. 退勤時刻（★文字を切らずに最小幅で固定） */
     #report-table th:nth-child(6),  #report-table td:nth-child(6)  { min-width: 65px; width: 70px; }      /* 6. 休憩開始 */
     #report-table th:nth-child(7),  #report-table td:nth-child(7)  { min-width: 65px; width: 70px; }      /* 7. 休憩終了 */
     #report-table th:nth-child(8),  #report-table td:nth-child(8)  { min-width: 110px; }                  /* 8. IN1(まるめ後) */
@@ -109,13 +111,14 @@
     #report-table th:nth-child(13), #report-table td:nth-child(13) { min-width: 70px; }                   /* 13. 総時間 */
     #report-table th:nth-child(14), #report-table td:nth-child(14) { min-width: 120px; }                  /* 14. Ver */
     #report-table th:nth-child(15), #report-table td:nth-child(15) { min-width: 50px; }                   /* 15. 食事 */
-  
+
+    /* 💡 コメント列など16番目以降の調整 */
     #report-table th:nth-child(16), #report-table td:nth-child(16) {
       text-align: left;
       white-space: normal;
       min-width: 200px;
     }
-  
+
     .search-btn-container {
       display: flex; gap: 10px; margin-top: 15px;
     }
@@ -133,21 +136,13 @@
         height: 100%;
       } 
     }
-  
+
     /* 左側：フォームボックス */
     .form-box { background: #f8f9fa; padding: 15px; border-radius: 6px; border: 1px solid #ddd; height: fit-content; box-sizing: border-box; }
     .form-box h3 { margin-top: 0; border-bottom: 2px solid #ddd; padding-bottom: 5px; color: #444; font-size: 1rem; }
     .form-group { margin-bottom: 12px; }
     .form-group label { display: block; font-weight: bold; font-size: 0.85rem; margin-bottom: 4px; color: #555; }
-    
-    /* 💡 必須マーク（required）用のスタイルを追加 */
-    .form-group label span.required { color: #dc3545; font-size: 0.75rem; margin-left: 5px; font-weight: normal; }
-  
     .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 8px; font-size: 0.9rem; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-family: inherit; }
-    
-    /* 💡 disabled（選択不可）状態の時の見た目を少しマイルドに調整 */
-    .form-group select:disabled { background-color: #e9ecef; color: #6c757d; cursor: not-allowed; }
-  
     .form-group textarea { resize: vertical; height: 70px; }
     .form-group small { color: #777; font-size: 0.75rem; display: block; margin-top: 2px; }
     .btn-row { display: flex; gap: 10px; margin-top: 15px; }
@@ -158,7 +153,7 @@
     .btn-clear { background-color: #6c757d; color: white; }
     .btn-danger { background-color: #dc3545; color: white; padding: 4px 8px; font-size: 0.75rem; }
     .btn-edit { background-color: #007bff; color: white; padding: 4px 8px; font-size: 0.75rem; margin-right: 3px; }
-  
+
     /* 右側：リストエリアコンテナ */
     .list-area-container {
       display: flex;
@@ -169,7 +164,7 @@
       .list-area-container { height: 100%; overflow: hidden; }
     }
     .list-area-container h3 { margin-top: 0; margin-bottom: 10px; font-size: 1rem; }
-  
+
     /* テーブルのスクロール設定 */
     .table-container { 
       overflow-x: auto;
@@ -187,7 +182,7 @@
     .table-container::-webkit-scrollbar { width: 6px; height: 6px; }
     .table-container::-webkit-scrollbar-track { background: #f1f1f1; }
     .table-container::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
-  
+
     table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; min-width: 600px; } 
     
     th { background-color: #f1f3f5; font-weight: bold; }
@@ -196,37 +191,115 @@
     }
     th, td { padding: 8px 10px; border-bottom: 1px solid #ddd; }
     tr:hover { background-color: #f8f9fa; }
-  
-    /* 店舗一覧テーブル */
-    #tab-store th:nth-child(1), #tab-store td:nth-child(1) { min-width: 240px; white-space: nowrap; text-align: left; }
-    #tab-store th:nth-child(2), #tab-store td:nth-child(2) { white-space: nowrap; text-align: left; }
-    #tab-store th:nth-child(4), #tab-store td:nth-child(4) { min-width: 110px; white-space: nowrap; text-align: left; }
-    #tab-store th:nth-child(5), #tab-store td:nth-child(5) { width: 140px; white-space: nowrap; text-align: center; }
+
+    /* 🏢 💡 追加：店舗一覧テーブル 各列の横幅と折り返し制御 */
+    #tab-store th:nth-child(1),
+    #tab-store td:nth-child(1) {
+      min-width: 240px;       /* 「北とうがらし出抜き小路」が1行に収まる幅 */
+      white-space: nowrap;
+      text-align: left;       /* 💡 ヘッダー・中身ともに左寄せ */
+    }
+    #tab-store th:nth-child(2),
+    #tab-store td:nth-child(2) {
+      white-space: nowrap;    /* 位置情報も1行で表示 */
+      text-align: left;
+    }
+    #tab-store th:nth-child(4),
+    #tab-store td:nth-child(4) {
+      min-width: 110px;       /* 「IN:〇〇分/OUT:〇〇分」が1行に収まる幅 */
+      white-space: nowrap;
+      text-align: left;       /* 💡 ヘッダー・中身ともに左寄せ */
+    }
+    #tab-store th:nth-child(5),
+    #tab-store td:nth-child(5) {
+      width: 140px;           /* 「編集」「削除」ボタン用 */
+      white-space: nowrap;
+      text-align: center;     /* 💡 ヘッダー・ボタンともに中央寄せ */
+    }
     
-    /* スタッフ一覧テーブル */
-    #staff-table-body td:nth-child(1), #tab-staff th:nth-child(1) { min-width: 160px; white-space: nowrap; text-align: left; }
-    #staff-table-body td:nth-child(2), #tab-staff th:nth-child(2) { white-space: normal; word-break: break-all; text-align: left; }
-    #staff-table-body td:nth-child(3), #tab-staff th:nth-child(3) { width: 120px; white-space: nowrap; text-align: center; }
-    #staff-table-body td:nth-child(4), #tab-staff th:nth-child(4) { width: 140px; white-space: nowrap; text-align: center; }
+    /* 👤 💡 追加：スタッフ一覧テーブル 各列の横幅と折り返し制御 */
+    #staff-table-body td:nth-child(1),
+    #tab-staff th:nth-child(1) {
+      min-width: 160px;       /* 10文字程度が綺麗に入る幅 */
+      white-space: nowrap;    
+      text-align: left;       /* 💡 ヘッダー・中身ともに左寄せ */
+    }
+    #staff-table-body td:nth-child(2),
+    #tab-staff th:nth-child(2) {
+      white-space: normal;    /* 店舗名が長い場合は自動改行を許可 */
+      word-break: break-all;
+      text-align: left;
+    }
+    #staff-table-body td:nth-child(3),
+    #tab-staff th:nth-child(3) {
+      width: 120px;           /* ヘッダー文字が一列に表示できる幅に固定 */
+      white-space: nowrap;    
+      text-align: center;     /* 時間数を中央寄せ */
+    }
+    #staff-table-body td:nth-child(4),
+    #tab-staff th:nth-child(4) {
+      width: 140px;           /* 「編集」「削除」ボタンが1列に綺麗に並ぶ幅 */
+      white-space: nowrap;    
+      text-align: center;     /* 中央寄せ */
+    }
     
-    /* コメント通知一覧テーブル */
-    #comment-table-body td:nth-child(1), th:nth-child(1) { width: 55px; white-space: nowrap; text-align: center; }
-    #comment-table-body td:nth-child(2), th:nth-child(2), #comment-table-body td:nth-child(3), th:nth-child(3) { white-space: nowrap; }
-    #comment-table-body td:nth-child(4), th:nth-child(4) { width: 70px; white-space: nowrap; text-align: center; }
-    #comment-table-body td:nth-child(5), th:nth-child(5) { max-width: 450px; min-width: 250px; white-space: normal; word-break: break-all; line-height: 1.4; }
-    #comment-table-body td:nth-child(6), th:nth-child(6) { width: 140px; white-space: nowrap; line-height: 1.3; }
-    #comment-table-body td:nth-child(7), th:nth-child(7) { width: 130px; white-space: nowrap; text-align: center; }
+    /* 💡 コメント通知一覧テーブル 各列の横幅と折り返し制御 */
+    /* 1番目：番号列（「番号」というタイトルも中身も1行で中央寄せ表示） */
+    #comment-table-body td:nth-child(1), 
+    th:nth-child(1) {
+      width: 55px;
+      white-space: nowrap;
+      text-align: center;
+    }
+
+    /* 2番目：対象列 / 3番目：確認状況 */
+    #comment-table-body td:nth-child(2), th:nth-child(2),
+    #comment-table-body td:nth-child(3), th:nth-child(3) {
+      white-space: nowrap;
+    }
+
+    /* 4番目：重要度列（「重要度」の文字とバッジを絶対に割らずに1行で中央寄せ表示） */
+    #comment-table-body td:nth-child(4),
+    th:nth-child(4) {
+      width: 70px;
+      white-space: nowrap;
+      text-align: center;
+    }
+
+    /* 5番目：コメント内容（長文を自動改行させるメインエリア） */
+    #comment-table-body td:nth-child(5), th:nth-child(5) {
+      max-width: 450px;       /* 横幅が広がりすぎないよう制限 */
+      min-width: 250px;       /* 狭くなりすぎないよう確保 */
+      white-space: normal;    /* 長い文章は自動で改行 */
+      word-break: break-all;  /* 枠線での強制折り返し */
+      line-height: 1.4;
+    }
+
+    /* 6番目：表示期間（From/To を2行でスマートに表示するエリア） */
+    #comment-table-body td:nth-child(6), th:nth-child(6) {
+      width: 140px;
+      white-space: nowrap;    /* 日時単体が途中で変に崩れるのを防ぐ */
+      line-height: 1.3;
+    }
+
+    /* 7番目：操作列（「編集」「削除」のボタンを絶対にズラさず1行横並びで固定） */
+    #comment-table-body td:nth-child(7), th:nth-child(7) {
+      width: 130px;           /* ボタン2つが無理なく収まる幅 */
+      white-space: nowrap;    /* 絶対に途中で改行させない */
+      text-align: center;     /* 中央に寄せて綺麗に整列 */
+    }
     
     .badge { padding: 3px 6px; font-size: 0.75rem; font-weight: bold; border-radius: 3px; color: #fff; }
     .badge-important { background-color: #dc3545; }
     .badge-normal { background-color: #6c757d; }
-  
+
+    /* 💡 確認状況用ボタンのデザイン */
     .btn-status-all { background-color: #28a745; color: white; padding: 4px 8px; font-size: 0.75rem; border-radius: 4px; border: none; cursor: pointer; font-weight: bold; }
     .btn-status-all:hover { background-color: #218838; }
     .btn-status-wait { background-color: #ffc107; color: #212529; padding: 4px 8px; font-size: 0.75rem; border-radius: 4px; border: none; cursor: pointer; font-weight: bold; }
     .btn-status-wait:hover { background-color: #e0a800; }
     
-    /* モーダルウィンドウ */
+    /* 💡 確認状況詳細ポップアップ（モーダルウィンドウ） */
     .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; justify-content: center; align-items: center; }
     .modal-content { background: white; padding: 20px; border-radius: 8px; width: 95%; max-width: 480px; max-height: 80%; overflow-y: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.2); box-sizing: border-box; }
     .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
@@ -237,10 +310,9 @@
     .status-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 5px; border-bottom: 1px solid #f1f1f1; font-size: 0.85rem; }
     .status-ok { color: #28a745; font-weight: bold; }
     .status-ng { color: #dc3545; font-weight: bold; }
-  
+
     #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.7); display: none; justify-content: center; align-items: center; z-index: 9999; font-weight: bold; font-size: 1.2rem; color: #c29d38; }
-    
-    /* 🔒 ログインTOP画面 */
+    /* 🔒 追加：ログインTOP画面のスタイル */
     #login-screen {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background-color: #22252a; z-index: 100000;
@@ -259,6 +331,47 @@
     .login-box .btn-login { width: 100%; padding: 10px; font-size: 1rem; font-weight: bold; background-color: #c29d38; color: #22252a; border: none; border-radius: 4px; cursor: pointer; margin-top: 10px; transition: 0.2s; }
     .login-box .btn-login:hover { background-color: #e0b641; }
     .login-error { color: #dc3545; font-size: 0.85rem; margin-top: 10px; display: none; }
+    /* 📊 勤務表用スタイル */
+    #report-table {
+      width: 100%;
+      border-collapse: collapse;
+      /* 💡 table-layout: fixed を解除し、文字数に応じた自然な最小幅を優先します */
+    }
+
+    #report-table th, #report-table td {
+      white-space: nowrap; /* 検索結果とヘッダーを綺麗に横一行に並べ、絶対に改行・カットさせない */
+      text-align: center;
+      padding: 8px 12px;   /* 文字が見やすくなるよう余白を少しゆったりに */
+      font-size: 0.85rem;
+    }
+
+    /* ⏱️ ヘッダー全体の文字を最優先で見せつつ、各列の「最低限の幅」をpxでカチッと指定 */
+    #report-table th:nth-child(1),  #report-table td:nth-child(1)  { text-align: left; min-width: 120px; } /* 1. メンバー名 */
+    #report-table th:nth-child(2),  #report-table td:nth-child(2)  { min-width: 95px; }                   /* 2. 日付 */
+    #report-table th:nth-child(3),  #report-table td:nth-child(3)  { text-align: left; min-width: 140px; } /* 3. 出勤店舗 */
+    #report-table th:nth-child(4),  #report-table td:nth-child(4)  { min-width: 65px; width: 70px; }      /* 4. 出勤時刻 */
+    #report-table th:nth-child(5),  #report-table td:nth-child(5)  { min-width: 65px; width: 70px; }      /* 5. 退勤時刻（★文字を切らずに最小幅で固定） */
+    #report-table th:nth-child(6),  #report-table td:nth-child(6)  { min-width: 65px; width: 70px; }      /* 6. 休憩開始 */
+    #report-table th:nth-child(7),  #report-table td:nth-child(7)  { min-width: 65px; width: 70px; }      /* 7. 休憩終了 */
+    #report-table th:nth-child(8),  #report-table td:nth-child(8)  { min-width: 110px; }                  /* 8. IN1(まるめ後) */
+    #report-table th:nth-child(9),  #report-table td:nth-child(9)  { min-width: 110px; }                  /* 9. OUT1(まるめ後) */
+    #report-table th:nth-child(10), #report-table td:nth-child(10) { min-width: 70px; }                   /* 10. 休憩時間 */
+    #report-table th:nth-child(11), #report-table td:nth-child(11) { min-width: 70px; }                   /* 11. 勤務時間 */
+    #report-table th:nth-child(12), #report-table td:nth-child(12) { min-width: 70px; }                   /* 12. 残業時間 */
+    #report-table th:nth-child(13), #report-table td:nth-child(13) { min-width: 70px; }                   /* 13. 総時間 */
+    #report-table th:nth-child(14), #report-table td:nth-child(14) { min-width: 120px; }                  /* 14. Ver */
+    #report-table th:nth-child(15), #report-table td:nth-child(15) { min-width: 50px; }                   /* 15. 食事 */
+
+    /* 💡 コメント列など16番目以降の調整 */
+    #report-table th:nth-child(16), #report-table td:nth-child(16) {
+      text-align: left;
+      white-space: normal;
+      min-width: 200px;
+    }
+
+    .search-btn-container {
+      display: flex; gap: 10px; margin-top: 15px;
+    }
   </style>
 </head>
 <body>
@@ -305,34 +418,17 @@
           <select id="report-month"></select>
           <small>※16日〜翌15日締め基準</small>
         </div>
-        <div class="search-box" style="display: flex; gap: 15px; align-items: flex-end; margin-bottom: 20px;">
-          <div class="form-group">
-            <label for="report-store">店舗名 <span style="color: red; font-size: 0.8rem;">*必須</span></label>
-            <select id="report-store" onchange="handleReportStoreChange()">
-              <option value="">店舗を選択してください</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="report-name">氏名</label>
-            <select id="report-name" disabled>
-              <option value="">店舗を先に選択してください</option>
-            </select>
-          </div>
-          <div class="form-group" style="margin: 0; flex: 1;">
-            <label>店舗名 <span style="color: red;">*必須</span></label>
-            <select id="search-store" onchange="handleSearchStoreChange()">
-              <option value="">店舗を選択してください</option>
-              </select>
-          </div>
-          
-          <div class="form-group" style="margin: 0; flex: 1;">
-            <label>氏名</label>
-            <select id="search-name" disabled>
-              <option value="">店舗を先に選択してください</option>
-            </select>
-          </div>
-        
-          <button id="search-btn" class="btn-submit" onclick="loadMonthlyReport()" style="margin: 0; height: 38px;" disabled>照会</button>
+        <div class="form-group">
+          <label for="report-store">店舗名</label>
+          <select id="report-store">
+            <option value="すべての店舗">すべての店舗</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="report-name">氏名</label>
+          <select id="report-name">
+            <option value="すべてのスタッフ">すべてのスタッフ (全員)</option>
+          </select>
         </div>
         <div class="search-btn-container">
           <button class="btn btn-primary" onclick="searchWorkReport()">🔍 検索する</button>
@@ -803,7 +899,7 @@
     document.getElementById(`tab-${type}-btn`).classList.add('active');
     document.getElementById(`tab-${type}`).classList.add('active');
   }
-
+  
   /**
    * 📊 勤務表用：検索セレクトボックスの初期生成
    */
@@ -813,12 +909,6 @@
     monthSelect.innerHTML = "";
     
     const now = new Date();
-    let defaultVal = "";
-    
-    // 現在が16日以降なら「当月度（先月16〜当月15日）」が先月締め実績、15日以下なら「先月度」が先月実績となるため
-    // 「デフォルトで先月度を選択。6/16であれば、5/16～6/15」という条件に自動合致させるロジック
-    let borderDate = new Date(now.getFullYear(), now.getMonth(), 16);
-    let targetDefaultIndex = 0; // デフォルト選択位置の調整用
     
     // 直近6ヶ月分の選択肢を用意
     for (let i = -4; i <= 2; i++) {
@@ -829,8 +919,6 @@
       const mStr = m < 10 ? "0" + m : m;
       const val = `${y}/${mStr}`;
       
-      // 期間の表示用テキスト作成 (16日〜翌15日)
-      const nextD = new Date(y, m, 15);
       const text = `${y}年${m}月度 (${m}/16 ～ ${m===12?1:m+1}/15)`;
       
       const opt = document.createElement("option");
@@ -839,24 +927,21 @@
       monthSelect.appendChild(opt);
     }
 
-    // デフォルト選択ロジック: 6/16 であれば 5/16~6/15 (5月度) を選ばせる
+    // デフォルト選択ロジック
     let currentMonthString = now.getFullYear() + "/" + ((now.getMonth() + 1) < 10 ? "0" + (now.getMonth() + 1) : (now.getMonth() + 1));
     if (now.getDate() >= 16) {
-      // 16日以降は「当月マイナス1ケ月」をデフォルトにする (例:6/16 -> 05度(5/16~6/15))
       const prevM = new Date(now.getFullYear(), now.getMonth() - 1, 1);
       currentMonthString = prevM.getFullYear() + "/" + ((prevM.getMonth() + 1) < 10 ? "0" + (prevM.getMonth() + 1) : (prevM.getMonth() + 1));
     } else {
-      // 15日以下は「当月マイナス2ヶ月」をデフォルトにする (例:6/10 -> 04度(4/16~5/15))
       const prevM2 = new Date(now.getFullYear(), now.getMonth() - 2, 1);
       currentMonthString = prevM2.getFullYear() + "/" + ((prevM2.getMonth() + 1) < 10 ? "0" + (prevM2.getMonth() + 1) : (prevM2.getMonth() + 1));
     }
     monthSelect.value = currentMonthString;
 
-    // ② 店舗名セレクトボックスの同期（店舗一覧マスタから構築）
+    // ② 店舗名セレクトボックスの同期（★「すべての店舗」を削除して必須化）
     const storeSelect = document.getElementById("report-store");
-    storeSelect.innerHTML = '<option value="">店舗を選択してください</option>';
-    // 「すべての店舗」を残してリセット
-//    storeSelect.innerHTML = '<option value="すべての店舗">すべての店舗</option>';
+    storeSelect.innerHTML = ''; // 完全にクリア
+    
     const storeRows = document.querySelectorAll("#store-table-body tr");
     storeRows.forEach(row => {
       const td = row.querySelector("td");
@@ -871,24 +956,43 @@
       }
     });
 
-    // ③ 氏名セレクトボックスの同期（スタッフ一覧マスタから構築）
+    // ★店舗名が変更されたら、紐づくスタッフ一覧を動的に書き換えるイベントを設定
+    storeSelect.onchange = updateReportNameSelect;
+
+    // ③ 氏名セレクトボックスの初期構築（選択されている先頭の店舗で絞り込み）
+    updateReportNameSelect();
+  }
+
+  /**
+   * 👥 選択された店舗に所属するスタッフのみを氏名セレクトボックスに表示する
+   */
+  function updateReportNameSelect() {
+    const storeSelect = document.getElementById("report-store");
     const nameSelect = document.getElementById("report-name");
-    nameSelect.innerHTML = '<option value="すべてのスタッフ">すべてのスタッフ (全員)</option>';
-    const staffRows = document.querySelectorAll("#staff-table-body tr");
-    staffRows.forEach(row => {
-      const td = row.querySelector("td");
-      if (td && td.getAttribute("colspan") === null) {
-        const sName = td.innerText.trim();
-        if (sName) {
-          const opt = document.createElement("option");
-          opt.value = sName;
-          opt.innerText = sName;
-          nameSelect.appendChild(opt);
-        }
+    
+    // 現在選択されている店舗名
+    const selectedStore = storeSelect.value;
+    
+    // 「すべてのスタッフ」の選択肢を初期配置
+    nameSelect.innerHTML = '<option value="すべてのスタッフ">すべてのスタッフ (店舗全員)</option>';
+    
+    if (!selectedStore) return;
+
+    // グローバル変数 globalStaffList（loadStaffListで取得済み）から所属するスタッフを抽出
+    globalStaffList.forEach(staff => {
+      // 所属店舗（カンマ区切り文字列）を分解して配列化し、前後の空白を除去
+      const belongStores = staff.stores.split(',').map(s => s.trim());
+      
+      // 選択された店舗が配列に含まれている場合のみ、選択肢に追加
+      if (belongStores.includes(selectedStore)) {
+        const opt = document.createElement("option");
+        opt.value = staff.name;
+        opt.innerText = staff.name;
+        nameSelect.appendChild(opt);
       }
     });
   }
-
+  
   /**
    * 🔍 勤務表の検索実行処理
    */
@@ -1308,43 +1412,6 @@
   function handleUserActivity() {
     if (typeof resetTimeoutTimer === "function") {
       resetTimeoutTimer();
-    }
-  }
-
-  // ⭕ 新しく追加する関数：勤務表照会の店舗が変更されたときの連動処理
-  function handleReportStoreChange() {
-    const storeSelect = document.getElementById("report-store");
-    const nameSelect = document.getElementById("report-name");
-    
-    const selectedStore = storeSelect.value;
-  
-    // 1. 店舗が未選択（空文字）の場合の処理
-    if (!selectedStore) {
-      nameSelect.innerHTML = '<option value="">店舗を先に選択してください</option>';
-      nameSelect.disabled = true;
-      return;
-    }
-  
-    // 2. 店舗が選ばれたら氏名選択を有効化
-    nameSelect.disabled = false;
-    nameSelect.innerHTML = '<option value="すべてのスタッフ">すべてのスタッフ (選択した店舗の全員)</option>';
-  
-    // 3. スタッフマスタから選ばれた店舗に所属する人のみを抽出してプルダウンにセット
-    if (typeof staffMaster !== "undefined" && Array.isArray(staffMaster)) {
-      
-      // 店舗名が一致するスタッフだけをフィルター
-      const filteredStaff = staffMaster.filter(staff => staff.store === selectedStore);
-  
-      // 抽出したスタッフをプルダウンに追加
-      filteredStaff.forEach(staff => {
-        const option = document.createElement("option");
-        option.value = staff.name;
-        option.innerText = staff.name;
-        nameSelect.appendChild(option);
-      });
-      
-    } else {
-      console.warn("staffMaster が見つからないか、データが空です。");
     }
   }
 </script>
