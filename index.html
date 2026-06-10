@@ -947,14 +947,15 @@
       currentMonthString = prevM2.getFullYear() + "/" + ((prevM2.getMonth() + 1) < 10 ? "0" + (prevM2.getMonth() + 1) : (prevM2.getMonth() + 1));
     }
     monthSelect.value = currentMonthString;
-
+    document.getElementById("report-store").options.length = 0;
+    document.getElementById("report-name").options.length = 0;
     // ② 店舗名セレクトボックスの初期化（★リロード時は一旦読み込み中にする）
-    const storeSelect = document.getElementById("report-store");
-    storeSelect.innerHTML = '<option value="">店舗データを読み込み中...</option>';
+//    const storeSelect = document.getElementById("report-store");
+//    storeSelect.innerHTML = '<option value="">店舗データを読み込み中...</option>';
 
     // ③ 氏名セレクトボックスの初期化（★同じく一旦待機状態にする）
-    const nameSelect = document.getElementById("report-name");
-    nameSelect.innerHTML = '<option value="">店舗を先に選択してください</option>';
+//    const nameSelect = document.getElementById("report-name");
+//    nameSelect.innerHTML = '<option value="">店舗を先に選択してください</option>';
     
     // ② 店舗名セレクトボックスの同期（店舗一覧マスタから構築）
 /*    const storeSelect = document.getElementById("report-store");
