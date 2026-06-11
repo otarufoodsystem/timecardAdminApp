@@ -196,26 +196,31 @@
     /* 🏢 💡 追加：店舗一覧テーブル 各列の横幅と折り返し制御 */
     #tab-store th:nth-child(1),
     #tab-store td:nth-child(1) {
-      min-width: 240px;       /* 「北とうがらし出抜き小路」が1行に収まる幅 */
+      /* 💡 iPadの幅に合わせて少しだけ最小幅を詰め、文字の隙間（パディング）も狭くします */
+      min-width: 180px;       
       white-space: nowrap;
-      text-align: left;       /* 💡 ヘッダー・中身ともに左寄せ */
+      text-align: left;       
+      padding: 8px 6px;       /* 👈 左右の余白を少し詰めて横幅を節約 */
     }
     #tab-store th:nth-child(2),
     #tab-store td:nth-child(2) {
-      white-space: nowrap;    /* 位置情報も1行で表示 */
+      white-space: nowrap;    
       text-align: left;
+      padding: 8px 6px;       /* 👈 左右の余白を少し詰めて横幅を節約 */
     }
     #tab-store th:nth-child(4),
     #tab-store td:nth-child(4) {
-      min-width: 110px;       /* 「IN:〇〇分/OUT:〇〇分」が1行に収まる幅 */
+      min-width: 95px;        /* 👈 「IN:〇〇分/OUT:〇〇分」が収まる限界までスマートに縮小 */
       white-space: nowrap;
-      text-align: left;       /* 💡 ヘッダー・中身ともに左寄せ */
+      text-align: left;       
+      padding: 8px 6px;       /* 👈 左右の余白を少し詰めて横幅を節約 */
     }
     #tab-store th:nth-child(5),
     #tab-store td:nth-child(5) {
-      width: 100px;           /* 「編集」「削除」ボタン用 */
+      width: 100px;           /* ⭕ ご要望通り140pxから100pxへ縮小 */
       white-space: nowrap;
-      text-align: center;     /* 💡 ヘッダー・ボタンともに中央寄せ */
+      text-align: center;     
+      padding: 8px 4px;       /* 👈 ボタンがはみ出さないよう、列の余白を最小限に */
     }
     
     /* 👤 💡 追加：スタッフ一覧テーブル 各列の横幅と折り返し制御 */
