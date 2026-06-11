@@ -1163,7 +1163,7 @@
 
     try {
       // 1. ヘッダー行を定義
-      const headers = ["氏名", "日付", "店舗", "出勤", "退勤", "休憩入", "休憩戻", "入1", "出1", "休憩", "実働", "残業", "総労働", "食事", "備考"];
+      const headers = ["メンバー名", "日付", "店舗", "出勤時刻", "退勤時刻", "休憩開始", "休憩終了", "IN１（まるめ後）", "OUT１（まるめ後）", "休憩時間", "勤務時間", "残業時間", "総労働", "食事", "コメント"];
       const csvRows = [headers.join(',')];
 
       // 2. テーブル内のデータを取得しエスケープ処理を適用
@@ -1193,6 +1193,17 @@
       const blob = new Blob([buf], {type: 'text/csv;charset=shift-jis'});
 
       // ファイル名の作成
+      // 🏢 選択されている「店舗名」「氏名」「対象月度」を画面のセレクトボックスから取得
+      const storeVal = document.getElementById("report-store").value || "不明な店舗";
+      const monthVal = (document.getElementById("report-month").value || "不明な月度").replace(/\//g, ""); // 2026/06 -> 202606
+      
+      let nameVal = document.getElementById("report-name").value || "ALL";
+      // 👤 氏名が未選択、または「すべて」の文言が含まれる場合は "ALL" に統一
+      if (!nameVal || nameVal.includes("すべてのスタッフ") || nameVal.includes("全員")) {
+        nameVal = "ALL";
+      }
+
+      // ⏱️ ダウンロード日時のフォーマット作成 (YYYYMMDD_HHMMSS)
       const now = new Date();
       const y = now.getFullYear();
       const m = String(now.getMonth() + 1).padStart(2, '0');
@@ -1200,8 +1211,10 @@
       const hh = String(now.getHours()).padStart(2, '0');
       const mm = String(now.getMinutes()).padStart(2, '0');
       const ss = String(now.getSeconds()).padStart(2, '0');
-      const fileName = `勤務表照会_${y}${m}${d}_${hh}${mm}${ss}.csv`;
-      
+      const downloadDateTime = `${y}${m}${d}_${hh}${mm}${ss}`;
+
+      // 📝 指定のファイル名に組み立て [店舗名]_[氏名]_[対象月度]_[ダウンロード日時].csv
+      const fileName = `${storeVal}_${nameVal}_${monthVal}_${downloadDateTime}.csv`;      
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
       link.download = fileName;
