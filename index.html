@@ -614,7 +614,7 @@
 </div>
 
 <script>
-  const GAS_API_URL = "https://script.google.com/macros/s/AKfycbw05enQsfyUt8sOpNjS3uIq8Lzx53rtUzDluMpOBYxyxJBTNDferqZj7TKXPIpZLrJw/exec";
+  const GAS_API_URL = "https://script.google.com/macros/s/AKfycbwlyi2Hxm3U_52O-G6aW7ojN-QEdqzgRNoF_jrqu7GiA3dJX4yBucA3Qr58XPVOrtLY/exec";
   
   // 💡 ユーザー名とパスワード、両方をローカルストレージで管理します
   let currentUsername = localStorage.getItem("admin_saved_username") || "";
@@ -1151,72 +1151,73 @@
   /**
    * 📊 勤務表照会の検索結果をShift-JIS形式でCSVダウンロードする関数
    */
-  function downloadReportCsv() {
+  async function downloadReportCsv() {
     const tbody = document.getElementById('report-table-body');
     if (!tbody || tbody.rows.length === 0) return;
-    
-    // データがない行の場合は処理しない
     if (tbody.rows.length === 1 && tbody.rows[0].cells.length === 1) return;
 
-    // 1. ヘッダー行を定義
-    const headers = ["氏名", "日付", "店舗", "出勤", "退勤", "休憩入", "休憩戻", "入1", "出1", "休憩", "実働", "残業", "総労働", "食事", "備考"];
-    const csvRows = [headers.join(',')];
+    const csvBtn = document.getElementById('btn-csv-download');
+    const originalText = csvBtn.innerText;
+    csvBtn.disabled = true;
+    csvBtn.innerText = "⏳ CSV生成中...";
 
-    // 2. テーブル内のデータを取得し、サンプル通りのエスケープ処理を適用
-    for (let i = 0; i < tbody.rows.length; i++) {
-      const row = tbody.rows[i];
-      const rowData = [];
-      for (let j = 0; j < row.cells.length; j++) {
-        let cellText = row.cells[j].innerText.trim();
-        // カンマや改行、ダブルクォーテーションが含まれる場合はエスケープ
-        if (cellText.indexOf(',') !== -1 || cellText.indexOf('\n') !== -1 || cellText.indexOf('"') !== -1) {
-          cellText = '"' + cellText.replace(/"/g, '""') + '"';
-        }
-        rowData.push(cellText);
-      }
-      csvRows.push(rowData.join(','));
-    }
-
-    const csvString = csvRows.join('\r\n');
-
-    // 3. ファイル名に今日の日付と時間を付与 (例: 勤務表照会_20260611_153000.csv)
-    const now = new Date();
-    const y = now.getFullYear();
-    const m = String(now.getMonth() + 1).padStart(2, '0');
-    const d = String(now.getDate()).padStart(2, '0');
-    const hh = String(now.getHours()).padStart(2, '0');
-    const mm = String(now.getMinutes()).padStart(2, '0');
-    const ss = String(now.getSeconds()).padStart(2, '0');
-    const fileName = `勤務表照会_${y}${m}${d}_${hh}${mm}${ss}.csv`;
-
-    // 4. サンプルの仕組みをブラウザ用に最適化：Shift-JISのバイナリBlobを作成してダウンロード
     try {
-      // ユーザー環境のブラウザ機能を利用してShift-JISにエンコード
-      const encoder = new TextEncoder('shift-jis', { NONSTANDARD_allowLegacyEncoding: true });
-      const sjisBytes = encoder.encode(csvString);
-      
-      // サンプル通りShift-JIS指定。BOMは付けずにBlobを作成
-      const blob = new Blob([sjisBytes], { type: 'text/csv;charset=shift-jis;' });
-      
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (err) {
-      // 万が一ブラウザが古くShift-JIS変換に失敗した場合は、UTF-8(BOM付き)でExcel文字化けを防ぐ
-      const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
-      const blob = new Blob([bom, csvString], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-  }  
+      // 1. ヘッダー行を定義
+      const headers = ["氏名", "日付", "店舗", "出勤", "退勤", "休憩入", "休憩戻", "入1", "出1", "休憩", "実働", "残業", "総労働", "食事", "備考"];
+      const csvRows = [headers.join(',')];
 
+      // 2. テーブル内のデータを取得しエスケープ処理を適用
+      for (let i = 0; i < tbody.rows.length; i++) {
+        const row = tbody.rows[i];
+        const rowData = [];
+        for (let j = 0; j < row.cells.length; j++) {
+          let cellText = row.cells[j].innerText.trim();
+          if (cellText.indexOf(',') !== -1 || cellText.indexOf('\n') !== -1 || cellText.indexOf('"') !== -1) {
+            cellText = '"' + cellText.replace(/"/g, '""') + '"';
+          }
+          rowData.push(cellText);
+        }
+        csvRows.push(rowData.join(','));
+      }
+
+      // 3. 💡 追加したGASの関数を呼び出し、サーバー側で100%確実なShift-JISのBase64に変換してもらう
+      const base64Data = await callGas("convertToSjisBase64", csvRows);
+      
+      // 4. ご提示いただいたサンプルコードのダウンロードロジックを再現
+      const bin = atob(base64Data);
+      const buf = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) {
+        buf[i] = bin.charCodeAt(i);
+      }
+      
+      const blob = new Blob([buf], {type: 'text/csv;charset=shift-jis'});
+
+      // ファイル名の作成
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      const d = String(now.getDate()).padStart(2, '0');
+      const hh = String(now.getHours()).padStart(2, '0');
+      const mm = String(now.getMinutes()).padStart(2, '0');
+      const ss = String(now.getSeconds()).padStart(2, '0');
+      const fileName = `勤務表照会_${y}${m}${d}_${hh}${mm}${ss}.csv`;
+      
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+    } catch (err) {
+      alert("CSVの生成中にエラーが発生しました。");
+      console.error(err);
+    } finally {
+      csvBtn.disabled = false;
+      csvBtn.innerText = originalText;
+    }
+  }
+  
   // --- スタッフ機能 ---
   let globalStaffList = [];
   async function loadStaffList() {
