@@ -432,7 +432,7 @@
         </div>
         <div class="search-btn-container">
           <button class="btn btn-primary" onclick="searchWorkReport()">🔍 検索する</button>
-          <button class="btn btn-success" id="btn-csv-download" onclick="downloadReportCsv()" style="display:none; background-color:#28a745; margin-left:10px;">CSVダウンロード</button>
+          <button class="btn" id="btn-csv-download" onclick="downloadReportCsv()" disabled style="background-color: #6c757d; color: white; margin-left: 10px; cursor: not-allowed;">CSVダウンロード</button>
         </div>
       </div>
       
@@ -1126,10 +1126,21 @@
         `;
         tbody.appendChild(tr);
       });
-      // ⭕ 検索結果が1件以上あればCSVダウンロードボタンを表示する
+      // ⭕ 検索結果の件数（res.data.length）に応じてCSVボタンの状態を切り替える
       const csvBtn = document.getElementById('btn-csv-download');
-      if (csvBtn) csvBtn.style.display = res.data.length > 0 ? 'inline-block' : 'none';
-
+      if (csvBtn) {
+        if (res.data && res.data.length > 0) {
+          // ヒットした時はアクティブ（緑色）にする
+          csvBtn.disabled = false;
+          csvBtn.style.backgroundColor = '#28a745';
+          csvBtn.style.cursor = 'pointer';
+        } else {
+          // ヒットしなかった場合はグレーアウト（無効化）にする
+          csvBtn.disabled = true;
+          csvBtn.style.backgroundColor = '#6c757d';
+          csvBtn.style.cursor = 'not-allowed';
+        }
+      }
     } catch (e) {
       showLoading(false);
       console.error(e);
@@ -1142,28 +1153,22 @@
    */
   function downloadReportCsv() {
     const tbody = document.getElementById('report-table-body');
-    if (!tbody || tbody.rows.length === 0) {
-      alert('ダウンロードするデータがありません。');
-      return;
-    }
+    if (!tbody || tbody.rows.length === 0) return;
     
-    // データが「登録データはありません」などのメッセージ行の場合は処理しない
-    if (tbody.rows.length === 1 && tbody.rows[0].cells.length === 1) {
-      alert('有効なデータがありません。');
-      return;
-    }
+    // データがない行の場合は処理しない
+    if (tbody.rows.length === 1 && tbody.rows[0].cells.length === 1) return;
 
     // 1. ヘッダー行を定義
     const headers = ["氏名", "日付", "店舗", "出勤", "退勤", "休憩入", "休憩戻", "入1", "出1", "休憩", "実働", "残業", "総労働", "食事", "備考"];
     const csvRows = [headers.join(',')];
 
-    // 2. テーブル内のデータを1行ずつ取得
+    // 2. テーブル内のデータを取得し、サンプル通りのエスケープ処理を適用
     for (let i = 0; i < tbody.rows.length; i++) {
       const row = tbody.rows[i];
       const rowData = [];
       for (let j = 0; j < row.cells.length; j++) {
         let cellText = row.cells[j].innerText.trim();
-        // カンマや改行、ダブルクォーテーションが含まれる場合はエスケープ処理
+        // カンマや改行、ダブルクォーテーションが含まれる場合はエスケープ
         if (cellText.indexOf(',') !== -1 || cellText.indexOf('\n') !== -1 || cellText.indexOf('"') !== -1) {
           cellText = '"' + cellText.replace(/"/g, '""') + '"';
         }
@@ -1174,7 +1179,7 @@
 
     const csvString = csvRows.join('\r\n');
 
-    // 3. ファイル名の作成 (例: 勤務表照会_20260611_153000.csv)
+    // 3. ファイル名に今日の日付と時間を付与 (例: 勤務表照会_20260611_153000.csv)
     const now = new Date();
     const y = now.getFullYear();
     const m = String(now.getMonth() + 1).padStart(2, '0');
@@ -1184,11 +1189,13 @@
     const ss = String(now.getSeconds()).padStart(2, '0');
     const fileName = `勤務表照会_${y}${m}${d}_${hh}${mm}${ss}.csv`;
 
-    // 4. 日本語WindowsのExcel文字化けを防ぐため、TextEncoder(Shift_JIS)で変換してダウンロード実行
+    // 4. サンプルの仕組みをブラウザ用に最適化：Shift-JISのバイナリBlobを作成してダウンロード
     try {
-      // ブラウザ標準機能を使って文字列をShift-JISのバイト配列に変換
+      // ユーザー環境のブラウザ機能を利用してShift-JISにエンコード
       const encoder = new TextEncoder('shift-jis', { NONSTANDARD_allowLegacyEncoding: true });
       const sjisBytes = encoder.encode(csvString);
+      
+      // サンプル通りShift-JIS指定。BOMは付けずにBlobを作成
       const blob = new Blob([sjisBytes], { type: 'text/csv;charset=shift-jis;' });
       
       const link = document.createElement('a');
@@ -1198,7 +1205,7 @@
       link.click();
       document.body.removeChild(link);
     } catch (err) {
-      // 万が一ブラウザがShift-JIS変換に対応していない場合のフォールバック(UTF-8 BOM付き)
+      // 万が一ブラウザが古くShift-JIS変換に失敗した場合は、UTF-8(BOM付き)でExcel文字化けを防ぐ
       const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
       const blob = new Blob([bom, csvString], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement('a');
@@ -1208,8 +1215,8 @@
       link.click();
       document.body.removeChild(link);
     }
-  }
-  
+  }  
+
   // --- スタッフ機能 ---
   let globalStaffList = [];
   async function loadStaffList() {
