@@ -1184,7 +1184,7 @@
       const base64Data = await callGas("convertToSjisBase64", csvRows);
       
       // 4. ご提示いただいたサンプルコードのダウンロードロジックを再現
-      const bin = atob(base64Data);
+      const bin = atob(base64Data.data);
       const buf = new Uint8Array(bin.length);
       for (let i = 0; i < bin.length; i++) {
         buf[i] = bin.charCodeAt(i);
