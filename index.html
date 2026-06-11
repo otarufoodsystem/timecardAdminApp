@@ -432,6 +432,7 @@
         </div>
         <div class="search-btn-container">
           <button class="btn btn-primary" onclick="searchWorkReport()">🔍 検索する</button>
+          <button class="btn btn-success" id="btn-csv-download" onclick="downloadReportCsv()" style="display:none; background-color:#28a745; margin-left:10px;">CSVダウンロード</button>
         </div>
       </div>
       
@@ -1125,6 +1126,9 @@
         `;
         tbody.appendChild(tr);
       });
+      // ⭕ 検索結果が1件以上あればCSVダウンロードボタンを表示する
+      const csvBtn = document.getElementById('btn-csv-download');
+      if (csvBtn) csvBtn.style.display = res.data.length > 0 ? 'inline-block' : 'none';
 
     } catch (e) {
       showLoading(false);
@@ -1133,6 +1137,79 @@
     }
   }
 
+  /**
+   * 📊 勤務表照会の検索結果をShift-JIS形式でCSVダウンロードする関数
+   */
+  function downloadReportCsv() {
+    const tbody = document.getElementById('report-table-body');
+    if (!tbody || tbody.rows.length === 0) {
+      alert('ダウンロードするデータがありません。');
+      return;
+    }
+    
+    // データが「登録データはありません」などのメッセージ行の場合は処理しない
+    if (tbody.rows.length === 1 && tbody.rows[0].cells.length === 1) {
+      alert('有効なデータがありません。');
+      return;
+    }
+
+    // 1. ヘッダー行を定義
+    const headers = ["氏名", "日付", "店舗", "出勤", "退勤", "休憩入", "休憩戻", "入1", "出1", "休憩", "実働", "残業", "総労働", "食事", "備考"];
+    const csvRows = [headers.join(',')];
+
+    // 2. テーブル内のデータを1行ずつ取得
+    for (let i = 0; i < tbody.rows.length; i++) {
+      const row = tbody.rows[i];
+      const rowData = [];
+      for (let j = 0; j < row.cells.length; j++) {
+        let cellText = row.cells[j].innerText.trim();
+        // カンマや改行、ダブルクォーテーションが含まれる場合はエスケープ処理
+        if (cellText.indexOf(',') !== -1 || cellText.indexOf('\n') !== -1 || cellText.indexOf('"') !== -1) {
+          cellText = '"' + cellText.replace(/"/g, '""') + '"';
+        }
+        rowData.push(cellText);
+      }
+      csvRows.push(rowData.join(','));
+    }
+
+    const csvString = csvRows.join('\r\n');
+
+    // 3. ファイル名の作成 (例: 勤務表照会_20260611_153000.csv)
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    const d = String(now.getDate()).padStart(2, '0');
+    const hh = String(now.getHours()).padStart(2, '0');
+    const mm = String(now.getMinutes()).padStart(2, '0');
+    const ss = String(now.getSeconds()).padStart(2, '0');
+    const fileName = `勤務表照会_${y}${m}${d}_${hh}${mm}${ss}.csv`;
+
+    // 4. 日本語WindowsのExcel文字化けを防ぐため、TextEncoder(Shift_JIS)で変換してダウンロード実行
+    try {
+      // ブラウザ標準機能を使って文字列をShift-JISのバイト配列に変換
+      const encoder = new TextEncoder('shift-jis', { NONSTANDARD_allowLegacyEncoding: true });
+      const sjisBytes = encoder.encode(csvString);
+      const blob = new Blob([sjisBytes], { type: 'text/csv;charset=shift-jis;' });
+      
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      // 万が一ブラウザがShift-JIS変換に対応していない場合のフォールバック(UTF-8 BOM付き)
+      const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+      const blob = new Blob([bom, csvString], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  }
+  
   // --- スタッフ機能 ---
   let globalStaffList = [];
   async function loadStaffList() {
