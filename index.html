@@ -242,8 +242,22 @@
       white-space: nowrap;    
       text-align: center;     /* 時間数を中央寄せ */
     }
+    /* ⭕【追加】在籍期間From */
     #staff-table-body td:nth-child(4),
     #tab-staff th:nth-child(4) {
+      width: 110px;
+      white-space: nowrap;
+      text-align: center;
+    }
+    /* ⭕【追加】在籍期間To */
+    #staff-table-body td:nth-child(5),
+    #tab-staff th:nth-child(5) {
+      width: 110px;
+      white-space: nowrap;
+      text-align: center;
+    }
+    #staff-table-body td:nth-child(6),
+    #tab-staff th:nth-child(6) {
       width: 140px;           /* 「編集」「削除」ボタンが1列に綺麗に並ぶ幅 */
       white-space: nowrap;    
       text-align: center;     /* 中央寄せ */
@@ -492,6 +506,14 @@
           <input type="text" id="staff-hours" value="08:00" placeholder="例: 08:00">
           <small>※1日あたりの所定労働時間数です</small>
         </div>
+        <div class="form-group">
+          <label>在籍期間 (From)</label>
+          <input type="date" id="staff-date-from">
+        </div>
+        <div class="form-group">
+          <label>在籍期間 (To) <small style="display:inline; color:#999;">※未設定可</small></label>
+          <input type="date" id="staff-date-to">
+        </div>
         <div class="btn-row">
           <button class="btn btn-clear" onclick="clearStaffForm()">クリア</button>
           <button class="btn btn-primary" onclick="submitStaffForm()">保存する</button>
@@ -501,8 +523,8 @@
         <h3>登録スタッフ一覧</h3>
         <div class="table-container">
           <table>
-            <thead><tr><th>氏名</th><th>所属・出勤店舗</th><th>標準勤務時間</th><th>操作</th></tr></thead>
-            <tbody id="staff-table-body"><tr><td colspan="4">読み込み中...</td></tr></tbody>
+            <thead><tr><th>氏名</th><th>所属・出勤店舗</th><th>標準勤務時間</th><th>在籍期間From</th><th>在籍期間To</th><th>操作</th></tr></thead>
+            <tbody id="staff-table-body"><tr><td colspan="6">読み込み中...</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -620,7 +642,7 @@
 </div>
 
 <script>
-  const GAS_API_URL = "https://script.google.com/macros/s/AKfycbwXzCcoRZGuegbKk1mz_ttxF-CDHoejBL_7Uz8mYj9YC8bjdBSGLfm4DngLsC4EN3d9/exec";
+  const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxDB9wwpx9327PoPMocB7hxogvlIooslV_Zq-6n7SpfD3quy1ADT6F9ejPyIoZcz-QO/exec";
   
   // 💡 ユーザー名とパスワード、両方をローカルストレージで管理します
   let currentUsername = localStorage.getItem("admin_saved_username") || "";
@@ -1246,12 +1268,18 @@
       const tbody = document.getElementById('staff-table-body');
       tbody.innerHTML = '';
       if(globalStaffList.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4">登録スタッフはいません</td></tr>';
+        // ⭕【修正】列数が4列から6列に増えたため、colspanを6に変更
+        tbody.innerHTML = '<tr><td colspan="6">登録スタッフはいません</td></tr>';
         return;
       }
       globalStaffList.forEach(item => {
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td><strong>${item.name}</strong></td><td>${item.stores}</td><td>${item.standardHours}</td>
+        // ⭕【修正】在籍期間From / To のセルを2つ追加（空ならハイフン表示）
+        tr.innerHTML = `<td><strong>${item.name}</strong></td>
+          <td>${item.stores}</td>
+          <td>${item.standardHours}</td>
+          <td>${item.dateFrom || '-'}</td>
+          <td>${item.dateTo || '-'}</td>
           <td>
             <button class="btn btn-edit" onclick="editStaff(${item.rowIndex})">編集</button>
             <button class="btn btn-danger" onclick="deleteStaff(${item.rowIndex}, '${item.name}')">削除</button>
@@ -1263,6 +1291,7 @@
       }
     } catch(e) {}
   }
+
   function editStaff(rowIndex) {
     const item = globalStaffList.find(s => s.rowIndex === rowIndex);
     if(!item) return;
@@ -1270,28 +1299,54 @@
     document.getElementById('staff-name').value = item.name;
     document.getElementById('staff-stores').value = item.stores;
     document.getElementById('staff-hours').value = item.standardHours;
+    
+    // ⭕【追加】シートの「YYYY/MM/DD」をフォームの「YYYY-MM-DD」に変換してセット
+    document.getElementById('staff-date-from').value = item.dateFrom ? item.dateFrom.replace(/\//g, '-') : "";
+    document.getElementById('staff-date-to').value = item.dateTo ? item.dateTo.replace(/\//g, '-') : "";
+
     document.getElementById('staff-form-title').innerText = "スタッフ編集 (上書き)";
     if (window.innerWidth < 768) { window.scrollTo({ top: 0, behavior: 'smooth' }); }
   }
+
   function clearStaffForm() {
     document.getElementById('staff-row-index').value = "";
     document.getElementById('staff-name').value = "";
     document.getElementById('staff-stores').value = "";
     document.getElementById('staff-hours').value = "08:00";
+    
+    // ⭕【追加】クリア時に在籍期間の入力欄も空にする
+    document.getElementById('staff-date-from').value = "";
+    document.getElementById('staff-date-to').value = "";
+
     document.getElementById('staff-form-title').innerText = "スタッフ登録・編集";
   }
+
   async function submitStaffForm() {
     const name = document.getElementById('staff-name').value;
     const stores = document.getElementById('staff-stores').value;
     const hours = document.getElementById('staff-hours').value;
     const rowIndex = document.getElementById('staff-row-index').value;
+    
+    // ⭕【追加】在籍期間の値を取得（未設定時は空文字になる）
+    const dateFrom = document.getElementById('staff-date-from').value;
+    const dateTo = document.getElementById('staff-date-to').value;
+
     if(!name || !stores) { alert("氏名と出勤店舗は必須です"); return; }
     showLoading(true);
     try {
-      const res = await callGas("saveStaff", { rowIndex: rowIndex ? Number(rowIndex) : null, name: name, stores: stores, standardHours: hours });
+      // ⭕【修正】GASに送るオブジェクトに dateFrom と dateTo を追加
+      const res = await callGas("saveStaff", { 
+        rowIndex: rowIndex ? Number(rowIndex) : null, 
+        name: name, 
+        stores: stores, 
+        standardHours: hours,
+        dateFrom: dateFrom,
+        dateTo: dateTo
+      });
       showLoading(false); alert(res.message); clearStaffForm(); loadStaffList();
     } catch(e) { showLoading(false); }
   }
+
   async function deleteStaff(rowIndex, name) {
     if(!confirm(`本当に ${name} さんを削除しますか？`)) return;
     showLoading(true);
