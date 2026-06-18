@@ -955,9 +955,10 @@
       const mStr = m < 10 ? "0" + m : m;
       const val = `${y}/${mStr}`;
       
-      // 期間の表示用テキスト作成 (16日〜翌15日)
-      const nextD = new Date(y, m, 15);
-      const text = `${y}年${m}月度 (${m}/16 ～ ${m===12?1:m+1}/15)`;
+      // ⭕【ここを修正】前月の情報を計算して、表示テキストを「前月16日〜当月15日」に変更
+      const prevD = new Date(y, d.getMonth() - 1, 1);
+      const prevM = prevD.getMonth() + 1;
+      const text = `${y}年${m}月度 (${prevM}/16 ～ ${m}/15)`;
       
       const opt = document.createElement("option");
       opt.value = val;
@@ -965,73 +966,26 @@
       monthSelect.appendChild(opt);
     }
 
-    // デフォルト選択ロジック: 6/16 であれば 5/16~6/15 (5月度) を選ばせる
+    // ⭕【ここを修正】デフォルト選択ロジック（valueの指定）
+    // 「5月度」のvalueは「2026/05」のままで、表示が「4/16〜5/15」に変わったため、
+    // 6/16時点では「5月度(4/16〜5/15)」を選ばせるために、1ヶ月マイナスではなく「当月度（今月の値）」をそのまま指定するように修正します。
     let currentMonthString = now.getFullYear() + "/" + ((now.getMonth() + 1) < 10 ? "0" + (now.getMonth() + 1) : (now.getMonth() + 1));
     if (now.getDate() >= 16) {
-      // 16日以降は「当月マイナス1ケ月」をデフォルトにする (例:6/16 -> 05度(5/16~6/15))
+      // 例: 6/16 以降は、今月である「6月度(5/16〜6/15)」をデフォルトにする
+      currentMonthString = now.getFullYear() + "/" + ((now.getMonth() + 1) < 10 ? "0" + (now.getMonth() + 1) : (now.getMonth() + 1));
+    } else {
+      // 例: 6/15 以前は、先月である「5月度(4/16〜5/15)」をデフォルトにする
       const prevM = new Date(now.getFullYear(), now.getMonth() - 1, 1);
       currentMonthString = prevM.getFullYear() + "/" + ((prevM.getMonth() + 1) < 10 ? "0" + (prevM.getMonth() + 1) : (prevM.getMonth() + 1));
-    } else {
-      // 15日以下は「当月マイナス2ヶ月」をデフォルトにする (例:6/10 -> 04度(4/16~5/15))
-      const prevM2 = new Date(now.getFullYear(), now.getMonth() - 2, 1);
-      currentMonthString = prevM2.getFullYear() + "/" + ((prevM2.getMonth() + 1) < 10 ? "0" + (prevM2.getMonth() + 1) : (prevM2.getMonth() + 1));
     }
     monthSelect.value = currentMonthString;
+    
     document.getElementById("report-store").options.length = 0;
     document.getElementById("report-name").options.length = 0;
+    
     // ⭕【追加】空っぽにした後、すぐに最新の店舗マスタからプルダウンを組み立て直す命令を実行する
     const storeSelect = document.getElementById("report-store");
-    rebuildReportStoreSelect(storeSelect);
-    // ② 店舗名セレクトボックスの初期化（★リロード時は一旦読み込み中にする）
-//    const storeSelect = document.getElementById("report-store");
-//    storeSelect.innerHTML = '<option value="">店舗データを読み込み中...</option>';
-
-    // ③ 氏名セレクトボックスの初期化（★同じく一旦待機状態にする）
-//    const nameSelect = document.getElementById("report-name");
-//    nameSelect.innerHTML = '<option value="">店舗を先に選択してください</option>';
-    
-    // ② 店舗名セレクトボックスの同期（店舗一覧マスタから構築）
-/*    const storeSelect = document.getElementById("report-store");
-//    // 「すべての店舗」を残してリセット
-//    storeSelect.innerHTML = '<option value="すべての店舗">すべての店舗</option>';
-    storeSelect.innerHTML = ''; // 完全にクリア
-    const storeRows = document.querySelectorAll("#store-table-body tr");
-    storeRows.forEach(row => {
-      const td = row.querySelector("td");
-      if (td && td.getAttribute("colspan") === null) {
-        const sName = td.innerText.trim();
-        if (sName) {
-          const opt = document.createElement("option");
-          opt.value = sName;
-          opt.innerText = sName;
-          storeSelect.appendChild(opt);
-        }
-      }
-    });*/
-
-    // ★店舗名が変更されたら、紐づくスタッフ一覧を動的に書き換えるイベントを設定
-//    storeSelect.onchange = updateReportNameSelect;
-
-    // ③ 氏名セレクトボックスの同期（★選択されている店舗の所属スタッフのみで初期構築）
-//    updateReportNameSelect();
-    
-/*    // ③ 氏名セレクトボックスの同期（スタッフ一覧マスタから構築）
-    const nameSelect = document.getElementById("report-name");
-    nameSelect.innerHTML = '<option value="すべてのスタッフ">すべてのスタッフ (全員)</option>';
-    const staffRows = document.querySelectorAll("#staff-table-body tr");
-    staffRows.forEach(row => {
-      const td = row.querySelector("td");
-      if (td && td.getAttribute("colspan") === null) {
-        const sName = td.innerText.trim();
-        if (sName) {
-          const opt = document.createElement("option");
-          opt.value = sName;
-          opt.innerText = sName;
-          nameSelect.appendChild(opt);
-        }
-      }
-    });*/
-  }
+    rebuildReportStoreSelect(storeSelect);  }
 
   /**
    * 🏢 勤務表の店舗プルダウンを現在の画面マスタから組み立て直す関数
