@@ -642,7 +642,7 @@
 </div>
 
 <script>
-  const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzSGAeVjL2HFF7tHLLVyDVocjkBthqjlaHgMPk_yjlS2tHal0_1howePUuIVsTxSFbC/exec";
+  const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyQFs7oniHW-L83VP66GlyaGXiJKzzwITiVtMSvwmPMsz2AACunkqj60ouwK51UPS3T/exec";
   
   // 💡 ユーザー名とパスワード、両方をローカルストレージで管理します
   let currentUsername = localStorage.getItem("admin_saved_username") || "";
@@ -1087,27 +1087,53 @@
 
       // テーブルへのデータ展開
       tbody.innerHTML = "";
-      res.data.forEach(item => {
+      res.data.forEach((item, index) => { // 💡インデックスを追加
         const tr = document.createElement("tr");
+        
+        // 💡食事のセレクトボックスの組み立て
+        const mealOptions = ["", "1", "2"].map(val => 
+          `<option value="${val}" ${item.meal === val ? 'selected' : ''}>${val || "-"}</option>`
+        ).join("");
+
         tr.innerHTML = `
           <td><strong>${item.name}</strong></td>
           <td>${item.date}</td>
           <td><small>${item.store}</small></td>
-          <td>${item.inTime || "-"}</td>
-          <td>${item.outTime || "-"}</td>
-          <td>${item.restIn || "-"}</td>
-          <td>${item.restOut || "-"}</td>
+          <td><input type="text" class="form-control form-control-sm edit-input" data-key="inTime" data-index="${index}" value="${item.inTime || ""}" style="width:70px; text-align:center;"></td>
+          <td><input type="text" class="form-control form-control-sm edit-input" data-key="outTime" data-index="${index}" value="${item.outTime || ""}" style="width:70px; text-align:center;"></td>
+          <td><input type="text" class="form-control form-control-sm edit-input" data-key="restIn" data-index="${index}" value="${item.restIn || ""}" style="width:70px; text-align:center;"></td>
+          <td><input type="text" class="form-control form-control-sm edit-input" data-key="restOut" data-index="${index}" value="${item.restOut || ""}" style="width:70px; text-align:center;"></td>
+          
           <td><span style="color:#007bff; font-weight:bold;">${item.in1 || "-"}</span></td>
           <td><span style="color:#007bff; font-weight:bold;">${item.out1 || "-"}</span></td>
           <td>${item.restTime || "-"}</td>
           <td><strong>${item.workTime || "-"}</strong></td>
           <td>${item.overTime || "-"}</td>
           <td>${item.totalTime || "-"}</td>
-          <td>${item.meal ? `<span class="badge badge-normal" style="background-color:#cc8b15">${item.meal}</span>` : "-"}</td>
+          
+          <td>
+            <select class="form-control form-control-sm edit-input" data-key="meal" data-index="${index}" style="width:55px;">
+              ${mealOptions}
+            </select>
+          </td>
           <td style="max-width:240px; white-space:normal; word-break:break-all;"><small>${item.comment || ""}</small></td>
         `;
+        
+        // 💡GASへ送るための元データをtr要素自体に記憶させておく
+        tr.dataset.raw = JSON.stringify(item);
         tbody.appendChild(tr);
       });
+
+      // ⭕ 勤務表の下部に「一括保存ボタン」を設置する領域を作る（なければ生成）
+      let btnArea = document.getElementById("report-save-btn-area");
+      if (!btnArea) {
+        btnArea = document.createElement("div");
+        btnArea.id = "report-save-btn-area";
+        btnArea.style.cssText = "text-align:right; padding:15px; background:#f8f9fa; border-top:1px solid #dee2e6;";
+        tbody.parentNode.parentNode.appendChild(btnArea); // tableの親要素の後ろに追加
+      }
+      btnArea.innerHTML = `<button type="button" class="btn btn-warning font-weight-bold" onclick="saveReportEdits()">💾 勤務表の変更を保存する</button>`;
+      
       // ⭕ 検索結果の件数（res.data.length）に応じてCSVボタンの状態を切り替える
       const csvBtn = document.getElementById('btn-csv-download');
       if (csvBtn) {
@@ -1618,6 +1644,76 @@
   function handleUserActivity() {
     if (typeof resetTimeoutTimer === "function") {
       resetTimeoutTimer();
+    }
+  }
+
+  /**
+   * 💾 画面で変更された勤務表データを集めてGASへ送信する処理
+   */
+  async function saveReportEdits() {
+    const tbody = document.getElementById("report-table-body");
+    const rows = tbody.querySelectorAll("tr");
+    const updateData = [];
+  
+    rows.forEach(tr => {
+      if (!tr.dataset.raw) return;
+      const rawItem = JSON.parse(tr.dataset.raw);
+      const idx = tr.querySelector(".edit-input").dataset.index;
+  
+      // 画面上の変更後の値を取得
+      const inTime = tr.querySelector(`[data-key="inTime"][data-index="${idx}"]`).value.trim();
+      const outTime = tr.querySelector(`[data-key="outTime"][data-index="${idx}"]`).value.trim();
+      const restIn = tr.querySelector(`[data-key="restIn"][data-index="${idx}"]`).value.trim();
+      const restOut = tr.querySelector(`[data-key="restOut"][data-index="${idx}"]`).value.trim();
+      const meal = tr.querySelector(`[data-key="meal"][data-index="${idx}"]`).value;
+  
+      // 元のデータから変更があった場合のみ送信リストに加える
+      if (inTime !== rawItem.inTime || outTime !== rawItem.outTime || 
+          restIn !== rawItem.restIn || restOut !== rawItem.restOut || meal !== rawItem.meal) {
+        updateData.push({
+          store: rawItem.store,
+          name: rawItem.name,
+          date: rawItem.date,
+          inTime: inTime,
+          outTime: outTime,
+          restIn: restIn,
+          restOut: restOut,
+          meal: meal
+        });
+      }
+    });
+  
+    if (updateData.length === 0) {
+      alert("変更されたデータはありません。");
+      return;
+    }
+  
+    if (!confirm(`${updateData.length} 件の変更を保存します。よろしいですか？\n※保存後、まるめ時間や勤務時間は自動で再計算されます。`)) return;
+  
+    showLoading(true);
+    try {
+      const response = await fetch(GAS_API_URL, {
+        method: "POST",
+        body: JSON.stringify({
+          action: "updateWorkReport", // 👈 新設するGASアクション
+          username: currentUsername,
+          password: currentPassword,
+          data: updateData
+        })
+      });
+      const res = await response.json();
+      showLoading(false);
+  
+      if (res.success) {
+        alert("勤務表の変更を保存しました。");
+        searchWorkReport(); // 画面を再読み込みして最新の自動計算結果を反映
+      } else {
+        alert("保存エラー: " + res.error);
+      }
+    } catch (e) {
+      showLoading(false);
+      console.error(e);
+      alert("通信エラーが発生しました。");
     }
   }
 </script>
