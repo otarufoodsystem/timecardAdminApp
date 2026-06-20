@@ -1091,10 +1091,9 @@
         const tr = document.createElement("tr");
         
         // 💡食事のセレクトボックスの組み立て
-        const mealOptions = ["", "1", "2"].map(val => 
+        const mealOptions = ["", "〇"].map(val => 
           `<option value="${val}" ${item.meal === val ? 'selected' : ''}>${val || "-"}</option>`
         ).join("");
-
         tr.innerHTML = `
           <td><strong>${item.name}</strong></td>
           <td>${item.date}</td>
