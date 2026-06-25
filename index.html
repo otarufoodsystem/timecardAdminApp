@@ -1303,7 +1303,7 @@
           inMarume: inMarume,
           outMarume: outMarume
         });
-        showLoading(false); alert(res.message); clearStaffForm(); loadStaffList();
+        showLoading(false); alert(res.message); clearStaffForm(); await loadStaffList();
       } catch(e) { showLoading(false); }
     }
   
@@ -1312,7 +1312,7 @@
       showLoading(true);
       try {
         const res = await callGas("deleteStaff", rowIndex);
-        showLoading(false); alert(res.message); clearStaffForm(); loadStaffList();
+        showLoading(false); alert(res.message); clearStaffForm(); await loadStaffList();
       } catch(e) { showLoading(false); }
     }
   
@@ -1393,7 +1393,7 @@
       try {
         // ⭕【修正】GASに渡すオブジェクトから inMarume, outMarume を削除
         const res = await callGas("saveStore", { rowIndex: rowIndex ? Number(rowIndex) : null, storeName: storeName, lat: lat, lng: lng, radius: radius });
-        showLoading(false); alert(res.message); clearStoreForm(); loadStoreList();
+        showLoading(false); alert(res.message); clearStoreForm(); await loadStoreList();
       } catch(e) { showLoading(false); }
     }
     
@@ -1402,7 +1402,7 @@
       showLoading(true);
       try {
         const res = await callGas("deleteStore", rowIndex);
-        showLoading(false); alert(res.message); clearStoreForm(); loadStoreList();
+        showLoading(false); alert(res.message); clearStoreForm(); await loadStoreList();
       } catch(e) { showLoading(false); }
     }
   
