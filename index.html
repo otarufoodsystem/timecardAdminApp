@@ -483,15 +483,14 @@
                   <th>氏名</th>
                   <th>所属・出勤店舗</th>
                   <th>標準時間</th>
-                  <th>INまるめ</th>
-                  <th>OUTまるめ</th>
+                  <th>まるめ</th>
                   <th>在籍期間From</th>
                   <th>在籍期間To</th>
                   <th>操作</th>
                 </tr>
               </thead>
               <tbody id="staff-table-body">
-                <tr><td colspan="8">読み込み中...</td></tr>
+                <tr><td colspan="7">読み込み中...</td></tr>
               </tbody>
             </table>
           </div>
@@ -1215,7 +1214,7 @@
         tbody.innerHTML = '';
         if(globalStaffList.length === 0) {
           // ⭕【修正】列数が6列から8列（まるめ2列追加）に増えたため、colspanを8に変更
-          tbody.innerHTML = '<tr><td colspan="8">登録スタッフはいません</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="7">登録スタッフはいません</td></tr>';
           return;
         }
         globalStaffList.forEach(item => {
