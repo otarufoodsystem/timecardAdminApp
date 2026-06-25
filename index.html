@@ -609,7 +609,7 @@
   </div>
   
   <script>
-    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbwIzxKpEZLQ2QvxlJzfREMQBHJk_C2ctZu1w-rwItpHaamGFv0FDOdNl7ODczolGBG8/exec";
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbztlUGvm7Udhwa3wU4VMbZmsb2TysDDxMK3Yx4quByomiynk_Fh3WK3xdBQSlAtuamR/exec";
     
     // 💡 ユーザー名とパスワード、両方をローカルストレージで管理します
     let currentUsername = localStorage.getItem("admin_saved_username") || "";
@@ -1303,8 +1303,7 @@
           inMarume: inMarume,
           outMarume: outMarume
         });
-        showLoading(false); alert(res.message); clearStaffForm();
-        await loadStaffList();
+        showLoading(false); alert(res.message); clearStaffForm(); loadStaffList();
       } catch(e) { showLoading(false); }
     }
   
@@ -1313,8 +1312,7 @@
       showLoading(true);
       try {
         const res = await callGas("deleteStaff", rowIndex);
-        showLoading(false); alert(res.message); clearStaffForm();
-        await loadStaffList();
+        showLoading(false); alert(res.message); clearStaffForm(); loadStaffList();
       } catch(e) { showLoading(false); }
     }
   
@@ -1395,8 +1393,7 @@
       try {
         // ⭕【修正】GASに渡すオブジェクトから inMarume, outMarume を削除
         const res = await callGas("saveStore", { rowIndex: rowIndex ? Number(rowIndex) : null, storeName: storeName, lat: lat, lng: lng, radius: radius });
-        showLoading(false); alert(res.message); clearStoreForm();
-        await loadStoreList();
+        showLoading(false); alert(res.message); clearStoreForm(); loadStoreList();
       } catch(e) { showLoading(false); }
     }
     
@@ -1405,8 +1402,7 @@
       showLoading(true);
       try {
         const res = await callGas("deleteStore", rowIndex);
-        showLoading(false); alert(res.message); clearStoreForm();
-        await loadStoreList();
+        showLoading(false); alert(res.message); clearStoreForm(); loadStoreList();
       } catch(e) { showLoading(false); }
     }
   
