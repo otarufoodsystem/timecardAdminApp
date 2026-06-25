@@ -84,12 +84,11 @@
     .tab-content.active { display: block; }
 
     /* =======================================================
-       📊 勤務表テーブルの列幅・見た目をすっきり整える設定
+        📊 勤務表テーブルの列幅・見た目をすっきり整える設定
     ======================================================= */
     #report-table {
       width: 100%;
       border-collapse: collapse;
-      /* 💡 table-layout: fixed を解除し、文字数に応じた自然な最小幅を優先します */
     }
 
     #report-table th, #report-table td {
@@ -104,7 +103,7 @@
     #report-table th:nth-child(2),  #report-table td:nth-child(2)  { min-width: 95px; }                   /* 2. 日付 */
     #report-table th:nth-child(3),  #report-table td:nth-child(3)  { text-align: left; min-width: 140px; } /* 3. 出勤店舗 */
     #report-table th:nth-child(4),  #report-table td:nth-child(4)  { min-width: 65px; width: 70px; }      /* 4. 出勤時刻 */
-    #report-table th:nth-child(5),  #report-table td:nth-child(5)  { min-width: 65px; width: 70px; }      /* 5. 退勤時刻（★文字を切らずに最小幅で固定） */
+    #report-table th:nth-child(5),  #report-table td:nth-child(5)  { min-width: 65px; width: 70px; }      /* 5. 退勤時刻 */
     #report-table th:nth-child(6),  #report-table td:nth-child(6)  { min-width: 65px; width: 70px; }      /* 6. 休憩開始 */
     #report-table th:nth-child(7),  #report-table td:nth-child(7)  { min-width: 65px; width: 70px; }      /* 7. 休憩終了 */
     #report-table th:nth-child(8),  #report-table td:nth-child(8)  { min-width: 110px; }                  /* 8. IN1(まるめ後) */
@@ -197,133 +196,116 @@
     th, td { padding: 8px 10px; border-bottom: 1px solid #ddd; }
     tr:hover { background-color: #f8f9fa; }
 
-    /* 🏢 💡 追加：店舗一覧テーブル 各列の横幅と折り返し制御 */
+    /* =======================================================
+        🏢 💡 店舗一覧テーブルの調整（「まるめ」を完全削除）
+    ======================================================= */
     #tab-store th:nth-child(1),
     #tab-store td:nth-child(1) {
-      /* 💡 iPadの幅に合わせて少しだけ最小幅を詰め、文字の隙間（パディング）も狭くします */
       min-width: 180px;       
       white-space: nowrap;
       text-align: left;       
-      padding: 8px 6px;       /* 👈 左右の余白を少し詰めて横幅を節約 */
+      padding: 8px 6px;       
     }
     #tab-store th:nth-child(2),
     #tab-store td:nth-child(2) {
       white-space: nowrap;    
       text-align: left;
-      padding: 8px 6px;       /* 👈 左右の余白を少し詰めて横幅を節約 */
+      padding: 8px 6px;       
     }
+    /* 💡 許容範囲（旧4列目）の幅指定を残し、5列目を操作（ボタン）列に割り当てます */
     #tab-store th:nth-child(4),
     #tab-store td:nth-child(4) {
-      min-width: 95px;        /* 👈 「IN:〇〇分/OUT:〇〇分」が収まる限界までスマートに縮小 */
+      min-width: 95px;
       white-space: nowrap;
       text-align: left;       
-      padding: 8px 6px;       /* 👈 左右の余白を少し詰めて横幅を節約 */
+      padding: 8px 6px;       
     }
     #tab-store th:nth-child(5),
     #tab-store td:nth-child(5) {
-      width: 100px;           /* ⭕ ご要望通り140pxから100pxへ縮小 */
+      width: 100px;           /* 操作ボタン列 */
       white-space: nowrap;
       text-align: center;     
-      padding: 8px 4px;       /* 👈 ボタンがはみ出さないよう、列の余白を最小限に */
+      padding: 8px 4px;       
     }
     
-    /* 👤 💡 追加：スタッフ一覧テーブル 各列の横幅と折り返し制御 */
+    /* =======================================================
+        👤 💡 スタッフ一覧テーブルの調整（新構造に対応）
+    ======================================================= */
+    /* 1. 氏名 */
     #staff-table-body td:nth-child(1),
     #tab-staff th:nth-child(1) {
-      min-width: 160px;       /* 10文字程度が綺麗に入る幅 */
+      min-width: 160px;       
       white-space: nowrap;    
-      text-align: left;       /* 💡 ヘッダー・中身ともに左寄せ */
+      text-align: left;       
     }
+    /* 2. 出勤店舗 */
     #staff-table-body td:nth-child(2),
     #tab-staff th:nth-child(2) {
-      white-space: normal;    /* 店舗名が長い場合は自動改行を許可 */
+      white-space: normal;    
       word-break: break-all;
       text-align: left;
     }
+    /* 3. 標準時間 */
     #staff-table-body td:nth-child(3),
     #tab-staff th:nth-child(3) {
-      width: 120px;           /* ヘッダー文字が一列に表示できる幅に固定 */
+      width: 120px;           
       white-space: nowrap;    
-      text-align: center;     /* 時間数を中央寄せ */
+      text-align: center;     
     }
-    /* ⭕【追加】在籍期間From */
+    /* 💡【新設】4. INまるめ */
     #staff-table-body td:nth-child(4),
     #tab-staff th:nth-child(4) {
-      width: 110px;
+      width: 90px;
       white-space: nowrap;
       text-align: center;
     }
-    /* ⭕【追加】在籍期間To */
+    /* 💡【新設】5. OUTまるめ */
     #staff-table-body td:nth-child(5),
     #tab-staff th:nth-child(5) {
+      width: 90px;
+      white-space: nowrap;
+      text-align: center;
+    }
+    /* 💡【移動】6. 在籍期間From */
+    #staff-table-body td:nth-child(6),
+    #tab-staff th:nth-child(6) {
       width: 110px;
       white-space: nowrap;
       text-align: center;
     }
-    #staff-table-body td:nth-child(6),
-    #tab-staff th:nth-child(6) {
-      width: 140px;           /* 「編集」「削除」ボタンが1列に綺麗に並ぶ幅 */
+    /* 💡【移動】7. 在籍期間To */
+    #staff-table-body td:nth-child(7),
+    #tab-staff th:nth-child(7) {
+      width: 110px;
+      white-space: nowrap;
+      text-align: center;
+    }
+    /* 💡【移動】8. 操作（ボタン） */
+    #staff-table-body td:nth-child(8),
+    #tab-staff th:nth-child(8) {
+      width: 140px;           
       white-space: nowrap;    
-      text-align: center;     /* 中央寄せ */
+      text-align: center;     
     }
     
     /* 💡 コメント通知一覧テーブル 各列の横幅と折り返し制御 */
-    /* 1番目：番号列（「番号」というタイトルも中身も1行で中央寄せ表示） */
-    #comment-table-body td:nth-child(1), 
-    th:nth-child(1) {
-      width: 55px;
-      white-space: nowrap;
-      text-align: center;
-    }
-
-    /* 2番目：対象列 / 3番目：確認状況 */
-    #comment-table-body td:nth-child(2), th:nth-child(2),
-    #comment-table-body td:nth-child(3), th:nth-child(3) {
-      white-space: nowrap;
-    }
-
-    /* 4番目：重要度列（「重要度」の文字とバッジを絶対に割らずに1行で中央寄せ表示） */
-    #comment-table-body td:nth-child(4),
-    th:nth-child(4) {
-      width: 70px;
-      white-space: nowrap;
-      text-align: center;
-    }
-
-    /* 5番目：コメント内容（長文を自動改行させるメインエリア） */
-    #comment-table-body td:nth-child(5), th:nth-child(5) {
-      max-width: 450px;       /* 横幅が広がりすぎないよう制限 */
-      min-width: 250px;       /* 狭くなりすぎないよう確保 */
-      white-space: normal;    /* 長い文章は自動で改行 */
-      word-break: break-all;  /* 枠線での強制折り返し */
-      line-height: 1.4;
-    }
-
-    /* 6番目：表示期間（From/To を2行でスマートに表示するエリア） */
-    #comment-table-body td:nth-child(6), th:nth-child(6) {
-      width: 140px;
-      white-space: nowrap;    /* 日時単体が途中で変に崩れるのを防ぐ */
-      line-height: 1.3;
-    }
-
-    /* 7番目：操作列（「編集」「削除」のボタンを絶対にズラさず1行横並びで固定） */
-    #comment-table-body td:nth-child(7), th:nth-child(7) {
-      width: 130px;           /* ボタン2つが無理なく収まる幅 */
-      white-space: nowrap;    /* 絶対に途中で改行させない */
-      text-align: center;     /* 中央に寄せて綺麗に整列 */
-    }
+    #comment-table-body td:nth-child(1),  th:nth-child(1) { width: 55px; white-space: nowrap; text-align: center; }
+    #comment-table-body td:nth-child(2), th:nth-child(2), #comment-table-body td:nth-child(3), th:nth-child(3) { white-space: nowrap; }
+    #comment-table-body td:nth-child(4),  th:nth-child(4) { width: 70px; white-space: nowrap; text-align: center; }
+    #comment-table-body td:nth-child(5), th:nth-child(5) { max-width: 450px; min-width: 250px; white-space: normal; word-break: break-all; line-height: 1.4; }
+    #comment-table-body td:nth-child(6), th:nth-child(6) { width: 140px; white-space: nowrap; line-height: 1.3; }
+    #comment-table-body td:nth-child(7), th:nth-child(7) { width: 130px; white-space: nowrap; text-align: center; }
     
     .badge { padding: 3px 6px; font-size: 0.75rem; font-weight: bold; border-radius: 3px; color: #fff; }
     .badge-important { background-color: #dc3545; }
     .badge-normal { background-color: #6c757d; }
 
-    /* 💡 確認状況用ボタンのデザイン */
     .btn-status-all { background-color: #28a745; color: white; padding: 4px 8px; font-size: 0.75rem; border-radius: 4px; border: none; cursor: pointer; font-weight: bold; }
     .btn-status-all:hover { background-color: #218838; }
     .btn-status-wait { background-color: #ffc107; color: #212529; padding: 4px 8px; font-size: 0.75rem; border-radius: 4px; border: none; cursor: pointer; font-weight: bold; }
     .btn-status-wait:hover { background-color: #e0a800; }
     
-    /* 💡 確認状況詳細ポップアップ（モーダルウィンドウ） */
+    /* モーダル */
     .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; justify-content: center; align-items: center; }
     .modal-content { background: white; padding: 20px; border-radius: 8px; width: 95%; max-width: 480px; max-height: 80%; overflow-y: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.2); box-sizing: border-box; }
     .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
@@ -336,7 +318,8 @@
     .status-ng { color: #dc3545; font-weight: bold; }
 
     #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.7); display: none; justify-content: center; align-items: center; z-index: 9999; font-weight: bold; font-size: 1.2rem; color: #c29d38; }
-    /* 🔒 追加：ログインTOP画面のスタイル */
+    
+    /* 🔒 ログイン画面 */
     #login-screen {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background-color: #22252a; z-index: 100000;
@@ -355,47 +338,6 @@
     .login-box .btn-login { width: 100%; padding: 10px; font-size: 1rem; font-weight: bold; background-color: #c29d38; color: #22252a; border: none; border-radius: 4px; cursor: pointer; margin-top: 10px; transition: 0.2s; }
     .login-box .btn-login:hover { background-color: #e0b641; }
     .login-error { color: #dc3545; font-size: 0.85rem; margin-top: 10px; display: none; }
-    /* 📊 勤務表用スタイル */
-    #report-table {
-      width: 100%;
-      border-collapse: collapse;
-      /* 💡 table-layout: fixed を解除し、文字数に応じた自然な最小幅を優先します */
-    }
-
-    #report-table th, #report-table td {
-      white-space: nowrap; /* 検索結果とヘッダーを綺麗に横一行に並べ、絶対に改行・カットさせない */
-      text-align: center;
-      padding: 8px 12px;   /* 文字が見やすくなるよう余白を少しゆったりに */
-      font-size: 0.85rem;
-    }
-
-    /* ⏱️ ヘッダー全体の文字を最優先で見せつつ、各列の「最低限の幅」をpxでカチッと指定 */
-    #report-table th:nth-child(1),  #report-table td:nth-child(1)  { text-align: left; min-width: 120px; } /* 1. メンバー名 */
-    #report-table th:nth-child(2),  #report-table td:nth-child(2)  { min-width: 95px; }                   /* 2. 日付 */
-    #report-table th:nth-child(3),  #report-table td:nth-child(3)  { text-align: left; min-width: 140px; } /* 3. 出勤店舗 */
-    #report-table th:nth-child(4),  #report-table td:nth-child(4)  { min-width: 65px; width: 70px; }      /* 4. 出勤時刻 */
-    #report-table th:nth-child(5),  #report-table td:nth-child(5)  { min-width: 65px; width: 70px; }      /* 5. 退勤時刻（★文字を切らずに最小幅で固定） */
-    #report-table th:nth-child(6),  #report-table td:nth-child(6)  { min-width: 65px; width: 70px; }      /* 6. 休憩開始 */
-    #report-table th:nth-child(7),  #report-table td:nth-child(7)  { min-width: 65px; width: 70px; }      /* 7. 休憩終了 */
-    #report-table th:nth-child(8),  #report-table td:nth-child(8)  { min-width: 110px; }                  /* 8. IN1(まるめ後) */
-    #report-table th:nth-child(9),  #report-table td:nth-child(9)  { min-width: 110px; }                  /* 9. OUT1(まるめ後) */
-    #report-table th:nth-child(10), #report-table td:nth-child(10) { min-width: 70px; }                   /* 10. 休憩時間 */
-    #report-table th:nth-child(11), #report-table td:nth-child(11) { min-width: 70px; }                   /* 11. 勤務時間 */
-    #report-table th:nth-child(12), #report-table td:nth-child(12) { min-width: 70px; }                   /* 12. 残業時間 */
-    #report-table th:nth-child(13), #report-table td:nth-child(13) { min-width: 70px; }                   /* 13. 総時間 */
-    #report-table th:nth-child(14), #report-table td:nth-child(14) { min-width: 120px; }                  /* 14. Ver */
-    #report-table th:nth-child(15), #report-table td:nth-child(15) { min-width: 50px; }                   /* 15. 食事 */
-
-    /* 💡 コメント列など16番目以降の調整 */
-    #report-table th:nth-child(16), #report-table td:nth-child(16) {
-      text-align: left;
-      white-space: normal;
-      min-width: 200px;
-    }
-
-    .search-btn-container {
-      display: flex; gap: 10px; margin-top: 15px;
-    }
   </style>
 </head>
 <body>
@@ -420,1305 +362,1341 @@
 
   <div id="protection-overlay">認証確認中...</div>
 
-<div class="header">
-  <h1>⚙️ OFSタイムカード 管理画面</h1>
-  <span class="version" id="app-version">...</span>
-</div>
-
-<div class="tabs">
-  <button id="tab-report-btn" class="tab-btn active" onclick="switchTab('report')">📊 勤務表照会</button>
-  <button id="tab-staff-btn" class="tab-btn" onclick="switchTab('staff')">👤 スタッフ一覧メンテ</button>
-  <button id="tab-store-btn" class="tab-btn" onclick="switchTab('store')">🏪 店舗一覧メンテ</button>
-  <button id="tab-comment-btn" class="tab-btn" onclick="switchTab('comment')">💬 コメント一覧メンテ</button>
-</div>
-
-<div class="container">
-  <div id="tab-report" class="tab-content active">
-    <div class="view-grid">
-      <div class="form-box">
-        <h3>勤務表 検索条件</h3>
-        <div class="form-group">
-          <label for="report-month">対象月度</label>
-          <select id="report-month"></select>
-          <small>※16日〜翌15日締め基準</small>
-        </div>
-        <div class="form-group">
-          <label for="report-store">店舗名</label>
-          <select id="report-store">
-            <option value="すべての店舗">すべての店舗</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="report-name">氏名</label>
-          <select id="report-name">
-            <option value="すべてのスタッフ">すべてのスタッフ (全員)</option>
-          </select>
-        </div>
-        <div class="search-btn-container">
-          <button class="btn btn-primary" onclick="searchWorkReport()">🔍 検索する</button>
-          <button class="btn" id="btn-csv-download" onclick="downloadReportCsv()" disabled style="background-color: #6c757d; color: white; margin-left: 10px; cursor: not-allowed;">CSVダウンロード</button>
-        </div>
-      </div>
-      
-      <div class="list-area-container">
-        <h3>検索結果一覧</h3>
-        <div class="table-container">
-          <table id="report-table">
-            <thead>
-              <tr>
-                <th>氏名</th>
-                <th>日付</th>
-                <th>出勤店舗</th>
-                <th>出勤時刻</th>
-                <th>退勤時刻</th>
-                <th>休憩開始</th>
-                <th>休憩終了</th>
-                <th>IN1(まるめ)</th>
-                <th>OUT1(まるめ)</th>
-                <th>休憩時間</th>
-                <th>勤務時間</th>
-                <th>残業時間</th>
-                <th>総時間</th>
-                <th>食事</th>
-                <th>コメント</th>
-              </tr>
-            </thead>
-            <tbody id="report-table-body">
-              <tr><td colspan="15" class="text-muted" style="text-align:center; padding:20px;">検索条件を指定して「検索する」ボタンを押してください。</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+  <div class="header">
+    <h1>⚙️ OFSタイムカード 管理画面</h1>
+    <span class="version" id="app-version">...</span>
   </div>
-  <div id="tab-staff" class="tab-content">  
-    <div class="view-grid">
-      <div class="form-box">
-        <h3 id="staff-form-title">スタッフ登録・編集</h3>
-        <input type="hidden" id="staff-row-index" value="">
-        <div class="form-group">
-          <label for="staff-name">氏名</label>
-          <input type="text" id="staff-name" placeholder="例: 山田太郎">
-        </div>
-        <div class="form-group">
-          <label for="staff-stores">出勤店舗 (カンマ区切り)</label>
-          <input type="text" id="staff-stores" placeholder="例: 真兵衛,小樽坂">
-          <small>※店舗一覧にある正確な店舗名を入力してください</small>
-        </div>
-        <div class="form-group">
-          <label for="staff-hours">標準勤務時間 (時間数)</label>
-          <input type="text" id="staff-hours" value="08:00" placeholder="例: 08:00">
-          <small>※1日あたりの所定労働時間数です</small>
-        </div>
-        <div class="form-group">
-          <label>在籍期間 (From)</label>
-          <input type="date" id="staff-date-from">
-        </div>
-        <div class="form-group">
-          <label>在籍期間 (To) <small style="display:inline; color:#999;">※未設定可</small></label>
-          <input type="date" id="staff-date-to">
-        </div>
-        <div class="btn-row">
-          <button class="btn btn-clear" onclick="clearStaffForm()">クリア</button>
-          <button class="btn btn-primary" onclick="submitStaffForm()">保存する</button>
-        </div>
-      </div>
-      <div class="list-area-container">
-        <h3>登録スタッフ一覧</h3>
-        <div class="table-container">
-          <table>
-            <thead><tr><th>氏名</th><th>所属・出勤店舗</th><th>標準勤務時間</th><th>在籍期間From</th><th>在籍期間To</th><th>操作</th></tr></thead>
-            <tbody id="staff-table-body"><tr><td colspan="6">読み込み中...</td></tr></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div id="tab-store" class="tab-content">
-    <div class="view-grid">
-      <div class="form-box">
-        <h3 id="store-form-title">店舗登録・編集</h3>
-        <input type="hidden" id="store-row-index" value="">
-        <div class="form-group">
-          <label for="store-name">店舗名</label>
-          <input type="text" id="store-name" placeholder="例: 真兵衛">
-        </div>
-        <div class="form-group">
-          <label for="store-lat">緯度</label>
-          <input type="number" step="any" id="store-lat" placeholder="例: 43.1907">
-        </div>
-        <div class="form-group">
-          <label for="store-lng">経度</label>
-          <input type="number" step="any" id="store-lng" placeholder="例: 141.005">
-        </div>
-        <div class="form-group">
-          <label for="store-radius">GPS許容範囲(m)</label>
-          <input type="number" id="store-radius" value="100">
-        </div>
-        <div class="form-group">
-          <label for="store-in-marume">INまるめ(分)</label>
-          <input type="number" id="store-in-marume" value="15">
-        </div>
-        <div class="form-group">
-          <label for="store-out-marume">OUTまるめ(分)</label>
-          <input type="number" id="store-out-marume" value="1">
-        </div>
-        <div class="btn-row">
-          <button class="btn btn-clear" onclick="clearStoreForm()">クリア</button>
-          <button class="btn btn-primary" onclick="submitStoreForm()">保存する</button>
-        </div>
-      </div>
-      <div class="list-area-container">
-        <h3>登録店舗一覧</h3>
-        <div class="table-container">
-          <table>
-            <thead><tr><th>店舗名</th><th>位置情報</th><th>許容径</th><th>まるめ(IN/OUT)</th><th>操作</th></tr></thead>
-            <tbody id="store-table-body"><tr><td colspan="5">登録データを読み込み中...</td></tr></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div id="tab-comment" class="tab-content">
-    <div class="view-grid">
-      <div class="form-box">
-        <h3 id="comment-form-title">コメント登録・編集</h3>
-        <input type="hidden" id="comment-row-index" value="">
-        <div class="form-group">
-          <label for="comment-target">通知対象 <span style="color:red">*</span></label>
-          <input type="text" id="comment-target" placeholder="全員 または 店舗名 または 個人名">
-          <small>※全員、店舗、個人のいずれかを正確に入力してください</small>
-        </div>
-        <div class="form-group">
-          <label for="comment-text">コメント内容 <span style="color:red">*</span></label>
-          <textarea id="comment-text" placeholder="ポップアップで表示させたい文章を入力してください"></textarea>
-        </div>
-        <div class="form-group">
-          <label for="comment-from">表示開始日時（From）</label>
-          <input type="datetime-local" id="comment-from">
-        </div>
-        <div class="form-group">
-          <label for="comment-to">表示開始日時（To）</label>
-          <input type="datetime-local" id="comment-to">
-        </div>
-        <div class="form-group">
-          <label for="comment-importance">重要度</label>
-          <select id="comment-importance">
-            <option value="普通">普通</option>
-            <option value="重要">重要</option>
-          </select>
-        </div>
-        <div class="btn-row">
-          <button class="btn btn-clear" onclick="clearCommentForm()">クリア</button>
-          <button class="btn btn-primary" onclick="submitCommentForm()">保存する</button>
-        </div>
-      </div>
-      <div class="list-area-container">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-          <h3>💬 コメント通知一覧</h3>
-          <button type="button" class="btn" style="background-color: #17a2b8; color: white; padding: 6px 12px; font-size: 0.85rem;" onclick="refreshCommentList(this)">🔄 最新の状況に更新</button>
-        </div>
-        <div class="table-container">
-          <table>
-            <thead><tr><th>番号</th><th>対象</th><th>確認状況</th><th>重要度</th><th>コメント内容</th><th>表示期間</th><th>操作</th></tr></thead>
-            <tbody id="comment-table-body"><tr><td colspan="7">登録データを読み込み中...</td></tr></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </div>
-
-</div>
-
-<div id="loading">処理中...</div>
-
-<div id="statusModal" class="modal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h4 id="modalCommentTitle">確認状況詳細</h4>
-      <button class="modal-close" onclick="closeStatusModal()">&times;</button>
-    </div>
-    <div id="modalStatusBody">
-      </div>
-  </div>
-</div>
-
-<script>
-  const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyQFs7oniHW-L83VP66GlyaGXiJKzzwITiVtMSvwmPMsz2AACunkqj60ouwK51UPS3T/exec";
   
-  // 💡 ユーザー名とパスワード、両方をローカルストレージで管理します
-  let currentUsername = localStorage.getItem("admin_saved_username") || "";
-  let currentPassword = localStorage.getItem("admin_saved_password") || "";
-  let lastAuthTime = localStorage.getItem("admin_last_auth_time") || "0";
+  <div class="tabs">
+    <button id="tab-report-btn" class="tab-btn active" onclick="switchTab('report')">📊 勤務表照会</button>
+    <button id="tab-staff-btn" class="tab-btn" onclick="switchTab('staff')">👤 スタッフ一覧メンテ</button>
+    <button id="tab-store-btn" class="tab-btn" onclick="switchTab('store')">🏪 店舗一覧メンテ</button>
+    <button id="tab-comment-btn" class="tab-btn" onclick="switchTab('comment')">💬 コメント一覧メンテ</button>
+  </div>
   
-  // 🔒 10分タイマー管理用の変数
-  let timeoutTimer = null;
-  const TEN_MINUTES = 10 * 60 * 1000; // 10分（ミリ秒）
-
-  // 💡 ログインボタンが押されたときの処理
-  async function handleLogin() {
-    const userInput = document.getElementById("login-user").value.trim();
-    const passInput = document.getElementById("login-pass").value.trim();
-    const errMsg = document.getElementById("login-err-msg");
-    const loginScreen = document.getElementById("login-screen");
-    const overlay = document.getElementById("protection-overlay");
-
-    if (!userInput || !passInput) {
-      if (errMsg) {
-        errMsg.innerText = "ユーザー名とパスワードを入力してください";
-        errMsg.style.display = "block";
-      }
-      return;
-    }
-
-    showLoading(true);
-    if (errMsg) errMsg.style.display = "none";
-
-    try {
-      const response = await fetch(GAS_API_URL, {
-        method: "POST",
-        body: JSON.stringify({ 
-          action: "checkAuth", 
-          username: userInput,  
-          password: passInput   
-        })
-      });
-      
-      const resData = await response.json();
-
-      if (resData.success) {
-        // 🔑【修正ポイント】変数とストレージの両方に確実に「ユーザー名」と「パスワード」をセットする
-        currentUsername = userInput; 
-        currentPassword = passInput;
-        localStorage.setItem("admin_saved_username", userInput);
-        localStorage.setItem("admin_saved_password", currentPassword);
-        localStorage.setItem("admin_last_auth_time", Date.now().toString());
-
-        if (resData.version) {
-          document.getElementById("app-version").innerText = resData.version;
-        }
-
-        if (loginScreen) loginScreen.style.display = "none";
-        if (overlay) overlay.style.display = "none";
-
-        await loadStoreList();   // 1. 店舗を読み込む
-        await loadStaffList();   // 2. スタッフを読み込む（検索に必須のデータです）
-        await loadCommentList(); // 3. コメントを読み込む
-        showLoading(false);
-        initReportForm(); // 👈【追加】勤務表のセレクトボックス（月度・店舗・氏名）を初期化        
-
-        // 🔥 これで確実に10分タイマーが起動します
-        resetTimeoutTimer();
-      } else {
-        showLoading(false);
+  <div class="container">
+    <div id="tab-report" class="tab-content active">
+      <div class="view-grid">
+        <div class="form-box">
+          <h3>勤務表 検索条件</h3>
+          <div class="form-group">
+            <label for="report-month">対象月度</label>
+            <select id="report-month"></select>
+            <small>※16日〜翌15日締め基準</small>
+          </div>
+          <div class="form-group">
+            <label for="report-store">店舗名</label>
+            <select id="report-store">
+              <option value="すべての店舗">すべての店舗</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="report-name">氏名</label>
+            <select id="report-name">
+              <option value="すべてのスタッフ">すべてのスタッフ (全員)</option>
+            </select>
+          </div>
+          <div class="search-btn-container">
+            <button class="btn btn-primary" onclick="searchWorkReport()">🔍 検索する</button>
+            <button class="btn" id="btn-csv-download" onclick="downloadReportCsv()" disabled style="background-color: #6c757d; color: white; margin-left: 10px; cursor: not-allowed;">CSVダウンロード</button>
+          </div>
+        </div>
+        
+        <div class="list-area-container">
+          <h3>検索結果一覧</h3>
+          <div class="table-container">
+            <table id="report-table">
+              <thead>
+                <tr>
+                  <th>氏名</th>
+                  <th>日付</th>
+                  <th>出勤店舗</th>
+                  <th>出勤時刻</th>
+                  <th>退勤時刻</th>
+                  <th>休憩開始</th>
+                  <th>休憩終了</th>
+                  <th>IN1(まるめ)</th>
+                  <th>OUT1(まるめ)</th>
+                  <th>休憩時間</th>
+                  <th>勤務時間</th>
+                  <th>残業時間</th>
+                  <th>総時間</th>
+                  <th>食事</th>
+                  <th>コメント</th>
+                </tr>
+              </thead>
+              <tbody id="report-table-body">
+                <tr><td colspan="15" class="text-muted" style="text-align:center; padding:20px;">検索条件を指定して「検索する」ボタンを押してください。</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  
+    <div id="tab-staff" class="tab-content">  
+      <div class="view-grid">
+        <div class="form-box">
+          <h3 id="staff-form-title">スタッフ登録・編集</h3>
+          <input type="hidden" id="staff-row-index" value="">
+          <div class="form-group">
+            <label for="staff-name">氏名</label>
+            <input type="text" id="staff-name" placeholder="例: 山田太郎">
+          </div>
+          <div class="form-group">
+            <label for="staff-stores">出勤店舗 (カンマ区切り)</label>
+            <input type="text" id="staff-stores" placeholder="例: 真兵衛,小樽坂">
+            <small>※店舗一覧にある正確な店舗名を入力してください</small>
+          </div>
+          <div class="form-group">
+            <label for="staff-hours">標準勤務時間 (時間数)</label>
+            <input type="text" id="staff-hours" value="08:00" placeholder="例: 08:00">
+            <small>※1日あたりの所定労働時間数です</small>
+          </div>
+          <div class="form-group">
+            <label for="staff-in-marume">INまるめ(分)</label>
+            <input type="number" id="staff-in-marume" value="15" min="1">
+          </div>
+          <div class="form-group">
+            <label for="staff-out-marume">OUTまるめ(分)</label>
+            <input type="number" id="staff-out-marume" value="15" min="1">
+          </div>
+          <div class="form-group">
+            <label>在籍期間 (From)</label>
+            <input type="date" id="staff-date-from">
+          </div>
+          <div class="form-group">
+            <label>在籍期間 (To) <small style="display:inline; color:#999;">※未設定可</small></label>
+            <input type="date" id="staff-date-to">
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-clear" onclick="clearStaffForm()">クリア</button>
+            <button class="btn btn-primary" onclick="submitStaffForm()">保存する</button>
+          </div>
+        </div>
+        <div class="list-area-container">
+          <h3>登録スタッフ一覧</h3>
+          <div class="table-container">
+            <table id="tab-staff">
+              <thead>
+                <tr>
+                  <th>氏名</th>
+                  <th>所属・出勤店舗</th>
+                  <th>標準時間</th>
+                  <th>INまるめ</th>
+                  <th>OUTまるめ</th>
+                  <th>在籍期間From</th>
+                  <th>在籍期間To</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="staff-table-body">
+                <tr><td colspan="8">読み込み中...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  
+    <div id="tab-store" class="tab-content">
+      <div class="view-grid">
+        <div class="form-box">
+          <h3 id="store-form-title">店舗登録・編集</h3>
+          <input type="hidden" id="store-row-index" value="">
+          <div class="form-group">
+            <label for="store-name">店舗名</label>
+            <input type="text" id="store-name" placeholder="例: 真兵衛">
+          </div>
+          <div class="form-group">
+            <label for="store-lat">緯度</label>
+            <input type="number" step="any" id="store-lat" placeholder="例: 43.1907">
+          </div>
+          <div class="form-group">
+            <label for="store-lng">経度</label>
+            <input type="number" step="any" id="store-lng" placeholder="例: 141.005">
+          </div>
+          <div class="form-group">
+            <label for="store-radius">GPS許容範囲(m)</label>
+            <input type="number" id="store-radius" value="100">
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-clear" onclick="clearStoreForm()">クリア</button>
+            <button class="btn btn-primary" onclick="submitStoreForm()">保存する</button>
+          </div>
+        </div>
+        <div class="list-area-container">
+          <h3>登録店舗一覧</h3>
+          <div class="table-container">
+            <table id="tab-store">
+              <thead>
+                <tr>
+                  <th>店舗名</th>
+                  <th>位置情報</th>
+                  <th>許容径</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="store-table-body">
+                <tr><td colspan="4">登録データを読み込み中...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  
+    <div id="tab-comment" class="tab-content">
+      <div class="view-grid">
+        <div class="form-box">
+          <h3 id="comment-form-title">コメント登録・編集</h3>
+          <input type="hidden" id="comment-row-index" value="">
+          <div class="form-group">
+            <label for="comment-target">通知対象 <span style="color:red">*</span></label>
+            <input type="text" id="comment-target" placeholder="全員 または 店舗名 または 個人名">
+            <small>※全員、店舗、個人のいずれかを正確に入力してください</small>
+          </div>
+          <div class="form-group">
+            <label for="comment-text">コメント内容 <span style="color:red">*</span></label>
+            <textarea id="comment-text" placeholder="ポップアップで表示させたい文章を入力してください"></textarea>
+          </div>
+          <div class="form-group">
+            <label for="comment-from">表示開始日時（From）</label>
+            <input type="datetime-local" id="comment-from">
+          </div>
+          <div class="form-group">
+            <label for="comment-to">表示開始日時（To）</label>
+            <input type="datetime-local" id="comment-to">
+          </div>
+          <div class="form-group">
+            <label for="comment-importance">重要度</label>
+            <select id="comment-importance">
+              <option value="普通">普通</option>
+              <option value="重要">重要</option>
+            </select>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-clear" onclick="clearCommentForm()">クリア</button>
+            <button class="btn btn-primary" onclick="submitCommentForm()">保存する</button>
+          </div>
+        </div>
+        <div class="list-area-container">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <h3>💬 コメント通知一覧</h3>
+            <button type="button" class="btn" style="background-color: #17a2b8; color: white; padding: 6px 12px; font-size: 0.85rem;" onclick="refreshCommentList(this)">🔄 最新の状況に更新</button>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead><tr><th>番号</th><th>対象</th><th>確認状況</th><th>重要度</th><th>コメント内容</th><th>表示期間</th><th>操作</th></tr></thead>
+              <tbody id="comment-table-body"><tr><td colspan="7">登録データを読み込み中...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  
+  </div>
+  
+  <div id="loading">処理中...</div>
+  
+  <div id="statusModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 id="modalCommentTitle">確認状況詳細</h4>
+        <button class="modal-close" onclick="closeStatusModal()">&times;</button>
+      </div>
+      <div id="modalStatusBody"></div>
+    </div>
+  </div>
+  
+  <script>
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbywdG5FYSwlBlO5gv-mc47ulQyc6xfMmcaexaa1Ur5_hz2HH_A0QoUd3qoVB8aaR702/exec";
+    
+    // 💡 ユーザー名とパスワード、両方をローカルストレージで管理します
+    let currentUsername = localStorage.getItem("admin_saved_username") || "";
+    let currentPassword = localStorage.getItem("admin_saved_password") || "";
+    let lastAuthTime = localStorage.getItem("admin_last_auth_time") || "0";
+    
+    // 🔒 10分タイマー管理用の変数
+    let timeoutTimer = null;
+    const TEN_MINUTES = 10 * 60 * 1000; // 10分（ミリ秒）
+  
+    // 💡 ログインボタンが押されたときの処理
+    async function handleLogin() {
+      const userInput = document.getElementById("login-user").value.trim();
+      const passInput = document.getElementById("login-pass").value.trim();
+      const errMsg = document.getElementById("login-err-msg");
+      const loginScreen = document.getElementById("login-screen");
+      const overlay = document.getElementById("protection-overlay");
+  
+      if (!userInput || !passInput) {
         if (errMsg) {
-          errMsg.innerText = "ユーザー名またはパスワードが違います";
+          errMsg.innerText = "ユーザー名とパスワードを入力してください";
           errMsg.style.display = "block";
         }
+        return;
       }
-    } catch (e) {
-      showLoading(false);
-      console.error(e);
-      alert("通信エラーが発生しました。");
-    }
-  }
   
-  // ページ読み込み時の処理
-  window.onload = async function() {
-    // 💡 画面のどこをクリック・キー入力しても10分タイマーを延長するイベントを設定
-    window.addEventListener('click', handleUserActivity);
-    window.addEventListener('keypress', handleUserActivity);
-    window.addEventListener('mousemove', handleUserActivity);
-    window.addEventListener('touchstart', handleUserActivity);
-    
-    // 💡 ログイン画面のバージョンを取得
-    fetchLoginVersion();
-
-    // 💡 自動ログインを実行
-    await runAuthentication();
-  };
-
-  async function fetchLoginVersion() {
-    try {
-      const response = await fetch(GAS_API_URL, {
-        method: "POST",
-        body: JSON.stringify({ 
-          action: "checkAuth", // 💡確実に存在する認証用アクションを呼び出します
-          username: "",        // 空文字を送信して、安全にバージョンデータだけを返してもらいます
-          password: "" 
-        })
-      });
-      
-      const resData = await response.json();
-      console.log("GASからのレスポンス確認:", resData); // 🔍確認用ログ
-  
-      // 💡 resData.version が存在すれば画面にセット
-      const loginVerEl = document.getElementById("login-version");
-      if (loginVerEl) {
-        if (resData.version) {
-          loginVerEl.innerText = resData.version;
-        } else {
-          // 万が一、GAS側からバージョンが返ってきていない場合の保険
-          loginVerEl.innerText = "v1.4.0"; 
-        }
-      }
-    } catch (e) {
-      console.error("ログイン画面のバージョン取得に失敗しました:", e);
-      // 通信エラー時の保険
-      const loginVerEl = document.getElementById("login-version");
-      if (loginVerEl) loginVerEl.innerText = "v1.4.0";
-    }
-  }
-  
-  // 🔒 認証実行関数 (起動・リロード時に自動で走る)
-  async function runAuthentication() {
-    const overlay = document.getElementById("protection-overlay");
-    const loginScreen = document.getElementById("login-screen");
-    const now = Date.now();
-
-    if (now - parseInt(lastAuthTime, 10) > TEN_MINUTES) {
-      currentUsername = "";
-      currentPassword = "";
-      clearAuthStorage();
-    }
-    
-    const savedUser = localStorage.getItem("admin_saved_username") || "";
-    const savedPass = localStorage.getItem("admin_saved_password") || ""; // 💡 パスワードもストレージから取得
-    
-    if (savedUser && savedPass) {
-      if (loginScreen) loginScreen.style.display = "none";
-      if (overlay) overlay.style.display = "flex";
-      
       showLoading(true);
+      if (errMsg) errMsg.style.display = "none";
+  
       try {
         const response = await fetch(GAS_API_URL, {
           method: "POST",
-          body: JSON.stringify({ action: "checkAuth", username: savedUser, password: savedPass })
+          body: JSON.stringify({ 
+            action: "checkAuth", 
+            username: userInput,  
+            password: passInput   
+          })
         });
-        const resData = await response.json(); 
         
+        const resData = await response.json();
+  
         if (resData.success) {
-          // 🔑【修正ポイント】自動ログイン成功時も変数に値を確実に同期する
-          currentUsername = savedUser;
-          currentPassword = savedPass;
+          // 🔑【修正ポイント】変数とストレージの両方に確実に「ユーザー名」と「パスワード」をセットする
+          currentUsername = userInput; 
+          currentPassword = passInput;
+          localStorage.setItem("admin_saved_username", userInput);
+          localStorage.setItem("admin_saved_password", currentPassword);
           localStorage.setItem("admin_last_auth_time", Date.now().toString());
-          
+  
           if (resData.version) {
             document.getElementById("app-version").innerText = resData.version;
           }
-
+  
+          if (loginScreen) loginScreen.style.display = "none";
           if (overlay) overlay.style.display = "none";
-          
+  
           await loadStoreList();   // 1. 店舗を読み込む
           await loadStaffList();   // 2. スタッフを読み込む（検索に必須のデータです）
           await loadCommentList(); // 3. コメントを読み込む
           showLoading(false);
-          initReportForm();
-
-          // 🔥 自動ログイン時も10分リアルタイム監視をスタート
+          initReportForm(); // 👈【追加】勤務表のセレクトボックス（月度・店舗・氏名）を初期化        
+  
+          // 🔥 これで確実に10分タイマーが起動します
           resetTimeoutTimer();
-          return;
         } else {
-          clearAuthStorage();
-          currentUsername = "";
-          currentPassword = "";
+          showLoading(false);
+          if (errMsg) {
+            errMsg.innerText = "ユーザー名またはパスワードが違います";
+            errMsg.style.display = "block";
+          }
         }
       } catch (e) {
-        if (overlay) overlay.innerText = "通信エラーが発生しました。リロードしてください。";
         showLoading(false);
-        return;
+        console.error(e);
+        alert("通信エラーが発生しました。");
       }
     }
-
-    if (overlay) overlay.style.display = "none";
-    if (loginScreen) loginScreen.style.display = "flex";
-    showLoading(false);
-  }
-
-  // 💡 タイマーをクリアして新しく10分測り直す
-  function resetTimeoutTimer() {
-    if (timeoutTimer) clearTimeout(timeoutTimer);
     
-    // ログイン状態（ユーザー名とパスワードがある状態）のときだけタイマーを動かす
-    if (currentUsername && currentPassword) {
-      localStorage.setItem("admin_last_auth_time", Date.now().toString());
-      timeoutTimer = setTimeout(triggerTimeout, TEN_MINUTES);
-    }
-  }
-
-  // 💡 10分経過（タイムアウト）した瞬間に実行される処理
-  function triggerTimeout() {
-    if (timeoutTimer) clearTimeout(timeoutTimer);
-    
-    // ✨ 放置された瞬間にアラートを出す
-    alert("セキュリティ保護のため、10分間操作がなかったため自動ログアウトしました。");
-    
-    clearAuthStorage();
-    currentUsername = "";
-    currentPassword = "";
+    // ページ読み込み時の処理
+    window.onload = async function() {
+      // 💡 画面のどこをクリック・キー入力しても10分タイマーを延長するイベントを設定
+      window.addEventListener('click', handleUserActivity);
+      window.addEventListener('keypress', handleUserActivity);
+      window.addEventListener('mousemove', handleUserActivity);
+      window.addEventListener('touchstart', handleUserActivity);
+      
+      // 💡 ログイン画面のバージョンを取得
+      fetchLoginVersion();
   
-    if (document.getElementById("login-user")) document.getElementById("login-user").value = "";
-    if (document.getElementById("login-pass")) document.getElementById("login-pass").value = "";
-    if (document.getElementById("login-err-msg")) document.getElementById("login-err-msg").style.display = "none";
-  
-    // ✨ 画面を強制リロードして、表示されていた各種データをメモリから完全に消去
-    location.reload();
-  }
-
-  // キャンセル時の共通メッセージ表示
-  function showAuthCancelMessage(overlay) {
-    overlay.innerHTML = "<div style='padding:20px;'>認証がキャンセルされたため、画面を表示できません。<br><button class='btn btn-primary' onclick='location.reload()' style='margin-top:10px;'>ログインする</button></div>";
-  }  
-  
-  async function callGas(action, data = null) {
-    // 💡 ブラウザに記憶されているユーザー名も一緒に取得する
-    const savedUser = localStorage.getItem("admin_saved_username") || "";
-    
-    // 💡 送信データ（共通ペイロード）に username と password を両方確実に含める
-    const payload = { 
-      action: action, 
-      username: savedUser, 
-      password: currentPassword 
+      // 💡 自動ログインを実行
+      await runAuthentication();
     };
-
-    if (data !== null) {
-      if (action.startsWith("delete")) {
-        payload.rowIndex = data;
-      } else {
-        payload.data = data;
-        if (data.rowIndex) {
-          payload.rowIndex = data.rowIndex;
-        }
-      }
-    }
-
-    try {
-      const response = await fetch(GAS_API_URL, { method: "POST", body: JSON.stringify(payload) });
-      const resData = await responseToJson(response);
-      localStorage.setItem("admin_last_auth_time", Date.now().toString());
-      return resData;
-    } catch (error) {
-      alert("通信エラーが発生しました:\n" + error.message);
-      showLoading(false);
-      throw error;
-    }
-  }
-
-  async function responseToJson(response) {
-    const resData = await response.json();
-    if (resData.authError) {
-      clearAuthStorage();
-      alert("セッションの有効期限が切れたか、パスワードが変更されました。再入力してください。");
-      location.reload();
-      throw new Error("Auth Error");
-    }
-    if (!resData.success) throw new Error(resData.error);
-    return resData;
-  }
-
-  function clearAuthStorage() {
-    localStorage.removeItem("admin_saved_username");
-    localStorage.removeItem("admin_saved_password");
-    localStorage.removeItem("removeItem"); // タイポがあれば削除
-    localStorage.removeItem("admin_last_auth_time");
-  }
-
-  function showLoading(show) { document.getElementById('loading').style.display = show ? 'flex' : 'none'; }
   
-  function switchTab(type) {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-    document.getElementById(`tab-${type}-btn`).classList.add('active');
-    document.getElementById(`tab-${type}`).classList.add('active');
-  }
-
-  /**
-   * 📊 勤務表用：検索セレクトボックスの初期生成
-   */
-  function initReportForm() {
-    // ① 月度セレクトボックスの生成（当月を中心に前後6ヶ月分を生成）
-    const monthSelect = document.getElementById("report-month");
-    monthSelect.innerHTML = "";
-    
-    const now = new Date();
-    let defaultVal = "";
-    
-    // 現在が16日以降なら「当月度（先月16〜当月15日）」が先月締め実績、15日以下なら「先月度」が先月実績となるため
-    // 「デフォルトで先月度を選択。6/16であれば、5/16～6/15」という条件に自動合致させるロジック
-    let borderDate = new Date(now.getFullYear(), now.getMonth(), 16);
-    let targetDefaultIndex = 0; // デフォルト選択位置の調整用
-    
-    // 直近6ヶ月分の選択肢を用意
-    for (let i = -4; i <= 2; i++) {
-      const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
-      const y = d.getFullYear();
-      const m = d.getMonth() + 1;
-      
-      const mStr = m < 10 ? "0" + m : m;
-      const val = `${y}/${mStr}`;
-      
-      // ⭕【ここを修正】前月の情報を計算して、表示テキストを「前月16日〜当月15日」に変更
-      const prevD = new Date(y, d.getMonth() - 1, 1);
-      const prevM = prevD.getMonth() + 1;
-      const text = `${y}年${m}月度 (${prevM}/16 ～ ${m}/15)`;
-      
-      const opt = document.createElement("option");
-      opt.value = val;
-      opt.innerText = text;
-      monthSelect.appendChild(opt);
-    }
-
-    // ⭕【ここを修正】デフォルト選択ロジック（valueの指定）
-    // 「5月度」のvalueは「2026/05」のままで、表示が「4/16〜5/15」に変わったため、
-    // 6/16時点では「5月度(4/16〜5/15)」を選ばせるために、1ヶ月マイナスではなく「当月度（今月の値）」をそのまま指定するように修正します。
-    let currentMonthString = now.getFullYear() + "/" + ((now.getMonth() + 1) < 10 ? "0" + (now.getMonth() + 1) : (now.getMonth() + 1));
-    if (now.getDate() >= 16) {
-      // 例: 6/16 以降は、今月である「6月度(5/16〜6/15)」をデフォルトにする
-      currentMonthString = now.getFullYear() + "/" + ((now.getMonth() + 1) < 10 ? "0" + (now.getMonth() + 1) : (now.getMonth() + 1));
-    } else {
-      // 例: 6/15 以前は、先月である「5月度(4/16〜5/15)」をデフォルトにする
-      const prevM = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-      currentMonthString = prevM.getFullYear() + "/" + ((prevM.getMonth() + 1) < 10 ? "0" + (prevM.getMonth() + 1) : (prevM.getMonth() + 1));
-    }
-    monthSelect.value = currentMonthString;
-    
-    document.getElementById("report-store").options.length = 0;
-    document.getElementById("report-name").options.length = 0;
-    
-    // ⭕【追加】空っぽにした後、すぐに最新の店舗マスタからプルダウンを組み立て直す命令を実行する
-    const storeSelect = document.getElementById("report-store");
-    rebuildReportStoreSelect(storeSelect);  }
-
-  /**
-   * 🏢 勤務表の店舗プルダウンを現在の画面マスタから組み立て直す関数
-   */
-  function rebuildReportStoreSelect(storeSelect) {
-    if (!storeSelect) return;
-    storeSelect.innerHTML = ''; // クリア
-    
-    const storeRows = document.querySelectorAll("#store-table-body tr");
-    storeRows.forEach(row => {
-      const td = row.querySelector("td");
-      if (td && td.getAttribute("colspan") === null) {
-        const sName = td.innerText.trim();
-        if (sName) {
-          const opt = document.createElement("option");
-          opt.value = sName;
-          opt.innerText = sName;
-          storeSelect.appendChild(opt);
-        }
-      }
-    });
-    
-    // 店舗変更時の連動イベントを再設定
-    storeSelect.onchange = updateReportNameSelect;
-    
-    // 最後に、選ばれた店舗のスタッフを絞り込む
-    if (typeof updateReportNameSelect === "function") {
-      updateReportNameSelect();
-    }
-  }
-
-  /**
-   * 👥 選択された店舗に所属するスタッフのみを氏名セレクトボックスに表示する
-   */
-  function updateReportNameSelect() {
-    const storeSelect = document.getElementById("report-store");
-    const nameSelect = document.getElementById("report-name");
-    
-    // 現在選択されている店舗名
-    const selectedStore = storeSelect.value;
-    
-    // 「すべてのスタッフ」の選択肢を初期配置
-    nameSelect.innerHTML = '<option value="すべてのスタッフ">すべてのスタッフ (店舗全員)</option>';
-    
-    if (!selectedStore) return;
-
-    // グローバル変数 globalStaffList から所属するスタッフを抽出
-    globalStaffList.forEach(staff => {
-      // 所属店舗（カンマ区切り文字列）を分解して配列化
-      const belongStores = staff.stores.split(',').map(s => s.trim());
-      
-      // 選択された店舗が配列に含まれている場合のみ、氏名選択肢に追加
-      if (belongStores.includes(selectedStore)) {
-        const opt = document.createElement("option");
-        opt.value = staff.name;
-        opt.innerText = staff.name;
-        nameSelect.appendChild(opt);
-      }
-    });
-  }
-  
-  /**
-   * 🔍 勤務表の検索実行処理
-   */
-  async function searchWorkReport() {
-    const month = document.getElementById("report-month").value;
-    const store = document.getElementById("report-store").value;
-    const name = document.getElementById("report-name").value;
-    const tbody = document.getElementById("report-table-body");
-
-    tbody.innerHTML = `<tr><td colspan="15" style="text-align:center; padding:20px; color:#c29d38; font-weight:bold;">🔄 スプレッドシートから勤務実績を抽出中...</td></tr>`;
-    showLoading(true);
-
-    try {
-      const response = await fetch(GAS_API_URL, {
-        method: "POST",
-        body: JSON.stringify({
-          action: "getWorkReport",
-          username: currentUsername,
-          password: currentPassword,
-          month: month,
-          store: store,
-          name: name
-        })
-      });
-
-      const res = await response.json();
-      showLoading(false);
-
-      if (!res.success) {
-        tbody.innerHTML = `<tr><td colspan="15" style="text-align:center; padding:20px; color:red;">エラー: ${res.error || "データの取得に失敗しました"}</td></tr>`;
-        return;
-      }
-
-      if (!res.data || res.data.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="15" style="text-align:center; padding:20px; class="text-muted">該当する勤務実績データが見つかりませんでした。</td></tr>`;
-        return;
-      }
-
-      // テーブルへのデータ展開
-      tbody.innerHTML = "";
-      res.data.forEach((item, index) => { // 💡インデックスを追加
-        const tr = document.createElement("tr");
+    async function fetchLoginVersion() {
+      try {
+        const response = await fetch(GAS_API_URL, {
+          method: "POST",
+          body: JSON.stringify({ 
+            action: "checkAuth", // 💡確実に存在する認証用アクションを呼び出します
+            username: "",        // 空文字を送信して、安全にバージョンデータだけを返してもらいます
+            password: "" 
+          })
+        });
         
-        // 💡食事のセレクトボックスの組み立て
-        const mealOptions = ["", "〇"].map(val => 
-          `<option value="${val}" ${item.meal === val ? 'selected' : ''}>${val || "-"}</option>`
-        ).join("");
-        tr.innerHTML = `
-          <td><strong>${item.name}</strong></td>
-          <td>${item.date}</td>
-          <td><small>${item.store}</small></td>
-          <td><input type="text" class="form-control form-control-sm edit-input" data-key="inTime" data-index="${index}" value="${item.inTime || ""}" style="width:70px; text-align:center;"></td>
-          <td><input type="text" class="form-control form-control-sm edit-input" data-key="outTime" data-index="${index}" value="${item.outTime || ""}" style="width:70px; text-align:center;"></td>
-          <td><input type="text" class="form-control form-control-sm edit-input" data-key="restIn" data-index="${index}" value="${item.restIn || ""}" style="width:70px; text-align:center;"></td>
-          <td><input type="text" class="form-control form-control-sm edit-input" data-key="restOut" data-index="${index}" value="${item.restOut || ""}" style="width:70px; text-align:center;"></td>
-          
-          <td><span style="color:#007bff; font-weight:bold;">${item.in1 || "-"}</span></td>
-          <td><span style="color:#007bff; font-weight:bold;">${item.out1 || "-"}</span></td>
-          <td>${item.restTime || "-"}</td>
-          <td><strong>${item.workTime || "-"}</strong></td>
-          <td>${item.overTime || "-"}</td>
-          <td>${item.totalTime || "-"}</td>
-          
-          <td>
-            <select class="form-control form-control-sm edit-input" data-key="meal" data-index="${index}" style="width:55px;">
-              ${mealOptions}
-            </select>
-          </td>
-          <td style="max-width:240px; white-space:normal; word-break:break-all;"><small>${item.comment || ""}</small></td>
-        `;
-        
-        // 💡GASへ送るための元データをtr要素自体に記憶させておく
-        tr.dataset.raw = JSON.stringify(item);
-        tbody.appendChild(tr);
-      });
-
-      // ⭕ 勤務表の下部に「一括保存ボタン」を設置する領域を作る（なければ生成）
-      let btnArea = document.getElementById("report-save-btn-area");
-      if (!btnArea) {
-        btnArea = document.createElement("div");
-        btnArea.id = "report-save-btn-area";
-        btnArea.style.cssText = "text-align:right; padding:15px; background:#f8f9fa; border-top:1px solid #dee2e6;";
-        tbody.parentNode.parentNode.appendChild(btnArea); // tableの親要素の後ろに追加
-      }
-      btnArea.innerHTML = `<button type="button" class="btn btn-warning font-weight-bold" onclick="saveReportEdits()">💾 勤務表の変更を保存する</button>`;
-      
-      // ⭕ 検索結果の件数（res.data.length）に応じてCSVボタンの状態を切り替える
-      const csvBtn = document.getElementById('btn-csv-download');
-      if (csvBtn) {
-        if (res.data && res.data.length > 0) {
-          // ヒットした時はアクティブ（緑色）にする
-          csvBtn.disabled = false;
-          csvBtn.style.backgroundColor = '#28a745';
-          csvBtn.style.cursor = 'pointer';
-        } else {
-          // ヒットしなかった場合はグレーアウト（無効化）にする
-          csvBtn.disabled = true;
-          csvBtn.style.backgroundColor = '#6c757d';
-          csvBtn.style.cursor = 'not-allowed';
-        }
-      }
-    } catch (e) {
-      showLoading(false);
-      console.error(e);
-      tbody.innerHTML = `<tr><td colspan="15" style="text-align:center; padding:20px; color:red;">通信エラーが発生しました。時間をおいて再度お試しください。</td></tr>`;
-    }
-  }
-
-  /**
-   * 📊 勤務表照会の検索結果をShift-JIS形式でCSVダウンロードする関数
-   */
-  async function downloadReportCsv() {
-    const tbody = document.getElementById('report-table-body');
-    if (!tbody || tbody.rows.length === 0) return;
-    if (tbody.rows.length === 1 && tbody.rows[0].cells.length === 1) return;
-
-    const csvBtn = document.getElementById('btn-csv-download');
-    const originalText = csvBtn.innerText;
-    csvBtn.disabled = true;
-    csvBtn.innerText = "⏳ CSV生成中...";
-
-    try {
-      // 1. ヘッダー行を定義
-      const headers = ["メンバー名", "日付", "店舗", "出勤時刻", "退勤時刻", "休憩開始", "休憩終了", "IN１（まるめ後）", "OUT１（まるめ後）", "休憩時間", "勤務時間", "残業時間", "総労働", "食事", "コメント"];
-      const csvRows = [headers.join(',')];
-
-      // 2. テーブル内のデータを取得しエスケープ処理を適用
-      for (let i = 0; i < tbody.rows.length; i++) {
-        const row = tbody.rows[i];
-        const rowData = [];
-        for (let j = 0; j < row.cells.length; j++) {
-          let cellText = row.cells[j].innerText.trim();
-          if (cellText.indexOf(',') !== -1 || cellText.indexOf('\n') !== -1 || cellText.indexOf('"') !== -1) {
-            cellText = '"' + cellText.replace(/"/g, '""') + '"';
+        const resData = await response.json();
+        console.log("GASからのレスポンス確認:", resData); // 🔍確認用ログ
+    
+        // 💡 resData.version が存在すれば画面にセット
+        const loginVerEl = document.getElementById("login-version");
+        if (loginVerEl) {
+          if (resData.version) {
+            loginVerEl.innerText = resData.version;
+          } else {
+            // 万が一、GAS側からバージョンが返ってきていない場合の保険
+            loginVerEl.innerText = "v1.4.0"; 
           }
-          rowData.push(cellText);
         }
-        csvRows.push(rowData.join(','));
+      } catch (e) {
+        console.error("ログイン画面のバージョン取得に失敗しました:", e);
+        // 通信エラー時の保険
+        const loginVerEl = document.getElementById("login-version");
+        if (loginVerEl) loginVerEl.innerText = "v1.4.0";
       }
-
-      // 3. 💡 追加したGASの関数を呼び出し、サーバー側で100%確実なShift-JISのBase64に変換してもらう
-      const base64Data = await callGas("convertToSjisBase64", csvRows);
-      
-      // 4. ご提示いただいたサンプルコードのダウンロードロジックを再現
-      const bin = atob(base64Data.data);
-      const buf = new Uint8Array(bin.length);
-      for (let i = 0; i < bin.length; i++) {
-        buf[i] = bin.charCodeAt(i);
-      }
-      
-      const blob = new Blob([buf], {type: 'text/csv;charset=shift-jis'});
-
-      // ファイル名の作成
-      // 🏢 選択されている「店舗名」「氏名」「対象月度」を画面のセレクトボックスから取得
-      const storeVal = document.getElementById("report-store").value || "不明な店舗";
-      const monthVal = (document.getElementById("report-month").value || "不明な月度").replace(/\//g, ""); // 2026/06 -> 202606
-      
-      let nameVal = document.getElementById("report-name").value || "ALL";
-      // 👤 氏名が未選択、または「すべて」の文言が含まれる場合は "ALL" に統一
-      if (!nameVal || nameVal.includes("すべてのスタッフ") || nameVal.includes("全員")) {
-        nameVal = "ALL";
-      }
-
-      // ⏱️ ダウンロード日時のフォーマット作成 (YYYYMMDD_HHMMSS)
-      const now = new Date();
-      const y = now.getFullYear();
-      const m = String(now.getMonth() + 1).padStart(2, '0');
-      const d = String(now.getDate()).padStart(2, '0');
-      const hh = String(now.getHours()).padStart(2, '0');
-      const mm = String(now.getMinutes()).padStart(2, '0');
-      const ss = String(now.getSeconds()).padStart(2, '0');
-      const downloadDateTime = `${y}${m}${d}_${hh}${mm}${ss}`;
-
-      // 📝 指定のファイル名に組み立て [店舗名]_[氏名]_[対象月度]_[ダウンロード日時].csv
-      const fileName = `${storeVal}_${nameVal}_${monthVal}_${downloadDateTime}.csv`;      
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-    } catch (err) {
-      alert("CSVの生成中にエラーが発生しました。");
-      console.error(err);
-    } finally {
-      csvBtn.disabled = false;
-      csvBtn.innerText = originalText;
     }
-  }
+    
+    // 🔒 認証実行関数 (起動・リロード時に自動で走る)
+    async function runAuthentication() {
+      const overlay = document.getElementById("protection-overlay");
+      const loginScreen = document.getElementById("login-screen");
+      const now = Date.now();
   
-  // --- スタッフ機能 ---
-  let globalStaffList = [];
-  async function loadStaffList() {
-    try {
-      const res = await callGas("getStaffList");
-      globalStaffList = res.data;
-      const tbody = document.getElementById('staff-table-body');
-      tbody.innerHTML = '';
-      if(globalStaffList.length === 0) {
-        // ⭕【修正】列数が4列から6列に増えたため、colspanを6に変更
-        tbody.innerHTML = '<tr><td colspan="6">登録スタッフはいません</td></tr>';
-        return;
+      if (now - parseInt(lastAuthTime, 10) > TEN_MINUTES) {
+        currentUsername = "";
+        currentPassword = "";
+        clearAuthStorage();
       }
-      globalStaffList.forEach(item => {
-        const tr = document.createElement('tr');
-        // ⭕【修正】在籍期間From / To のセルを2つ追加（空ならハイフン表示）
-        tr.innerHTML = `<td><strong>${item.name}</strong></td>
-          <td>${item.stores}</td>
-          <td>${item.standardHours}</td>
-          <td>${item.dateFrom || '-'}</td>
-          <td>${item.dateTo || '-'}</td>
-          <td>
-            <button class="btn btn-edit" onclick="editStaff(${item.rowIndex})">編集</button>
-            <button class="btn btn-danger" onclick="deleteStaff(${item.rowIndex}, '${item.name}')">削除</button>
-          </td>`;
-        tbody.appendChild(tr);
+      
+      const savedUser = localStorage.getItem("admin_saved_username") || "";
+      const savedPass = localStorage.getItem("admin_saved_password") || ""; // 💡 パスワードもストレージから取得
+      
+      if (savedUser && savedPass) {
+        if (loginScreen) loginScreen.style.display = "none";
+        if (overlay) overlay.style.display = "flex";
+        
+        showLoading(true);
+        try {
+          const response = await fetch(GAS_API_URL, {
+            method: "POST",
+            body: JSON.stringify({ action: "checkAuth", username: savedUser, password: savedPass })
+          });
+          const resData = await response.json(); 
+          
+          if (resData.success) {
+            // 🔑【修正ポイント】自動ログイン成功時も変数に値を確実に同期する
+            currentUsername = savedUser;
+            currentPassword = savedPass;
+            localStorage.setItem("admin_last_auth_time", Date.now().toString());
+            
+            if (resData.version) {
+              document.getElementById("app-version").innerText = resData.version;
+            }
+  
+            if (overlay) overlay.style.display = "none";
+            
+            await loadStoreList();   // 1. 店舗を読み込む
+            await loadStaffList();   // 2. スタッフを読み込む（検索に必須のデータです）
+            await loadCommentList(); // 3. コメントを読み込む
+            showLoading(false);
+            initReportForm();
+  
+            // 🔥 自動ログイン時も10分リアルタイム監視をスタート
+            resetTimeoutTimer();
+            return;
+          } else {
+            clearAuthStorage();
+            currentUsername = "";
+            currentPassword = "";
+          }
+        } catch (e) {
+          if (overlay) overlay.innerText = "通信エラーが発生しました。リロードしてください。";
+          showLoading(false);
+          return;
+        }
+      }
+  
+      if (overlay) overlay.style.display = "none";
+      if (loginScreen) loginScreen.style.display = "flex";
+      showLoading(false);
+    }
+  
+    // 💡 タイマーをクリアして新しく10分測り直す
+    function resetTimeoutTimer() {
+      if (timeoutTimer) clearTimeout(timeoutTimer);
+      
+      // ログイン状態（ユーザー名とパスワードがある状態）のときだけタイマーを動かす
+      if (currentUsername && currentPassword) {
+        localStorage.setItem("admin_last_auth_time", Date.now().toString());
+        timeoutTimer = setTimeout(triggerTimeout, TEN_MINUTES);
+      }
+    }
+  
+    // 💡 10分経過（タイムアウト）した瞬間に実行される処理
+    function triggerTimeout() {
+      if (timeoutTimer) clearTimeout(timeoutTimer);
+      
+      // ✨ 放置された瞬間にアラートを出す
+      alert("セキュリティ保護のため、10分間操作がなかったため自動ログアウトしました。");
+      
+      clearAuthStorage();
+      currentUsername = "";
+      currentPassword = "";
+    
+      if (document.getElementById("login-user")) document.getElementById("login-user").value = "";
+      if (document.getElementById("login-pass")) document.getElementById("login-pass").value = "";
+      if (document.getElementById("login-err-msg")) document.getElementById("login-err-msg").style.display = "none";
+    
+      // ✨ 画面を強制リロードして、表示されていた各種データをメモリから完全に消去
+      location.reload();
+    }
+  
+    // キャンセル時の共通メッセージ表示
+    function showAuthCancelMessage(overlay) {
+      overlay.innerHTML = "<div style='padding:20px;'>認証がキャンセルされたため、画面を表示できません。<br><button class='btn btn-primary' onclick='location.reload()' style='margin-top:10px;'>ログインする</button></div>";
+    }  
+    
+    async function callGas(action, data = null) {
+      // 💡 ブラウザに記憶されているユーザー名も一緒に取得する
+      const savedUser = localStorage.getItem("admin_saved_username") || "";
+      
+      // 💡 送信データ（共通ペイロード）に username と password を両方確実に含める
+      const payload = { 
+        action: action, 
+        username: savedUser, 
+        password: currentPassword 
+      };
+  
+      if (data !== null) {
+        if (action.startsWith("delete")) {
+          payload.rowIndex = data;
+        } else {
+          payload.data = data;
+          if (data.rowIndex) {
+            payload.rowIndex = data.rowIndex;
+          }
+        }
+      }
+  
+      try {
+        const response = await fetch(GAS_API_URL, { method: "POST", body: JSON.stringify(payload) });
+        const resData = await responseToJson(response);
+        localStorage.setItem("admin_last_auth_time", Date.now().toString());
+        return resData;
+      } catch (error) {
+        alert("通信エラーが発生しました:\n" + error.message);
+        showLoading(false);
+        throw error;
+      }
+    }
+  
+    async function responseToJson(response) {
+      const resData = await response.json();
+      if (resData.authError) {
+        clearAuthStorage();
+        alert("セッションの有効期限が切れたか、パスワードが変更されました。再入力してください。");
+        location.reload();
+        throw new Error("Auth Error");
+      }
+      if (!resData.success) throw new Error(resData.error);
+      return resData;
+    }
+  
+    function clearAuthStorage() {
+      localStorage.removeItem("admin_saved_username");
+      localStorage.removeItem("admin_saved_password");
+//      localStorage.removeItem("removeItem"); // タイポがあれば削除
+      localStorage.removeItem("admin_last_auth_time");
+    }
+  
+    function showLoading(show) { document.getElementById('loading').style.display = show ? 'flex' : 'none'; }
+    
+    function switchTab(type) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      document.getElementById(`tab-${type}-btn`).classList.add('active');
+      document.getElementById(`tab-${type}`).classList.add('active');
+    }
+  
+    /**
+     * 📊 勤務表用：検索セレクトボックスの初期生成
+     */
+    function initReportForm() {
+      // ① 月度セレクトボックスの生成（当月を中心に前後6ヶ月分を生成）
+      const monthSelect = document.getElementById("report-month");
+      monthSelect.innerHTML = "";
+      
+      const now = new Date();
+      
+      // 現在が16日以降なら「当月度（先月16〜当月15日）」が先月締め実績、15日以下なら「先月度」が先月実績となるため
+      // 「デフォルトで先月度を選択。6/16であれば、5/16～6/15」という条件に自動合致させるロジック
+      let borderDate = new Date(now.getFullYear(), now.getMonth(), 16);
+      let targetDefaultIndex = 0; // デフォルト選択位置の調整用
+      
+      // 直近6ヶ月分の選択肢を用意
+      for (let i = -4; i <= 2; i++) {
+        const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
+        const y = d.getFullYear();
+        const m = d.getMonth() + 1;
+        
+        const mStr = m < 10 ? "0" + m : m;
+        const val = `${y}/${mStr}`;
+        
+        // ⭕【ここを修正】前月の情報を計算して、表示テキストを「前月16日〜当月15日」に変更
+        const prevD = new Date(y, d.getMonth() - 1, 1);
+        const prevM = prevD.getMonth() + 1;
+        const text = `${y}年${m}月度 (${prevM}/16 ～ ${m}/15)`;
+        
+        const opt = document.createElement("option");
+        opt.value = val;
+        opt.innerText = text;
+        monthSelect.appendChild(opt);
+      }
+  
+      // ⭕【ここを修正】デフォルト選択ロジック（valueの指定）
+      // 「5月度」のvalueは「2026/05」のままで、表示が「4/16〜5/15」に変わったため、
+      // 6/16時点では「5月度(4/16〜5/15)」を選ばせるために、1ヶ月マイナスではなく「当月度（今月の値）」をそのまま指定するように修正します。
+      let currentMonthString = now.getFullYear() + "/" + ((now.getMonth() + 1) < 10 ? "0" + (now.getMonth() + 1) : (now.getMonth() + 1));
+      if (now.getDate() >= 16) {
+        // 例: 6/16 以降は、今月である「6月度(5/16〜6/15)」をデフォルトにする
+        currentMonthString = now.getFullYear() + "/" + ((now.getMonth() + 1) < 10 ? "0" + (now.getMonth() + 1) : (now.getMonth() + 1));
+      } else {
+        // 例: 6/15 以前は、先月である「5月度(4/16〜5/15)」をデフォルトにする
+        const prevM = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        currentMonthString = prevM.getFullYear() + "/" + ((prevM.getMonth() + 1) < 10 ? "0" + (prevM.getMonth() + 1) : (prevM.getMonth() + 1));
+      }
+      monthSelect.value = currentMonthString;
+      
+      document.getElementById("report-store").options.length = 0;
+      document.getElementById("report-name").options.length = 0;
+      
+      // ⭕【追加】空っぽにした後、すぐに最新の店舗マスタからプルダウンを組み立て直す命令を実行する
+      const storeSelect = document.getElementById("report-store");
+      rebuildReportStoreSelect(storeSelect);  }
+  
+    /**
+     * 🏢 勤務表の店舗プルダウンを現在の画面マスタから組み立て直す関数
+     */
+    function rebuildReportStoreSelect(storeSelect) {
+      if (!storeSelect) return;
+      storeSelect.innerHTML = ''; // クリア
+      
+      const storeRows = document.querySelectorAll("#store-table-body tr");
+      storeRows.forEach(row => {
+        const td = row.querySelector("td");
+        if (td && td.getAttribute("colspan") === null) {
+          const sName = td.innerText.trim();
+          if (sName) {
+            const opt = document.createElement("option");
+            opt.value = sName;
+            opt.innerText = sName;
+            storeSelect.appendChild(opt);
+          }
+        }
       });
+      
+      // 店舗変更時の連動イベントを再設定
+      storeSelect.onchange = updateReportNameSelect;
+      
+      // 最後に、選ばれた店舗のスタッフを絞り込む
       if (typeof updateReportNameSelect === "function") {
         updateReportNameSelect();
       }
-    } catch(e) {}
-  }
-
-  function editStaff(rowIndex) {
-    const item = globalStaffList.find(s => s.rowIndex === rowIndex);
-    if(!item) return;
-    document.getElementById('staff-row-index').value = item.rowIndex;
-    document.getElementById('staff-name').value = item.name;
-    document.getElementById('staff-stores').value = item.stores;
-    document.getElementById('staff-hours').value = item.standardHours;
-    
-    // ⭕【追加】シートの「YYYY/MM/DD」をフォームの「YYYY-MM-DD」に変換してセット
-    document.getElementById('staff-date-from').value = item.dateFrom ? item.dateFrom.replace(/\//g, '-') : "";
-    document.getElementById('staff-date-to').value = item.dateTo ? item.dateTo.replace(/\//g, '-') : "";
-
-    document.getElementById('staff-form-title').innerText = "スタッフ編集 (上書き)";
-    if (window.innerWidth < 768) { window.scrollTo({ top: 0, behavior: 'smooth' }); }
-  }
-
-  function clearStaffForm() {
-    document.getElementById('staff-row-index').value = "";
-    document.getElementById('staff-name').value = "";
-    document.getElementById('staff-stores').value = "";
-    document.getElementById('staff-hours').value = "08:00";
-    
-    // ⭕【追加】クリア時に在籍期間の入力欄も空にする
-    document.getElementById('staff-date-from').value = "";
-    document.getElementById('staff-date-to').value = "";
-
-    document.getElementById('staff-form-title').innerText = "スタッフ登録・編集";
-  }
-
-  async function submitStaffForm() {
-    const name = document.getElementById('staff-name').value;
-    const stores = document.getElementById('staff-stores').value;
-    const hours = document.getElementById('staff-hours').value;
-    const rowIndex = document.getElementById('staff-row-index').value;
-    
-    // ⭕【追加】在籍期間の値を取得（未設定時は空文字になる）
-    const dateFrom = document.getElementById('staff-date-from').value;
-    const dateTo = document.getElementById('staff-date-to').value;
-
-    if(!name || !stores) { alert("氏名と出勤店舗は必須です"); return; }
-    showLoading(true);
-    try {
-      // ⭕【修正】GASに送るオブジェクトに dateFrom と dateTo を追加
-      const res = await callGas("saveStaff", { 
-        rowIndex: rowIndex ? Number(rowIndex) : null, 
-        name: name, 
-        stores: stores, 
-        standardHours: hours,
-        dateFrom: dateFrom,
-        dateTo: dateTo
-      });
-      showLoading(false); alert(res.message); clearStaffForm(); loadStaffList();
-    } catch(e) { showLoading(false); }
-  }
-
-  async function deleteStaff(rowIndex, name) {
-    if(!confirm(`本当に ${name} さんを削除しますか？`)) return;
-    showLoading(true);
-    try {
-      const res = await callGas("deleteStaff", rowIndex);
-      showLoading(false); alert(res.message); clearStaffForm(); loadStaffList();
-    } catch(e) { showLoading(false); }
-  }
-
-  // --- 店舗機能 ---
-  let globalStoreList = [];
-  async function loadStoreList() {
-    try {
-      const res = await callGas("getStoreList");
-      globalStoreList = res.data;
-      const tbody = document.getElementById('store-table-body');
-      tbody.innerHTML = '';
-      if(globalStoreList.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5">登録店舗はありません</td></tr>';
-        return;
-      }
-      globalStoreList.forEach(item => {
-        const tr = document.createElement('tr');
-        const geo = (item.lat && item.lng) ? `${item.lat}, ${item.lng}` : '未設定';
-        tr.innerHTML = `<td><strong>${item.storeName}</strong></td><td><small>${geo}</small></td><td>${item.radius}m</td><td>IN:${item.inMarume}分/OUT:${item.outMarume}分</td>
-          <td>
-            <button class="btn btn-edit" onclick="editStore(${item.rowIndex})">編集</button>
-            <button class="btn btn-danger" onclick="deleteStore(${item.rowIndex}, '${item.storeName}')">削除</button>
-          </td>`;
-        tbody.appendChild(tr);
-      });
-      // 🏢 GASから店舗データが画面に届いたので、ここでプルダウンを安全に組み立てる
+    }
+  
+    /**
+     * 👥 選択された店舗に所属するスタッフのみを氏名セレクトボックスに表示する
+     */
+    function updateReportNameSelect() {
       const storeSelect = document.getElementById("report-store");
-      storeSelect.innerHTML = ''; // クリア
+      const nameSelect = document.getElementById("report-name");
       
-      globalStoreList.forEach(item => {
-        if (item.storeName) {
+      // 現在選択されている店舗名
+      const selectedStore = storeSelect.value;
+      
+      // 「すべてのスタッフ」の選択肢を初期配置
+      nameSelect.innerHTML = '<option value="すべてのスタッフ">すべてのスタッフ (店舗全員)</option>';
+      
+      if (!selectedStore) return;
+  
+      // グローバル変数 globalStaffList から所属するスタッフを抽出
+      globalStaffList.forEach(staff => {
+        // 所属店舗（カンマ区切り文字列）を分解して配列化
+        const belongStores = staff.stores.split(',').map(s => s.trim());
+        
+        // 選択された店舗が配列に含まれている場合のみ、氏名選択肢に追加
+        if (belongStores.includes(selectedStore)) {
           const opt = document.createElement("option");
-          opt.value = item.storeName;
-          opt.innerText = item.storeName;
-          storeSelect.appendChild(opt);
+          opt.value = staff.name;
+          opt.innerText = staff.name;
+          nameSelect.appendChild(opt);
         }
       });
-      
-      // 店舗名が変更されたらスタッフを絞り込むイベントを設定
-      storeSelect.onchange = updateReportNameSelect;
-    } catch(e) {}
-  }
+    }
+    
+    /**
+     * 🔍 勤務表の検索実行処理
+     */
+    async function searchWorkReport() {
+      const month = document.getElementById("report-month").value;
+      const store = document.getElementById("report-store").value;
+      const name = document.getElementById("report-name").value;
+      const tbody = document.getElementById("report-table-body");
   
-  function editStore(rowIndex) {
-    const item = globalStoreList.find(s => s.rowIndex === rowIndex);
-    if(!item) return;
-    document.getElementById('store-row-index').value = item.rowIndex;
-    document.getElementById('store-name').value = item.storeName;
-    document.getElementById('store-lat').value = item.lat;
-    document.getElementById('store-lng').value = item.lng;
-    document.getElementById('store-radius').value = item.radius;
-    document.getElementById('store-in-marume').value = item.inMarume;
-    document.getElementById('store-out-marume').value = item.outMarume;
-    document.getElementById('store-form-title').innerText = "店舗編集 (上書き)";
-    if (window.innerWidth < 768) { window.scrollTo({ top: 0, behavior: 'smooth' }); }
-  }
+      tbody.innerHTML = `<tr><td colspan="15" style="text-align:center; padding:20px; color:#c29d38; font-weight:bold;">🔄 スプレッドシートから勤務実績を抽出中...</td></tr>`;
+      showLoading(true);
   
-  function clearStoreForm() {
-    document.getElementById('store-row-index').value = "";
-    document.getElementById('store-name').value = "";
-    document.getElementById('store-lat').value = "";
-    document.getElementById('store-lng').value = "";
-    document.getElementById('store-radius').value = "100";
-    document.getElementById('store-in-marume').value = "15";
-    document.getElementById('store-out-marume').value = "15";
-    document.getElementById('store-form-title').innerText = "店舗登録・編集";
-  }
+      try {
+        const response = await fetch(GAS_API_URL, {
+          method: "POST",
+          body: JSON.stringify({
+            action: "getWorkReport",
+            username: currentUsername,
+            password: currentPassword,
+            month: month,
+            store: store,
+            name: name
+          })
+        });
   
-  async function submitStoreForm() {
-    const storeName = document.getElementById('store-name').value;
-    const lat = document.getElementById('store-lat').value;
-    const lng = document.getElementById('store-lng').value;
-    const radius = document.getElementById('store-radius').value;
-    const inMarume = document.getElementById('store-in-marume').value;
-    const outMarume = document.getElementById('store-out-marume').value;
-    const rowIndex = document.getElementById('store-row-index').value;
-    if(!storeName) { alert("店舗名は必須です"); return; }
-    showLoading(true);
-    try {
-      const res = await callGas("saveStore", { rowIndex: rowIndex ? Number(rowIndex) : null, storeName: storeName, lat: lat, lng: lng, radius: radius, inMarume: inMarume, outMarume: outMarume });
-      showLoading(false); alert(res.message); clearStoreForm(); loadStoreList();
-    } catch(e) { showLoading(false); }
-  }
+        const res = await response.json();
+        showLoading(false);
   
-  async function deleteStore(rowIndex, storeName) {
-    if(!confirm(`本当に店舗「${storeName}」を削除しますか？`)) return;
-    showLoading(true);
-    try {
-      const res = await callGas("deleteStore", rowIndex);
-      showLoading(false); alert(res.message); clearStoreForm(); loadStoreList();
-    } catch(e) { showLoading(false); }
-  }
-
-  // --- コメント機能 ---
-  let globalCommentList = [];
-  async function loadCommentList() {
-    showLoading(true);
-    try {
-      const res = await callGas("getCommentList");
-      globalCommentList = res.data;
-      const tbody = document.getElementById('comment-table-body');
-      tbody.innerHTML = '';
-      if(!globalCommentList || globalCommentList.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7">登録されたコメント通知はありません</td></tr>';
-        return;
-      }
-      
-      for (const item of globalCommentList) {
-        const tr = document.createElement('tr');
-        let period = '常時表示';
-        if (item.from && item.to) {
-          period = `${item.from}<br><span style="color:#888; font-size:0.8rem;">～</span><br>${item.to}`;
-        } else if (item.from || item.to) {
-          period = `${item.from || '制限なし'}<br><span style="color:#888; font-size:0.8rem;">～</span><br>${item.to || '制限なし'}`;
+        if (!res.success) {
+          tbody.innerHTML = `<tr><td colspan="15" style="text-align:center; padding:20px; color:red;">エラー: ${res.error || "データの取得に失敗しました"}</td></tr>`;
+          return;
         }
-        const cleanComment = item.comment.replace(/\n/g, '<br>');
+  
+        if (!res.data || res.data.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="15" style="text-align:center; padding:20px;" class="text-muted">該当する勤務実績データが見つかりませんでした。</td></tr>`;
+          return;
+        }
+  
+        // テーブルへのデータ展開
+        tbody.innerHTML = "";
+        res.data.forEach((item, index) => { // 💡インデックスを追加
+          const tr = document.createElement("tr");
+          
+          // 💡食事のセレクトボックスの組み立て
+          const mealOptions = ["", "〇"].map(val => 
+            `<option value="${val}" ${item.meal === val ? 'selected' : ''}>${val || "-"}</option>`
+          ).join("");
+          tr.innerHTML = `
+            <td><strong>${item.name}</strong></td>
+            <td>${item.date}</td>
+            <td><small>${item.store}</small></td>
+            <td><input type="text" class="form-control form-control-sm edit-input" data-key="inTime" data-index="${index}" value="${item.inTime || ""}" style="width:70px; text-align:center;"></td>
+            <td><input type="text" class="form-control form-control-sm edit-input" data-key="outTime" data-index="${index}" value="${item.outTime || ""}" style="width:70px; text-align:center;"></td>
+            <td><input type="text" class="form-control form-control-sm edit-input" data-key="restIn" data-index="${index}" value="${item.restIn || ""}" style="width:70px; text-align:center;"></td>
+            <td><input type="text" class="form-control form-control-sm edit-input" data-key="restOut" data-index="${index}" value="${item.restOut || ""}" style="width:70px; text-align:center;"></td>
+            
+            <td><span style="color:#007bff; font-weight:bold;">${item.in1 || "-"}</span></td>
+            <td><span style="color:#007bff; font-weight:bold;">${item.out1 || "-"}</span></td>
+            <td>${item.restTime || "-"}</td>
+            <td><strong>${item.workTime || "-"}</strong></td>
+            <td>${item.overTime || "-"}</td>
+            <td>${item.totalTime || "-"}</td>
+            
+            <td>
+              <select class="form-control form-control-sm edit-input" data-key="meal" data-index="${index}" style="width:55px;">
+                ${mealOptions}
+              </select>
+            </td>
+            <td style="max-width:240px; white-space:normal; word-break:break-all;"><small>${item.comment || ""}</small></td>
+          `;
+          
+          // 💡GASへ送るための元データをtr要素自体に記憶させておく
+          tr.dataset.raw = JSON.stringify(item);
+          tbody.appendChild(tr);
+        });
+  
+        // ⭕ 勤務表の下部に「一括保存ボタン」を設置する領域を作る（なければ生成）
+        let btnArea = document.getElementById("report-save-btn-area");
+        if (!btnArea) {
+          btnArea = document.createElement("div");
+          btnArea.id = "report-save-btn-area";
+          btnArea.style.cssText = "text-align:right; padding:15px; background:#f8f9fa; border-top:1px solid #dee2e6;";
+          tbody.parentNode.parentNode.appendChild(btnArea); // tableの親要素の後ろに追加
+        }
+        btnArea.innerHTML = `<button type="button" class="btn btn-warning font-weight-bold" onclick="saveReportEdits()">💾 勤務表の変更を保存する</button>`;
         
-        const badgeClass = item.importance === "重要" ? "badge badge-important" : "badge badge-normal";
-
-        let statusButtonHtml = `<span class="text-muted">算出中...</span>`;
-        if (item.id) {
-          try {
-            const statusRes = await callGas("getCommentStatus", { commentId: item.id, _ts: Date.now() });
-            if (statusRes.success) {
-              const confirmed = statusRes.confirmedCount || 0;
-              const total = statusRes.totalCount || 0;
-              
-              if (total > 0 && confirmed === total) {
-                statusButtonHtml = `<button class="btn-status-all" onclick="openStatusModal(${item.id})">全員確認済み</button>`;
+        // ⭕ 検索結果の件数（res.data.length）に応じてCSVボタンの状態を切り替える
+        const csvBtn = document.getElementById('btn-csv-download');
+        if (csvBtn) {
+          if (res.data && res.data.length > 0) {
+            // ヒットした時はアクティブ（緑色）にする
+            csvBtn.disabled = false;
+            csvBtn.style.backgroundColor = '#28a745';
+            csvBtn.style.cursor = 'pointer';
+          } else {
+            // ヒットしなかった場合はグレーアウト（無効化）にする
+            csvBtn.disabled = true;
+            csvBtn.style.backgroundColor = '#6c757d';
+            csvBtn.style.cursor = 'not-allowed';
+          }
+        }
+      } catch (e) {
+        showLoading(false);
+        console.error(e);
+        tbody.innerHTML = `<tr><td colspan="15" style="text-align:center; padding:20px; color:red;">通信エラーが発生しました。時間をおいて再度お試しください。</td></tr>`;
+      }
+    }
+  
+    /**
+     * 📊 勤務表照会の検索結果をShift-JIS形式でCSVダウンロードする関数
+     */
+    async function downloadReportCsv() {
+      const tbody = document.getElementById('report-table-body');
+      if (!tbody || tbody.rows.length === 0) return;
+      if (tbody.rows.length === 1 && tbody.rows[0].cells.length === 1) return;
+  
+      const csvBtn = document.getElementById('btn-csv-download');
+      const originalText = csvBtn.innerText;
+      csvBtn.disabled = true;
+      csvBtn.innerText = "⏳ CSV生成中...";
+  
+      try {
+        // 1. ヘッダー行を定義
+        const headers = ["メンバー名", "日付", "店舗", "出勤時刻", "退勤時刻", "休憩開始", "休憩終了", "IN１（まるめ後）", "OUT１（まるめ後）", "休憩時間", "勤務時間", "残業時間", "総労働", "食事", "コメント"];
+        const csvRows = [headers.join(',')];
+  
+        // 2. テーブル内のデータを取得しエスケープ処理を適用
+        for (let i = 0; i < tbody.rows.length; i++) {
+          const row = tbody.rows[i];
+          const rowData = [];
+          for (let j = 0; j < row.cells.length; j++) {
+            let cellText = row.cells[j].innerText.trim();
+            if (cellText.indexOf(',') !== -1 || cellText.indexOf('\n') !== -1 || cellText.indexOf('"') !== -1) {
+              cellText = '"' + cellText.replace(/"/g, '""') + '"';
+            }
+            rowData.push(cellText);
+          }
+          csvRows.push(rowData.join(','));
+        }
+  
+        // 3. 💡 追加したGASの関数を呼び出し、サーバー側で100%確実なShift-JISのBase64に変換してもらう
+        const base64Data = await callGas("convertToSjisBase64", csvRows);
+        
+        // 4. ご提示いただいたサンプルコードのダウンロードロジックを再現
+        const bin = atob(base64Data.data);
+        const buf = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) {
+          buf[i] = bin.charCodeAt(i);
+        }
+        
+        const blob = new Blob([buf], {type: 'text/csv;charset=shift-jis'});
+  
+        // ファイル名の作成
+        // 🏢 選択されている「店舗名」「氏名」「対象月度」を画面のセレクトボックスから取得
+        const storeVal = document.getElementById("report-store").value || "不明な店舗";
+        const monthVal = (document.getElementById("report-month").value || "不明な月度").replace(/\//g, ""); // 2026/06 -> 202606
+        
+        let nameVal = document.getElementById("report-name").value || "ALL";
+        // 👤 氏名が未選択、または「すべて」の文言が含まれる場合は "ALL" に統一
+        if (!nameVal || nameVal.includes("すべてのスタッフ") || nameVal.includes("全員")) {
+          nameVal = "ALL";
+        }
+  
+        // ⏱️ ダウンロード日時のフォーマット作成 (YYYYMMDD_HHMMSS)
+        const now = new Date();
+        const y = now.getFullYear();
+        const m = String(now.getMonth() + 1).padStart(2, '0');
+        const d = String(now.getDate()).padStart(2, '0');
+        const hh = String(now.getHours()).padStart(2, '0');
+        const mm = String(now.getMinutes()).padStart(2, '0');
+        const ss = String(now.getSeconds()).padStart(2, '0');
+        const downloadDateTime = `${y}${m}${d}_${hh}${mm}${ss}`;
+  
+        // 📝 指定のファイル名に組み立て [店舗名]_[氏名]_[対象月度]_[ダウンロード日時].csv
+        const fileName = `${storeVal}_${nameVal}_${monthVal}_${downloadDateTime}.csv`;      
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+  
+      } catch (err) {
+        alert("CSV의 生成中にエラーが発生しました。");
+        console.error(err);
+      } finally {
+        csvBtn.disabled = false;
+        csvBtn.innerText = originalText;
+      }
+    }
+    
+    // --- スタッフ機能 ---
+    let globalStaffList = [];
+    async function loadStaffList() {
+      try {
+        const res = await callGas("getStaffList");
+        globalStaffList = res.data;
+        const tbody = document.getElementById('staff-table-body');
+        tbody.innerHTML = '';
+        if(globalStaffList.length === 0) {
+          // ⭕【修正】列数が6列から8列（まるめ2列追加）に増えたため、colspanを8に変更
+          tbody.innerHTML = '<tr><td colspan="8">登録スタッフはいません</td></tr>';
+          return;
+        }
+        globalStaffList.forEach(item => {
+          const tr = document.createElement('tr');
+          // ⭕【修正】「INまるめ」「OUTまるめ」の表示セルを2つ追加
+          tr.innerHTML = `<td><strong>${item.name}</strong></td>
+            <td>${item.stores}</td>
+            <td>${item.standardHours}</td>
+            <td>IN:${item.inMarume || '15'}分 / OUT:${item.outMarume || '15'}分</td>
+            <td>${item.dateFrom || '-'}</td>
+            <td>${item.dateTo || '-'}</td>
+            <td>
+              <button class="btn btn-edit" onclick="editStaff(${item.rowIndex})">編集</button>
+              <button class="btn btn-danger" onclick="deleteStaff(${item.rowIndex}, '${item.name}')">削除</button>
+            </td>`;
+          tbody.appendChild(tr);
+        });
+        if (typeof updateReportNameSelect === "function") {
+          updateReportNameSelect();
+        }
+      } catch(e) {}
+    }
+  
+    function editStaff(rowIndex) {
+      const item = globalStaffList.find(s => s.rowIndex === rowIndex);
+      if(!item) return;
+      document.getElementById('staff-row-index').value = item.rowIndex;
+      document.getElementById('staff-name').value = item.name;
+      document.getElementById('staff-stores').value = item.stores;
+      document.getElementById('staff-hours').value = item.standardHours;
+      
+      // ⭕【追加】「INまるめ」「OUTまるめ」の値を編集フォームにセット（空ならデフォルト15）
+      document.getElementById('staff-in-marume').value = item.inMarume || "15";
+      document.getElementById('staff-out-marume').value = item.outMarume || "15";
+      
+      // ⭕【追加】シートの「YYYY/MM/DD」をフォームの「YYYY-MM-DD」に変換してセット
+      document.getElementById('staff-date-from').value = item.dateFrom ? item.dateFrom.replace(/\//g, '-') : "";
+      document.getElementById('staff-date-to').value = item.dateTo ? item.dateTo.replace(/\//g, '-') : "";
+  
+      document.getElementById('staff-form-title').innerText = "スタッフ編集 (上書き)";
+      if (window.innerWidth < 768) { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+    }
+  
+    function clearStaffForm() {
+      document.getElementById('staff-row-index').value = "";
+      document.getElementById('staff-name').value = "";
+      document.getElementById('staff-stores').value = "";
+      document.getElementById('staff-hours').value = "08:00";
+      
+      // ⭕【追加】クリア時に「INまるめ」「OUTまるめ」をデフォルト15に戻す
+      document.getElementById('staff-in-marume').value = "15";
+      document.getElementById('staff-out-marume').value = "15";
+      
+      // ⭕【追加】クリア時に在籍期間の入力欄も空にする
+      document.getElementById('staff-date-from').value = "";
+      document.getElementById('staff-date-to').value = "";
+  
+      document.getElementById('staff-form-title').innerText = "スタッフ登録・編集";
+    }
+  
+    async function submitStaffForm() {
+      const name = document.getElementById('staff-name').value;
+      const stores = document.getElementById('staff-stores').value;
+      const hours = document.getElementById('staff-hours').value;
+      const rowIndex = document.getElementById('staff-row-index').value;
+      
+      // ⭕【追加】「INまるめ」「OUTまるめ」の値を取得
+      const inMarume = document.getElementById('staff-in-marume').value;
+      const outMarume = document.getElementById('staff-out-marume').value;
+      
+      // ⭕【追加】在籍期間の値を取得（未設定時は空文字になる）
+      const dateFrom = document.getElementById('staff-date-from').value;
+      const dateTo = document.getElementById('staff-date-to').value;
+  
+      if(!name || !stores) { alert("氏名と出勤店舗は必須です"); return; }
+      showLoading(true);
+      try {
+        // ⭕【修正】GASに送るオブジェクトに inMarume, outMarume, dateFrom, dateTo を追加
+        const res = await callGas("saveStaff", { 
+          rowIndex: rowIndex ? Number(rowIndex) : null, 
+          name: name, 
+          stores: stores, 
+          standardHours: hours,
+          inMarume: inMarume,
+          outMarume: outMarume,
+          dateFrom: dateFrom,
+          dateTo: dateTo
+        });
+        showLoading(false); alert(res.message); clearStaffForm(); loadStaffList();
+      } catch(e) { showLoading(false); }
+    }
+  
+    async function deleteStaff(rowIndex, name) {
+      if(!confirm(`本当に ${name} さんを削除しますか？`)) return;
+      showLoading(true);
+      try {
+        const res = await callGas("deleteStaff", rowIndex);
+        showLoading(false); alert(res.message); clearStaffForm(); loadStaffList();
+      } catch(e) { showLoading(false); }
+    }
+  
+    // --- 店舗機能 ---
+    let globalStoreList = [];
+    async function loadStoreList() {
+      try {
+        const res = await callGas("getStoreList");
+        globalStoreList = res.data;
+        const tbody = document.getElementById('store-table-body');
+        tbody.innerHTML = '';
+        if(globalStoreList.length === 0) {
+          // ⭕【修正】まるめ表示列を削除したため colspan を 4 に変更
+          tbody.innerHTML = '<tr><td colspan="4">登録店舗はありません</td></tr>';
+          return;
+        }
+        globalStoreList.forEach(item => {
+          const tr = document.createElement('tr');
+          const geo = (item.lat && item.lng) ? `${item.lat}, ${item.lng}` : '未設定';
+          // ⭕【修正】店舗一覧テーブルから まるめ時間表示 の <td> を削除
+          tr.innerHTML = `<td><strong>${item.storeName}</strong></td><td><small>${geo}</small></td><td>${item.radius}m</td>
+            <td>
+              <button class="btn btn-edit" onclick="editStore(${item.rowIndex})">編集</button>
+              <button class="btn btn-danger" onclick="deleteStore(${item.rowIndex}, '${item.storeName}')">削除</button>
+            </td>`;
+          tbody.appendChild(tr);
+        });
+        // 🏢 GASから店舗データが画面に届いたので、ここでプルダウンを安全に組み立てる
+        const storeSelect = document.getElementById("report-store");
+        storeSelect.innerHTML = ''; // クリア
+        
+        globalStoreList.forEach(item => {
+          if (item.storeName) {
+            const opt = document.createElement("option");
+            opt.value = item.storeName;
+            opt.innerText = item.storeName;
+            storeSelect.appendChild(opt);
+          }
+        });
+        
+        // 店舗名が変更されたらスタッフを絞り込むイベントを設定
+        storeSelect.onchange = updateReportNameSelect;
+      } catch(e) {}
+    }
+    
+    function editStore(rowIndex) {
+      const item = globalStoreList.find(s => s.rowIndex === rowIndex);
+      if(!item) return;
+      document.getElementById('store-row-index').value = item.rowIndex;
+      document.getElementById('store-name').value = item.storeName;
+      document.getElementById('store-lat').value = item.lat;
+      document.getElementById('store-lng').value = item.lng;
+      document.getElementById('store-radius').value = item.radius;
+      // ⭕【削除】店舗フォームへのまるめ時間セットロジックを削除
+      document.getElementById('store-form-title').innerText = "店舗編集 (上書き)";
+      if (window.innerWidth < 768) { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+    }
+    
+    function clearStoreForm() {
+      document.getElementById('store-row-index').value = "";
+      document.getElementById('store-name').value = "";
+      document.getElementById('store-lat').value = "";
+      document.getElementById('store-lng').value = "";
+      document.getElementById('store-radius').value = "100";
+      // ⭕【削除】店舗フォームのまるめ初期値セットを削除
+      document.getElementById('store-form-title').innerText = "店舗登録・編集";
+    }
+    
+    async function submitStoreForm() {
+      const storeName = document.getElementById('store-name').value;
+      const lat = document.getElementById('store-lat').value;
+      const lng = document.getElementById('store-lng').value;
+      const radius = document.getElementById('store-radius').value;
+      // ⭕【削除】変数取得を削除
+      const rowIndex = document.getElementById('store-row-index').value;
+      if(!storeName) { alert("店舗名は必須です"); return; }
+      showLoading(true);
+      try {
+        // ⭕【修正】GASに渡すオブジェクトから inMarume, outMarume を削除
+        const res = await callGas("saveStore", { rowIndex: rowIndex ? Number(rowIndex) : null, storeName: storeName, lat: lat, lng: lng, radius: radius });
+        showLoading(false); alert(res.message); clearStoreForm(); loadStoreList();
+      } catch(e) { showLoading(false); }
+    }
+    
+    async function deleteStore(rowIndex, storeName) {
+      if(!confirm(`本当に店舗「${storeName}」を削除しますか？`)) return;
+      showLoading(true);
+      try {
+        const res = await callGas("deleteStore", rowIndex);
+        showLoading(false); alert(res.message); clearStoreForm(); loadStoreList();
+      } catch(e) { showLoading(false); }
+    }
+  
+    // --- コメント機能 ---
+    let globalCommentList = [];
+    async function loadCommentList() {
+      showLoading(true);
+      try {
+        const res = await callGas("getCommentList");
+        globalCommentList = res.data;
+        const tbody = document.getElementById('comment-table-body');
+        tbody.innerHTML = '';
+        if(!globalCommentList || globalCommentList.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7">登録されたコメント通知はありません</td></tr>';
+          return;
+        }
+        
+        for (const item of globalCommentList) {
+          const tr = document.createElement('tr');
+          let period = '常時表示';
+          if (item.from && item.to) {
+            period = `${item.from}<br><span style="color:#888; font-size:0.8rem;">～</span><br>${item.to}`;
+          } else if (item.from || item.to) {
+            period = `${item.from || '制限なし'}<br><span style="color:#888; font-size:0.8rem;">～</span><br>${item.to || '制限なし'}`;
+          }
+          const cleanComment = item.comment.replace(/\n/g, '<br>');
+          
+          const badgeClass = item.importance === "重要" ? "badge badge-important" : "badge badge-normal";
+  
+          let statusButtonHtml = `<span class="text-muted">算出中...</span>`;
+          if (item.id) {
+            try {
+              const statusRes = await callGas("getCommentStatus", { commentId: item.id, _ts: Date.now() });
+              if (statusRes.success) {
+                const confirmed = statusRes.confirmedCount || 0;
+                const total = statusRes.totalCount || 0;
+                
+                if (total > 0 && confirmed === total) {
+                  statusButtonHtml = `<button class="btn-status-all" onclick="openStatusModal(${item.id})">全員確認済み</button>`;
+                } else {
+                  statusButtonHtml = `<button class="btn-status-wait" onclick="openStatusModal(${item.id})">確認中 (${confirmed}/${total})</button>`;
+                }
               } else {
-                statusButtonHtml = `<button class="btn-status-wait" onclick="openStatusModal(${item.id})">確認中 (${confirmed}/${total})</button>`;
+                statusButtonHtml = `<button class="btn" style="padding:4px 8px; font-size:0.75rem;" onclick="openStatusModal(${item.id})">確認状況</button>`;
               }
-            } else {
+            } catch(err) {
               statusButtonHtml = `<button class="btn" style="padding:4px 8px; font-size:0.75rem;" onclick="openStatusModal(${item.id})">確認状況</button>`;
             }
-          } catch(err) {
-            statusButtonHtml = `<button class="btn" style="padding:4px 8px; font-size:0.75rem;" onclick="openStatusModal(${item.id})">確認状況</button>`;
+          } else {
+            statusButtonHtml = `<span class="text-muted">-</span>`;
           }
-        } else {
-          statusButtonHtml = `<span class="text-muted">-</span>`;
+  
+          tr.innerHTML = `
+            <td><small class="text-muted">#${item.id || '-'}</small></td>
+            <td><strong>${item.target}</strong></td>
+            <td>${statusButtonHtml}</td>
+            <td><span class="${badgeClass}">${item.importance || '普通'}</span></td>
+            <td>${cleanComment}</td>
+            <td><small>${period}</small></td>
+            <td>
+              <button class="btn btn-edit" onclick="editComment(${item.rowIndex})">編集</button>
+              <button class="btn btn-danger" onclick="deleteComment(${item.rowIndex})">削除</button>
+            </td>`;
+          tbody.appendChild(tr);
         }
-
-        tr.innerHTML = `
-          <td><small class="text-muted">#${item.id || '-'}</small></td>
-          <td><strong>${item.target}</strong></td>
-          <td>${statusButtonHtml}</td>
-          <td><span class="${badgeClass}">${item.importance || '普通'}</span></td>
-          <td>${cleanComment}</td>
-          <td><small>${period}</small></td>
-          <td>
-            <button class="btn btn-edit" onclick="editComment(${item.rowIndex})">編集</button>
-            <button class="btn btn-danger" onclick="deleteComment(${item.rowIndex})">削除</button>
-          </td>`;
-        tbody.appendChild(tr);
+      } catch(e) {
+        console.error(e);
+      } finally {
+        showLoading(false);
       }
-    } catch(e) {
-      console.error(e);
-    } finally {
-      showLoading(false);
     }
-  }
-
-  function editComment(rowIndex) {
-    const item = globalCommentList.find(c => c.rowIndex === rowIndex);
-    if(!item) return;
-    document.getElementById('comment-row-index').value = item.rowIndex;
-    document.getElementById('comment-target').value = item.target;
-    document.getElementById('comment-text').value = item.comment;
-    
-    const formatToInputDateTime = (dateStr) => {
-      if (!dateStr) return "";
-      const d = new Date(String(dateStr).replace(/-/g, "/"));
-      if (isNaN(d.getTime())) return "";
+  
+    function editComment(rowIndex) {
+      const item = globalCommentList.find(c => c.rowIndex === rowIndex);
+      if(!item) return;
+      document.getElementById('comment-row-index').value = item.rowIndex;
+      document.getElementById('comment-target').value = item.target;
+      document.getElementById('comment-text').value = item.comment;
       
-      const year = d.getFullYear();
-      const month = String(d.getMonth() + 1).padStart(2, '0');
-      const day = String(d.getDate()).padStart(2, '0');
-      const hours = String(d.getHours()).padStart(2, '0');
-      const minutes = String(d.getMinutes()).padStart(2, '0');
-      return `${year}-${month}-${day}T${hours}:${minutes}`;
-    };
-    
-    document.getElementById('comment-from').value = formatToInputDateTime(item.from);
-    document.getElementById('comment-to').value = formatToInputDateTime(item.to);
-    
-    document.getElementById('comment-importance').value = item.importance || "普通";
-    document.getElementById('comment-form-title').innerText = "コメント編集 (上書き)";
-    if (window.innerWidth < 768) { window.scrollTo({ top: 0, behavior: 'smooth' }); }
-  }
-
-  function clearCommentForm() {
-    document.getElementById('comment-row-index').value = "";
-    document.getElementById('comment-target').value = "";
-    document.getElementById('comment-text').value = "";
-    document.getElementById('comment-from').value = "";
-    document.getElementById('comment-to').value = "";
-    document.getElementById('comment-importance').value = "普通";
-    document.getElementById('comment-form-title').innerText = "コメント登録・編集";
-  }
-
-  async function submitCommentForm() {
-    const target = document.getElementById('comment-target').value.trim();
-    const comment = document.getElementById('comment-text').value.trim();
-    let from = document.getElementById('comment-from').value;
-    let to = document.getElementById('comment-to').value;
-    const importance = document.getElementById('comment-importance').value;
-    const rowIndex = document.getElementById('comment-row-index').value;
-    
-    if (!target) { alert("通知対象は必須項目です\n（全員、店舗名、個人名などを入力してください）"); return; }
-    if (!comment) { alert("コメント内容は必須項目です"); return; }
-    
-    if (!from) from = "";
-    if (!to) to = "";
-    
-    showLoading(true);
-    try {
-      const res = await callGas("saveComment", {
-        rowIndex: rowIndex ? Number(rowIndex) : null,
-        target: target,
-        comment: comment,
-        from: from,
-        to: to,
-        importance: importance
-      });
-      showLoading(false);
-      alert(res.message);
-      clearCommentForm();
-      loadCommentList();
-    } catch(e) {
-      showLoading(false);
-    }
-  }
-
-  async function deleteComment(rowIndex) {
-    if(!confirm(`本当にこのコメント通知を削除しますか？\n（関連するスタッフの確認状況データも一括削除されます）`)) return;
-    showLoading(true);
-    try {
-      const res = await callGas("deleteComment", rowIndex);
-      showLoading(false);
-      alert(res.message);
-      clearCommentForm();
-      loadCommentList();
-    } catch(e) {
-      showLoading(false);
-    }
-  }
-
-  async function openStatusModal(commentId) {
-    if(!commentId) return;
-    showLoading(true);
-    try {
-      const res = await callGas("getCommentStatus", { commentId: commentId });
-      showLoading(false);
-      
-      if (!res.success) { alert("確認状況の取得に失敗しました"); return; }
-      
-      document.getElementById("modalCommentTitle").innerText = `コメント通知 #${commentId} スタッフ確認状況`;
-      
-      const body = document.getElementById("modalStatusBody");
-      body.innerHTML = "";
-      
-      if (!res.data || res.data.length === 0) {
-        body.innerHTML = "<p class='text-muted' style='text-align:center; padding:10px;'>このコメントに対する配信対象スタッフがいません。</p>";
-      } else {
-        const ul = document.createElement("ul");
-        ul.className = "status-list";
+      const formatToInputDateTime = (dateStr) => {
+        if (!dateStr) return "";
+        const d = new Date(String(dateStr).replace(/-/g, "/"));
+        if (isNaN(d.getTime())) return "";
         
-        res.data.forEach(staff => {
-          const li = document.createElement("li");
-          li.className = "status-item";
-          
-          const statusBadge = staff.confirmed 
-            ? `<span class="status-ok">● 確認済</span> <small class="text-muted" style="font-size:0.75rem;">(${staff.time})</small>` 
-            : `<span class="status-ng">○ 未確認</span>`;
-            
-          li.innerHTML = `<span><strong>${staff.name}</strong></span> <span>${statusBadge}</span>`;
-          ul.appendChild(li);
-        });
-        body.appendChild(ul);
-      }
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        const hours = String(d.getHours()).padStart(2, '0');
+        const minutes = String(d.getMinutes()).padStart(2, '0');
+        return `${year}-${month}-${day}T${hours}:${minutes}`;
+      };
       
-      document.getElementById("statusModal").style.display = "flex";
-    } catch(e) {
-      showLoading(false);
+      document.getElementById('comment-from').value = formatToInputDateTime(item.from);
+      document.getElementById('comment-to').value = formatToInputDateTime(item.to);
+      
+      document.getElementById('comment-importance').value = item.importance || "普通";
+      document.getElementById('comment-form-title').innerText = "コメント編集 (上書き)";
+      if (window.innerWidth < 768) { window.scrollTo({ top: 0, behavior: 'smooth' }); }
     }
-  }
-
-  function closeStatusModal() {
-    document.getElementById("statusModal").style.display = "none";
-  }
   
-  async function refreshCommentList(btnElement) {
-    if (!btnElement) return;
-    
-    const originalText = btnElement.innerText;
-    btnElement.disabled = true;
-    btnElement.innerText = "🔄 更新中...";
-    
-    try {
-      await loadCommentList();
-    } catch (err) {
-      console.error("更新エラー:", err);
-    } finally {
-      btnElement.disabled = false;
-      btnElement.innerText = originalText;
+    function clearCommentForm() {
+      document.getElementById('comment-row-index').value = "";
+      document.getElementById('comment-target').value = "";
+      document.getElementById('comment-text').value = "";
+      document.getElementById('comment-from').value = "";
+      document.getElementById('comment-to').value = "";
+      document.getElementById('comment-importance').value = "普通";
+      document.getElementById('comment-form-title').innerText = "コメント登録・編集";
     }
-  }
-
-  function handleUserActivity() {
-    if (typeof resetTimeoutTimer === "function") {
-      resetTimeoutTimer();
-    }
-  }
-
-  /**
-   * 💾 画面で変更された勤務表データを集めてGASへ送信する処理
-   */
-  async function saveReportEdits() {
-    const tbody = document.getElementById("report-table-body");
-    const rows = tbody.querySelectorAll("tr");
-    const updateData = [];
   
-    rows.forEach(tr => {
-      if (!tr.dataset.raw) return;
-      const rawItem = JSON.parse(tr.dataset.raw);
-      const idx = tr.querySelector(".edit-input").dataset.index;
-  
-      // 画面上の変更後の値を取得
-      const inTime = tr.querySelector(`[data-key="inTime"][data-index="${idx}"]`).value.trim();
-      const outTime = tr.querySelector(`[data-key="outTime"][data-index="${idx}"]`).value.trim();
-      const restIn = tr.querySelector(`[data-key="restIn"][data-index="${idx}"]`).value.trim();
-      const restOut = tr.querySelector(`[data-key="restOut"][data-index="${idx}"]`).value.trim();
-      const meal = tr.querySelector(`[data-key="meal"][data-index="${idx}"]`).value;
-  
-      // 元のデータから変更があった場合のみ送信リストに加える
-      if (inTime !== rawItem.inTime || outTime !== rawItem.outTime || 
-          restIn !== rawItem.restIn || restOut !== rawItem.restOut || meal !== rawItem.meal) {
-        updateData.push({
-          store: rawItem.store,
-          name: rawItem.name,
-          date: rawItem.date,
-          inTime: inTime,
-          outTime: outTime,
-          restIn: restIn,
-          restOut: restOut,
-          meal: meal
+    async function submitCommentForm() {
+      const target = document.getElementById('comment-target').value.trim();
+      const comment = document.getElementById('comment-text').value.trim();
+      let from = document.getElementById('comment-from').value;
+      let to = document.getElementById('comment-to').value;
+      const importance = document.getElementById('comment-importance').value;
+      const rowIndex = document.getElementById('comment-row-index').value;
+      
+      if (!target) { alert("通知対象は必須項目です\n（全員、店舗名、個人名などを入力してください）"); return; }
+      if (!comment) { alert("コメント内容は必須項目です"); return; }
+      
+      if (!from) from = "";
+      if (!to) to = "";
+      
+      showLoading(true);
+      try {
+        const res = await callGas("saveComment", {
+          rowIndex: rowIndex ? Number(rowIndex) : null,
+          target: target,
+          comment: comment,
+          from: from,
+          to: to,
+          importance: importance
         });
+        showLoading(false);
+        alert(res.message);
+        clearCommentForm();
+        loadCommentList();
+      } catch(e) {
+        showLoading(false);
       }
-    });
-  
-    if (updateData.length === 0) {
-      alert("変更されたデータはありません。");
-      return;
     }
   
-    if (!confirm(`${updateData.length} 件の変更を保存します。よろしいですか？\n※保存後、まるめ時間や勤務時間は自動で再計算されます。`)) return;
+    async function deleteComment(rowIndex) {
+      if(!confirm(`本当にこのコメント通知を削除しますか？\n（関連するスタッフの確認状況データも一括削除されます）`)) return;
+      showLoading(true);
+      try {
+        const res = await callGas("deleteComment", rowIndex);
+        showLoading(false);
+        alert(res.message);
+        clearCommentForm();
+        loadCommentList();
+      } catch(e) {
+        showLoading(false);
+      }
+    }
   
-    showLoading(true);
-    try {
-      const response = await fetch(GAS_API_URL, {
-        method: "POST",
-        body: JSON.stringify({
-          action: "updateWorkReport", // 👈 新設するGASアクション
-          username: currentUsername,
-          password: currentPassword,
-          data: updateData
-        })
+    async function openStatusModal(commentId) {
+      if(!commentId) return;
+      showLoading(true);
+      try {
+        const res = await callGas("getCommentStatus", { commentId: commentId });
+        showLoading(false);
+        
+        if (!res.success) { alert("確認状況の取得に失敗しました"); return; }
+        
+        document.getElementById("modalCommentTitle").innerText = `コメント通知 #${commentId} スタッフ確認状況`;
+        
+        const body = document.getElementById("modalStatusBody");
+        body.innerHTML = "";
+        
+        if (!res.data || res.data.length === 0) {
+          body.innerHTML = "<p class='text-muted' style='text-align:center; padding:10px;'>このコメントに対する配信対象スタッフがいません。</p>";
+        } else {
+          const ul = document.createElement("ul");
+          ul.className = "status-list";
+          
+          res.data.forEach(staff => {
+            const li = document.createElement("li");
+            li.className = "status-item";
+            
+            const statusBadge = staff.confirmed 
+              ? `<span class="status-ok">● 確認済</span> <small class="text-muted" style="font-size:0.75rem;">(${staff.time})</small>` 
+              : `<span class="status-ng">○ 未確認</span>`;
+              
+            li.innerHTML = `<span><strong>${staff.name}</strong></span> <span>${statusBadge}</span>`;
+            ul.appendChild(li);
+          });
+          body.appendChild(ul);
+        }
+        
+        document.getElementById("statusModal").style.display = "flex";
+      } catch(e) {
+        showLoading(false);
+      }
+    }
+  
+    function closeStatusModal() {
+      document.getElementById("statusModal").style.display = "none";
+    }
+    
+    async function refreshCommentList(btnElement) {
+      if (!btnElement) return;
+      
+      const originalText = btnElement.innerText;
+      btnElement.disabled = true;
+      btnElement.innerText = "🔄 更新中...";
+      
+      try {
+        await loadCommentList();
+      } catch (err) {
+        console.error("更新エラー:", err);
+      } finally {
+        btnElement.disabled = false;
+        btnElement.innerText = originalText;
+      }
+    }
+  
+    function handleUserActivity() {
+      if (typeof resetTimeoutTimer === "function") {
+        resetTimeoutTimer();
+      }
+    }
+  
+    /**
+     * 💾 画面で変更された勤務表データを集めてGASへ送信する処理
+     */
+    async function saveReportEdits() {
+      const tbody = document.getElementById("report-table-body");
+      const rows = tbody.querySelectorAll("tr");
+      const updateData = [];
+    
+      rows.forEach(tr => {
+        if (!tr.dataset.raw) return;
+        const rawItem = JSON.parse(tr.dataset.raw);
+        const idx = tr.querySelector(".edit-input").dataset.index;
+    
+        // 画面上の変更後の値を取得
+        const inTime = tr.querySelector(`[data-key="inTime"][data-index="${idx}"]`).value.trim();
+        const outTime = tr.querySelector(`[data-key="outTime"][data-index="${idx}"]`).value.trim();
+        const restIn = tr.querySelector(`[data-key="restIn"][data-index="${idx}"]`).value.trim();
+        const restOut = tr.querySelector(`[data-key="restOut"][data-index="${idx}"]`).value.trim();
+        const meal = tr.querySelector(`[data-key="meal"][data-index="${idx}"]`).value;
+    
+        // 元のデータから変更があった場合のみ送信リストに加える
+        if (inTime !== rawItem.inTime || outTime !== rawItem.outTime || 
+            restIn !== rawItem.restIn || restOut !== rawItem.restOut || meal !== rawItem.meal) {
+          updateData.push({
+            store: rawItem.store,
+            name: rawItem.name,
+            date: rawItem.date,
+            inTime: inTime,
+            outTime: outTime,
+            restIn: restIn,
+            restOut: restOut,
+            meal: meal
+          });
+        }
       });
-      const res = await response.json();
-      showLoading(false);
-  
-      if (res.success) {
-        alert("勤務表の変更を保存しました。");
-        searchWorkReport(); // 画面を再読み込みして最新の自動計算結果を反映
-      } else {
-        alert("保存エラー: " + res.error);
+    
+      if (updateData.length === 0) {
+        alert("変更されたデータはありません。");
+        return;
       }
-    } catch (e) {
-      showLoading(false);
-      console.error(e);
-      alert("通信エラーが発生しました。");
+    
+      if (!confirm(`${updateData.length} 件の変更を保存します。よろしいですか？\n※保存後、まるめ時間や勤務時間は自動で再計算されます。`)) return;
+    
+      showLoading(true);
+      try {
+        const response = await fetch(GAS_API_URL, {
+          method: "POST",
+          body: JSON.stringify({
+            action: "updateWorkReport", // 👈 新設するGASアクション
+            username: currentUsername,
+            password: currentPassword,
+            data: updateData
+          })
+        });
+        const res = await response.json();
+        showLoading(false);
+    
+        if (res.success) {
+          alert("勤務表の変更を保存しました。");
+          searchWorkReport(); // 画面を再読み込みして最新の自動計算結果を反映
+        } else {
+          alert("保存エラー: " + res.error);
+        }
+      } catch (e) {
+        showLoading(false);
+        console.error(e);
+        alert("通信エラーが発生しました。");
+      }
     }
-  }
-</script>
+  </script>
 </body>
 </html>
