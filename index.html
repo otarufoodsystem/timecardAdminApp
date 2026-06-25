@@ -609,7 +609,7 @@
   </div>
   
   <script>
-    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbztlUGvm7Udhwa3wU4VMbZmsb2TysDDxMK3Yx4quByomiynk_Fh3WK3xdBQSlAtuamR/exec";
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbx7uPKengpO8-ruJEqBuTG9p2cWS7WW7zP3cD5YtlDR8rkQNeFqTojQM3e7FrkIwIRu/exec";
     
     // 💡 ユーザー名とパスワード、両方をローカルストレージで管理します
     let currentUsername = localStorage.getItem("admin_saved_username") || "";
@@ -1303,8 +1303,14 @@
           inMarume: inMarume,
           outMarume: outMarume
         });
-        showLoading(false); alert(res.message); clearStaffForm(); await loadStaffList();
-      } catch(e) { showLoading(false); }
+        alert(res.message);
+        clearStaffForm();
+        await loadStaffList();
+      } catch(e) {
+        console.error(e);
+      } finally {
+        showLoading(false);
+      }
     }
   
     async function deleteStaff(rowIndex, name) {
@@ -1312,8 +1318,14 @@
       showLoading(true);
       try {
         const res = await callGas("deleteStaff", rowIndex);
-        showLoading(false); alert(res.message); clearStaffForm(); await loadStaffList();
-      } catch(e) { showLoading(false); }
+        alert(res.message);
+        clearStaffForm();
+        await loadStaffList();
+      } catch(e) {
+        console.error(e);
+      } finally {
+        showLoading(false);
+      }
     }
   
     // --- 店舗機能 ---
@@ -1393,8 +1405,14 @@
       try {
         // ⭕【修正】GASに渡すオブジェクトから inMarume, outMarume を削除
         const res = await callGas("saveStore", { rowIndex: rowIndex ? Number(rowIndex) : null, storeName: storeName, lat: lat, lng: lng, radius: radius });
-        showLoading(false); alert(res.message); clearStoreForm(); await loadStoreList();
-      } catch(e) { showLoading(false); }
+        alert(res.message);
+        clearStoreForm();
+        await loadStoreList();
+      } catch(e) {
+        console.error(e);
+      } finally {
+        showLoading(false);
+      }
     }
     
     async function deleteStore(rowIndex, storeName) {
@@ -1402,8 +1420,14 @@
       showLoading(true);
       try {
         const res = await callGas("deleteStore", rowIndex);
-        showLoading(false); alert(res.message); clearStoreForm(); await loadStoreList();
-      } catch(e) { showLoading(false); }
+        alert(res.message);
+        clearStoreForm();
+        await loadStoreList();
+      } catch(e) {
+        console.error(e);
+      } finally {
+        showLoading(false);
+      }
     }
   
     // --- コメント機能 ---
