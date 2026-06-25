@@ -454,20 +454,20 @@
             <small>※1日あたりの所定労働時間数です</small>
           </div>
           <div class="form-group">
-            <label for="staff-in-marume">INまるめ(分)</label>
-            <input type="number" id="staff-in-marume" value="15" min="1">
-          </div>
-          <div class="form-group">
-            <label for="staff-out-marume">OUTまるめ(分)</label>
-            <input type="number" id="staff-out-marume" value="15" min="1">
-          </div>
-          <div class="form-group">
             <label>在籍期間 (From)</label>
             <input type="date" id="staff-date-from">
           </div>
           <div class="form-group">
             <label>在籍期間 (To) <small style="display:inline; color:#999;">※未設定可</small></label>
             <input type="date" id="staff-date-to">
+          </div>
+          <div class="form-group">
+            <label for="staff-in-marume">INまるめ(分)</label>
+            <input type="number" id="staff-in-marume" value="15" min="1">
+          </div>
+          <div class="form-group">
+            <label for="staff-out-marume">OUTまるめ(分)</label>
+            <input type="number" id="staff-out-marume" value="1" min="1">
           </div>
           <div class="btn-row">
             <button class="btn btn-clear" onclick="clearStaffForm()">クリア</button>
@@ -609,7 +609,7 @@
   </div>
   
   <script>
-    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbywdG5FYSwlBlO5gv-mc47ulQyc6xfMmcaexaa1Ur5_hz2HH_A0QoUd3qoVB8aaR702/exec";
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxGoDJg4dLmYLZ5dLqyvA94FoDTKd0RXnSPoKN2FwAs--d6WY8HKHJTxiEukpQlrWp5/exec";
     
     // 💡 ユーザー名とパスワード、両方をローカルストレージで管理します
     let currentUsername = localStorage.getItem("admin_saved_username") || "";
@@ -1219,13 +1219,13 @@
         }
         globalStaffList.forEach(item => {
           const tr = document.createElement('tr');
-          // ⭕【修正】「INまるめ」「OUTまるめ」の表示セルを2つ追加
+          // ⭕【修正】「INまるめ」「OUTまるめ」の表示セルを追加
           tr.innerHTML = `<td><strong>${item.name}</strong></td>
             <td>${item.stores}</td>
             <td>${item.standardHours}</td>
-            <td>IN:${item.inMarume || '15'}分 / OUT:${item.outMarume || '15'}分</td>
             <td>${item.dateFrom || '-'}</td>
             <td>${item.dateTo || '-'}</td>
+            <td>IN:${item.inMarume || '15'}分 / OUT:${item.outMarume || '1'}分</td>
             <td>
               <button class="btn btn-edit" onclick="editStaff(${item.rowIndex})">編集</button>
               <button class="btn btn-danger" onclick="deleteStaff(${item.rowIndex}, '${item.name}')">削除</button>
@@ -1246,14 +1246,14 @@
       document.getElementById('staff-stores').value = item.stores;
       document.getElementById('staff-hours').value = item.standardHours;
       
-      // ⭕【追加】「INまるめ」「OUTまるめ」の値を編集フォームにセット（空ならデフォルト15）
-      document.getElementById('staff-in-marume').value = item.inMarume || "15";
-      document.getElementById('staff-out-marume').value = item.outMarume || "15";
-      
       // ⭕【追加】シートの「YYYY/MM/DD」をフォームの「YYYY-MM-DD」に変換してセット
       document.getElementById('staff-date-from').value = item.dateFrom ? item.dateFrom.replace(/\//g, '-') : "";
       document.getElementById('staff-date-to').value = item.dateTo ? item.dateTo.replace(/\//g, '-') : "";
   
+      // ⭕【追加】「INまるめ」「OUTまるめ」の値を編集フォームにセット
+      document.getElementById('staff-in-marume').value = item.inMarume || "15";
+      document.getElementById('staff-out-marume').value = item.outMarume || "1";
+      
       document.getElementById('staff-form-title').innerText = "スタッフ編集 (上書き)";
       if (window.innerWidth < 768) { window.scrollTo({ top: 0, behavior: 'smooth' }); }
     }
@@ -1264,14 +1264,14 @@
       document.getElementById('staff-stores').value = "";
       document.getElementById('staff-hours').value = "08:00";
       
-      // ⭕【追加】クリア時に「INまるめ」「OUTまるめ」をデフォルト15に戻す
-      document.getElementById('staff-in-marume').value = "15";
-      document.getElementById('staff-out-marume').value = "15";
-      
       // ⭕【追加】クリア時に在籍期間の入力欄も空にする
       document.getElementById('staff-date-from').value = "";
       document.getElementById('staff-date-to').value = "";
   
+      // ⭕【追加】クリア時に「INまるめ」「OUTまるめ」をデフォルトに戻す
+      document.getElementById('staff-in-marume').value = "15";
+      document.getElementById('staff-out-marume').value = "1";
+      
       document.getElementById('staff-form-title').innerText = "スタッフ登録・編集";
     }
   
@@ -1281,14 +1281,14 @@
       const hours = document.getElementById('staff-hours').value;
       const rowIndex = document.getElementById('staff-row-index').value;
       
-      // ⭕【追加】「INまるめ」「OUTまるめ」の値を取得
-      const inMarume = document.getElementById('staff-in-marume').value;
-      const outMarume = document.getElementById('staff-out-marume').value;
-      
       // ⭕【追加】在籍期間の値を取得（未設定時は空文字になる）
       const dateFrom = document.getElementById('staff-date-from').value;
       const dateTo = document.getElementById('staff-date-to').value;
   
+      // ⭕【追加】「INまるめ」「OUTまるめ」の値を取得
+      const inMarume = document.getElementById('staff-in-marume').value;
+      const outMarume = document.getElementById('staff-out-marume').value;
+      
       if(!name || !stores) { alert("氏名と出勤店舗は必須です"); return; }
       showLoading(true);
       try {
@@ -1298,10 +1298,10 @@
           name: name, 
           stores: stores, 
           standardHours: hours,
-          inMarume: inMarume,
-          outMarume: outMarume,
           dateFrom: dateFrom,
-          dateTo: dateTo
+          dateTo: dateTo,
+          inMarume: inMarume,
+          outMarume: outMarume
         });
         showLoading(false); alert(res.message); clearStaffForm(); loadStaffList();
       } catch(e) { showLoading(false); }
