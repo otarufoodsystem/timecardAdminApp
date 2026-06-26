@@ -609,7 +609,7 @@
   </div>
   
   <script>
-    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxAiITszsVLfK59Dy90pIdgScPEwhKbpAfmRmN3IGlmyifx5K6y2DdYYh_fo76GTXg6/exec";
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzYCllP6EyexEJsTIy2ouKJ-1VhrvpnIQdYRp30uwatTpXHG3qYEoSGKnp2GU96znC3/exec";
     
     // 💡 ユーザー名とパスワード、両方をローカルストレージで管理します
     let currentUsername = localStorage.getItem("admin_saved_username") || "";
@@ -1716,7 +1716,8 @@
         showLoading(false);
     
         if (res.success) {
-          alert("勤務表の変更を保存しました。");
+//          alert("勤務表の変更を保存しました。");
+          alert("サーバーからの返答:\n" + res.message);
           searchWorkReport(); // 画面を再読み込みして最新の自動計算結果を反映
         } else {
           alert("保存エラー: " + res.error);
