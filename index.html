@@ -913,7 +913,7 @@
       let targetDefaultIndex = 0; // デフォルト選択位置の調整用
       
       // 直近6ヶ月分の選択肢を用意
-      for (let i = -4; i <= 2; i++) {
+      for (let i = -4; i <= 1; i++) {
         const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
         const y = d.getFullYear();
         const m = d.getMonth() + 1;
@@ -951,7 +951,8 @@
       
       // ⭕【追加】空っぽにした後、すぐに最新の店舗マスタからプルダウンを組み立て直す命令を実行する
       const storeSelect = document.getElementById("report-store");
-      rebuildReportStoreSelect(storeSelect);  }
+      rebuildReportStoreSelect(storeSelect);
+    }
   
     /**
      * 🏢 勤務表の店舗プルダウンを現在の画面マスタから組み立て直す関数
