@@ -1095,9 +1095,14 @@
         if (!btnArea) {
           btnArea = document.createElement("div");
           btnArea.id = "report-save-btn-area";
-          btnArea.style.cssText = "text-align:right; padding:15px; background:#f8f9fa; border-top:1px solid #dee2e6;";
-          tbody.parentNode.parentNode.appendChild(btnArea); // tableの親要素の後ろに追加
+          // 🎨 CSSを修正：スクロールエリア幅いっぱいにし、ボタンを左寄せにする
+          btnArea.style.cssText = "text-align:left; padding:15px; background:#f8f9fa; border-top:1px solid #dee2e6; width:100%; position:sticky; left:0; box-sizing:border-box;";
+          
+          // 💡 tableの外側のラッパー（スクロールする親要素）の後ろ、または外側に配置
+          const tableContainer = tbody.closest('.table-responsive') || tbody.parentNode.parentNode;
+          tableContainer.parentNode.insertBefore(btnArea, tableContainer.nextSibling);
         }
+        // ボタンを左側に配置
         btnArea.innerHTML = `<button type="button" class="btn btn-warning font-weight-bold" onclick="saveReportEdits()">💾 勤務表の変更を保存する</button>`;
         
         // ⭕ 検索結果の件数（res.data.length）に応じてCSVボタンの状態を切り替える
