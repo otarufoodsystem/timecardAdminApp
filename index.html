@@ -609,7 +609,9 @@
   </div>
   
   <script>
-    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxKncUlq60CG4bWtOSVn4QubmROgbadSH7CScztR4liGrvtZ0oimOtlGBJiV_Nz51j8/exec";
+    // ⭕ 【追記】GitHub側で管理するバージョンをここに宣言する
+    const APP_VERSION = "v1.6.5";
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyxUpez8DOstQNimtES3dnjC3LJkwWpou554mT0G2JTJrjb0f319RUAP5wIbEHXYRl5/exec";
     
     // 💡 ユーザー名とパスワード、両方をローカルストレージで管理します
     let currentUsername = localStorage.getItem("admin_saved_username") || "";
@@ -1709,6 +1711,7 @@
             action: "updateWorkReport", // 👈 新設するGASアクション
             username: currentUsername,
             password: currentPassword,
+            appVersion: APP_VERSION,
             data: updateData
           })
         });
