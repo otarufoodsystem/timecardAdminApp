@@ -699,12 +699,15 @@
       window.addEventListener('touchstart', handleUserActivity);
       
       // 💡 ログイン画面のバージョンを取得
-      fetchLoginVersion();
+      const loginVerEl = document.getElementById("login-version");
+      if (loginVerEl) {
+        loginVerEl.innerText = APP_VERSION; // 👈 コード上の const APP_VERSION をそのまま表示
+      }
   
       // 💡 自動ログインを実行
       await runAuthentication();
     };
-  
+/*  
     async function fetchLoginVersion() {
       try {
         const response = await fetch(GAS_API_URL, {
@@ -736,7 +739,7 @@
         if (loginVerEl) loginVerEl.innerText = "v1.4.0";
       }
     }
-    
+*/    
     // 🔒 認証実行関数 (起動・リロード時に自動で走る)
     async function runAuthentication() {
       const overlay = document.getElementById("protection-overlay");
