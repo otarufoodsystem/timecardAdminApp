@@ -785,6 +785,10 @@
             showLoading(false);
             initReportForm();
   
+            if (document.getElementById("app-version")) {
+              document.getElementById("app-version").innerText = APP_VERSION;
+            }
+            
             // 🔥 自動ログイン時も10分リアルタイム監視をスタート
             resetTimeoutTimer();
             return;
