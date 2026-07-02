@@ -742,6 +742,10 @@
 */    
     // 🔒 認証実行関数 (起動・リロード時に自動で走る)
     async function runAuthentication() {
+      if (document.getElementById("app-version")) {
+        document.getElementById("app-version").innerText = APP_VERSION;
+      }
+
       const overlay = document.getElementById("protection-overlay");
       const loginScreen = document.getElementById("login-screen");
       const now = Date.now();
@@ -785,10 +789,6 @@
             showLoading(false);
             initReportForm();
   
-            if (document.getElementById("app-version")) {
-              document.getElementById("app-version").innerText = APP_VERSION;
-            }
-            
             // 🔥 自動ログイン時も10分リアルタイム監視をスタート
             resetTimeoutTimer();
             return;
