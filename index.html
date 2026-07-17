@@ -1160,6 +1160,9 @@
           const rowData = [];
           for (let j = 0; j < row.cells.length; j++) {
             let cellText = row.cells[j].innerText.trim();
+            if (cellText.includes('〇')) {
+              cellText = '〇';
+            }
             if (cellText.indexOf(',') !== -1 || cellText.indexOf('\n') !== -1 || cellText.indexOf('"') !== -1) {
               cellText = '"' + cellText.replace(/"/g, '""') + '"';
             }
