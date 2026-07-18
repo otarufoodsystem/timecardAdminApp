@@ -1155,25 +1155,35 @@
         const csvRows = [headers.join(',')];
   
         // 2. テーブル内のデータを取得しエスケープ処理を適用
-        for (let j = 0; j < row.cells.length; j++) {
-          let currentCellText = row.cells[j].innerText.trim();
+        for (let i = 0; i < tbody.rows.length; i++) {
+          const row = tbody.rows[i];
           
-          // 🔑 修正ポイント：きっちり「O列（j === 14：食事列）」のときだけ判定を動かす
-          if (j === 14) {
-            if (currentCellText.includes('〇')) {
-              currentCellText = '〇'; // 「〇」が入っていれば、改行もダッシュも消して「〇」に固定
-            } else {
-              currentCellText = '-';  // 「〇」がない場合は、ハイフンにする
-            }
-          } else {
-            // 👤 食事列「以外」のときだけ、カンマや改行のエスケープ処理を行う
-            if (currentCellText.indexOf(',') !== -1 || currentCellText.indexOf('\n') !== -1 || currentCellText.indexOf('"') !== -1) {
-              currentCellText = '"' + currentCellText.replace(/"/g, '""') + '"';
-            }
+          // 非表示行はスキップ
+          if (row.style.display === 'none' || row.offsetHeight === 0) {
+            continue;
           }
-          
-          // 最後に、全ての列（A〜O列）が順番通り正しく格納される
-          rowData.push(currentCellText);
+
+          const rowData = [];
+          for (let j = 0; j < row.cells.length; j++) {
+            let currentCellText = row.cells[j].innerText.trim();
+            
+            // ⭕ HTMLテーブルの14番目（インデックス13 ＝ 食事列）のときだけ処理
+            if (j === 13) {
+              if (currentCellText.includes('〇')) {
+                currentCellText = '〇'; // 〇が含まれていれば、改行などを無視して「〇」に固定
+              } else {
+                currentCellText = '-';  // 〇がなければハイフンにする
+              }
+            } else {
+              // 👤 食事列以外の場合のみ、通常のエスケープ処理
+              if (currentCellText.indexOf(',') !== -1 || currentCellText.indexOf('\n') !== -1 || currentCellText.indexOf('"') !== -1) {
+                currentCellText = '"' + currentCellText.replace(/"/g, '""') + '"';
+              }
+            }
+            
+            rowData.push(currentCellText);
+          }
+          csvRows.push(rowData.join(','));
         }
   
         // 3. 💡 追加したGASの関数を呼び出し、サーバー側で100%確実なShift-JISのBase64に変換してもらう
