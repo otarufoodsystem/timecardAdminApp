@@ -1158,13 +1158,8 @@
         for (let i = 0; i < tbody.rows.length; i++) {
           const row = tbody.rows[i];
           
-          // 💡【重要】画面上に表示されていない非表示行（フィルターされた行やダミー行）は完全にスキップ
+          // 非表示行はスキップ
           if (row.style.display === 'none' || row.offsetHeight === 0) {
-            continue;
-          }
-          
-          // 💡【重要】列数が正しく15列（O列まで）ない特殊な行もスキップして列ズレを防ぐ
-          if (row.cells.length < headers.length) {
             continue;
           }
 
@@ -1172,17 +1167,14 @@
           for (let j = 0; j < row.cells.length; j++) {
             let currentCellText = row.cells[j].innerText.trim();
             
-            // 💡 数字（j）ではなく、ヘッダーの名前が「食事」の列かどうかで厳密に判定
-            if (headers[j] === "食事") {
-              if (currentCellText.includes('〇')) {
-                rowData.push('〇'); // 「〇」が入っていれば、改行もダッシュも無視して「〇」だけを格納
-              } else {
-                rowData.push('-');  // 「〇」がない場合は、ハイフンなどの未支給状態にする
-              }
-              continue; // 食事列の処理はここで終了、次のマスのループへ
+            // 🔥【力技解決】列番号に関係なく、文字の中に「〇」が含まれていたら
+            // 改行やハイフンをすべて無視して、問答無用で「〇」1文字だけに強制変換する
+            if (currentCellText.includes('〇')) {
+              rowData.push('〇');
+              continue; // エスケープ処理（""で囲む処理）に進ませずに次のマスへ
             }
             
-            // 👤 食事列以外の通常のエスケープ処理
+            // 通常のエスケープ処理
             if (currentCellText.indexOf(',') !== -1 || currentCellText.indexOf('\n') !== -1 || currentCellText.indexOf('"') !== -1) {
               currentCellText = '"' + currentCellText.replace(/"/g, '""') + '"';
             }
