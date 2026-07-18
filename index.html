@@ -610,8 +610,8 @@
   
   <script>
     // ⭕ 【追記】GitHub側で管理するバージョンをここに宣言する
-    const APP_VERSION = "v1.6.10";
-    const GAS_API_URL = "https://script.google.com/macros/s/AKfycby1yPKTyriAoiM7kYJmbvhazDMnz_KB44BR15AEcluMjf1nNdz9aFZKb3OtxmUsz4za/exec";
+    const APP_VERSION = "v1.6.11";
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycby8X3njFw6QX1hTRNgvr5kiHRnzSqHYf588HdAU69NOrFAgYd8RxGvlSuwaUmdy0xZb/exec";
     
     // 💡 ユーザー名とパスワード、両方をローカルストレージで管理します
     let currentUsername = localStorage.getItem("admin_saved_username") || "";
@@ -1140,43 +1140,53 @@
      * 📊 勤務表照会の検索結果をShift-JIS形式でCSVダウンロードする関数
      */
     async function downloadReportCsv() {
+      // 🏢 1. ボタンの状態を「生成中」に切り替え
       const csvBtn = document.getElementById('btn-csv-download');
       const originalText = csvBtn.innerText;
       csvBtn.disabled = true;
       csvBtn.innerText = "⏳ CSV生成中...";
     
       try {
-        // 🏢 1. 画面の選択ボックスから条件を取得
+        // 🏢 2. 画面の検索条件セレクトボックスから値を正確に取得
         const storeVal = document.getElementById("report-store").value;
         const monthVal = document.getElementById("report-month").value;
         let nameVal = document.getElementById("report-name").value;
+        
+        // 「すべてのスタッフ」や「全員」が選ばれている場合はGASの指定に合わせる
         if (!nameVal || nameVal.includes("すべてのスタッフ") || nameVal.includes("全員")) {
           nameVal = "すべてのスタッフ";
         }
     
-        // 💡 2. 【重要】HTMLは見ない。すでにGASにある関数を呼び出してスプレッドシートの生データを直接もらう
+        // 💡 3.【確実】HTMLは見ない。GASのスプレッドシート取得関数から「生のデータ」を直接引き直す
         const response = await callGas("getWorkReport", {
           store: storeVal,
           month: monthVal,
           name: nameVal
         });
     
+        // レスポンスから配列データを抽出（空なら処理終了）
         const reportData = response.data || [];
+        if (reportData.length === 0) {
+          alert("出力対象のデータがありませんでした。");
+          return;
+        }
     
-        // 3. ヘッダー定義
+        // 📊 4. CSVのヘッダー定義
         const headers = ["メンバー名", "日付", "店舗", "出勤時刻", "退勤時刻", "休憩開始", "休憩終了", "IN１（まるめ後）", "OUT１（まるめ後）", "休憩時間", "勤務時間", "残業時間", "総労働", "食事", "コメント"];
         const csvRows = [headers.join(',')];
     
-        // 4. GASから届いた綺麗なオブジェクトからCSV行を組み立てる
+        // 🔄 5. スプレッドシートから届いた綺麗なデータ（オブジェクト）をCSV行に変換
         for (let i = 0; i < reportData.length; i++) {
           const item = reportData[i];
           
-          // 食事列のクレンジング（文字に「〇」が入っていれば「〇」、それ以外は「-」）
+          // ⭕【食事列の汚れ対策】セレクトボックスのHTMLを介さないため、
+          // シートに「〇」が入っていれば「〇」、それ以外（ハイフンや空欄）なら「-」に完全固定
           let mealClean = "-";
-          if (item.meal && item.meal.includes("〇")) {
+          if (item.meal && String(item.meal).trim().includes("〇")) {
             mealClean = "〇";
           }
     
+          // ヘッダーの順番通りに配列へ格納
           const row = [
             item.name,
             item.date,
@@ -1190,14 +1200,14 @@
             item.restTime,
             item.workTime,
             item.overTime,
-            item.totalTime, // 総労働
-            mealClean,      // 綺麗になった食事列
+            item.totalTime, // 総労働（シート側の「総時間」に対応）
+            mealClean,      // クレンジング済みの食事データ
             item.comment
           ];
     
-          // 各マスのエスケープ処理
+          // 各セルのカンマ・改行・ダブルクォーテーションを安全にエスケープ処理
           const escapedRow = row.map(text => {
-            let str = String(text || "").trim();
+            let str = String(text ?? "").trim();
             if (str.indexOf(',') !== -1 || str.indexOf('\n') !== -1 || str.indexOf('"') !== -1) {
               str = '"' + str.replace(/"/g, '""') + '"';
             }
@@ -1207,18 +1217,22 @@
           csvRows.push(escapedRow.join(','));
         }
     
-        // 5. 【超重要】もう二度とバグっているGASの変換は通さない。JavaScriptだけでダウンロードさせる
+        // 💾 6. GASのBase64エンコードバグをバイパスし、ブラウザ側でCSVファイルを生成
         const csvString = csvRows.join('\r\n');
-        const bom = new Uint8Array([0xEF, 0xBB, 0xBF]); // Excel文字化け防止
+        
+        // Excelで開いても絶対に文字化けしないように「BOM (Byte Order Mark)」を付与
+        const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
         const blob = new Blob([bom, csvString], { type: 'text/csv;charset=utf-8;' });
     
-        // ファイル名の作成
-        const fileMonth = monthVal.replace(/\//g, "");
+        // 📝 7. ファイル名の作成ロジック (店舗名_スタッフ名_月度_作成日時.csv)
+        const fileMonth = monthVal.replace(/\//g, ""); // "2026/06" -> "202606"
         const fileNameName = nameVal === "すべてのスタッフ" ? "ALL" : nameVal;
+        
         const now = new Date();
         const downloadDateTime = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`;
         const fileName = `${storeVal}_${fileNameName}_${fileMonth}_${downloadDateTime}.csv`;      
     
+        // 🚀 8. 疑似リンクを作って自動クリック（ダウンロード実行）
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
         link.download = fileName;
@@ -1230,6 +1244,7 @@
         alert("CSVの生成中にエラーが発生しました。");
         console.error(err);
       } finally {
+        // ⚙️ 9. ボタンの状態を元に戻す
         csvBtn.disabled = false;
         csvBtn.innerText = originalText;
       }
