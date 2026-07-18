@@ -1146,7 +1146,7 @@
       csvBtn.innerText = "⏳ CSV生成中...";
     
       try {
-        // 🏢 1. 画面の検索条件ボックスから値を取得（検索側と完全同一）
+        // 🏢 1. 画面の検索条件ボックスから値を取得
         const monthVal = document.getElementById("report-month").value; // 例: "2026/07"
         const storeVal = document.getElementById("report-store").value;
         let nameVal = document.getElementById("report-name").value;
@@ -1155,12 +1155,14 @@
           nameVal = "すべてのスタッフ";
         }
     
-        // 🚀 2. 【原因解決】callGasを使わず、検索側と100%同一のフラットな構造でfetchを投げる
+        // 🚀 2. 【完全解決】検索側と100%同じ認証情報とフラットな構造でリクエストを投げる
         const response = await fetch(GAS_API_URL, {
           method: "POST",
           body: JSON.stringify({
-            action: "getWorkReport", // action とパラメータを同じ階層に並べる
-            month: monthVal,
+            action: "getWorkReport",
+            username: currentUsername,  // 🔒 GASの認証突破に必須
+            password: currentPassword,  // 🔒 GASの認証突破に必須
+            month: monthVal,            // "2026/07" のまま送信（GAS側のsplitに適合）
             store: storeVal,
             name: nameVal
           })
@@ -1168,10 +1170,10 @@
     
         const resJson = await response.json();
         
-        // GAS側の返却形式（オブジェクト直下、または .data の中身）を安全に吸収
-        const reportData = resJson.data || resJson || [];
+        // 🎯 GASは responseData.data に配列を格納して返してくるため、.data を正確に参照
+        const reportData = resJson.data || [];
         
-        if (!Array.isArray(reportData) || reportData.length === 0) {
+        if (reportData.length === 0) {
           alert(`データが見つかりませんでした。\n選択条件を確認してください：\n・店舗: ${storeVal}\n・月度: ${monthVal}\n・スタッフ: ${nameVal}`);
           return;
         }
@@ -1180,7 +1182,7 @@
         const headers = ["メンバー名", "日付", "店舗", "出勤時刻", "退勤時刻", "休憩開始", "休憩終了", "IN１（まるめ後）", "OUT１（まるめ後）", "休憩時間", "勤務時間", "残業時間", "総労働", "食事", "コメント"];
         const csvRows = [headers.join(',')];
     
-        // 🔄 4. データをCSV行に変換
+        // 🔄 4. スプレッドシートから戻ってきた純粋なデータをCSV行に変換
         for (let i = 0; i < reportData.length; i++) {
           const item = reportData[i];
           
@@ -1203,11 +1205,12 @@
             item.restTime,
             item.workTime,
             item.overTime,
-            item.totalTime,
+            item.totalTime, // GAS側の idxTotalTime（総時間）に対応
             mealClean,
             item.comment
           ];
     
+          // 各マスのエスケープ処理（カンマや改行対策）
           const escapedRow = row.map(text => {
             let str = String(text ?? "").trim();
             if (str.indexOf(',') !== -1 || str.indexOf('\n') !== -1 || str.indexOf('"') !== -1) {
@@ -1219,12 +1222,13 @@
           csvRows.push(escapedRow.join(','));
         }
     
-        // 💾 5. ダウンロード処理
+        // 💾 5. ブラウザ側で安全にBOM付きCSVファイルを組み立ててダウンロード
         const csvString = csvRows.join('\r\n');
-        const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+        const bom = new Uint8Array([0xEF, 0xBB, 0xBF]); // Excel文字化け防止
         const blob = new Blob([bom, csvString], { type: 'text/csv;charset=utf-8;' });
     
-        const fileMonth = monthVal.replace(/\//g, ""); // "2026/07" -> "202607"
+        // ファイル名用の月度整形（"2026/07" -> "202607"）
+        const fileMonth = monthVal.replace(/\//g, "");
         const fileNameName = nameVal === "すべてのスタッフ" ? "ALL" : nameVal;
         
         const now = new Date();
