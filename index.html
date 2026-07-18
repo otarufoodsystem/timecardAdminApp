@@ -610,8 +610,8 @@
   
   <script>
     // ⭕ 【追記】GitHub側で管理するバージョンをここに宣言する
-    const APP_VERSION = "v1.6.9";
-    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyTCDO27gwvJTZjeH-c1D1G_sZg4-YTGAaM17Ni0_Rb4fTOY5uxUAkdMmJlsfXkZG9C/exec";
+    const APP_VERSION = "v1.6.10";
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycby1yPKTyriAoiM7kYJmbvhazDMnz_KB44BR15AEcluMjf1nNdz9aFZKb3OtxmUsz4za/exec";
     
     // 💡 ユーザー名とパスワード、両方をローカルストレージで管理します
     let currentUsername = localStorage.getItem("admin_saved_username") || "";
@@ -1140,91 +1140,92 @@
      * 📊 勤務表照会の検索結果をShift-JIS形式でCSVダウンロードする関数
      */
     async function downloadReportCsv() {
-      const tbody = document.getElementById('report-table-body');
-      if (!tbody || tbody.rows.length === 0) return;
-      if (tbody.rows.length === 1 && tbody.rows[0].cells.length === 1) return;
-  
       const csvBtn = document.getElementById('btn-csv-download');
       const originalText = csvBtn.innerText;
       csvBtn.disabled = true;
       csvBtn.innerText = "⏳ CSV生成中...";
-  
+    
       try {
-        // 1. ヘッダー行を定義
+        // 🏢 1. 画面の選択ボックスから条件を取得
+        const storeVal = document.getElementById("report-store").value;
+        const monthVal = document.getElementById("report-month").value;
+        let nameVal = document.getElementById("report-name").value;
+        if (!nameVal || nameVal.includes("すべてのスタッフ") || nameVal.includes("全員")) {
+          nameVal = "すべてのスタッフ";
+        }
+    
+        // 💡 2. 【重要】HTMLは見ない。すでにGASにある関数を呼び出してスプレッドシートの生データを直接もらう
+        const response = await callGas("getWorkReport", {
+          store: storeVal,
+          month: monthVal,
+          name: nameVal
+        });
+    
+        const reportData = response.data || [];
+    
+        // 3. ヘッダー定義
         const headers = ["メンバー名", "日付", "店舗", "出勤時刻", "退勤時刻", "休憩開始", "休憩終了", "IN１（まるめ後）", "OUT１（まるめ後）", "休憩時間", "勤務時間", "残業時間", "総労働", "食事", "コメント"];
         const csvRows = [headers.join(',')];
-  
-        // 2. テーブル内のデータを取得しエスケープ処理を適用
-        for (let i = 0; i < tbody.rows.length; i++) {
-          const row = tbody.rows[i];
+    
+        // 4. GASから届いた綺麗なオブジェクトからCSV行を組み立てる
+        for (let i = 0; i < reportData.length; i++) {
+          const item = reportData[i];
           
-          // 非表示行はスキップ
-          if (row.style.display === 'none' || row.offsetHeight === 0) {
-            continue;
+          // 食事列のクレンジング（文字に「〇」が入っていれば「〇」、それ以外は「-」）
+          let mealClean = "-";
+          if (item.meal && item.meal.includes("〇")) {
+            mealClean = "〇";
           }
-
-          const rowData = [];
-          for (let j = 0; j < row.cells.length; j++) {
-            let cellValue = row.cells[j].innerText.trim();
-            
-            // 💡 文字の中に「〇」があれば、変数に代入せず、その場で「〇」を配列に入れて次のマスへ
-//            if (cellValue.includes('〇')) {
-//              rowData.push('〇');
-//              continue;
-//            }
-            
-            // 通常のエスケープ処理（元々のコードのまま）
-            if (cellValue.indexOf(',') !== -1 || cellValue.indexOf('\n') !== -1 || cellValue.indexOf('"') !== -1) {
-              cellValue = '"' + cellValue.replace(/"/g, '""') + '"';
+    
+          const row = [
+            item.name,
+            item.date,
+            item.store,
+            item.inTime,
+            item.outTime,
+            item.restIn,
+            item.restOut,
+            item.in1,
+            item.out1,
+            item.restTime,
+            item.workTime,
+            item.overTime,
+            item.totalTime, // 総労働
+            mealClean,      // 綺麗になった食事列
+            item.comment
+          ];
+    
+          // 各マスのエスケープ処理
+          const escapedRow = row.map(text => {
+            let str = String(text || "").trim();
+            if (str.indexOf(',') !== -1 || str.indexOf('\n') !== -1 || str.indexOf('"') !== -1) {
+              str = '"' + str.replace(/"/g, '""') + '"';
             }
-            
-            rowData.push(cellValue);
-          }
-          csvRows.push(rowData.join(','));
+            return str;
+          });
+    
+          csvRows.push(escapedRow.join(','));
         }
-  
-        // 3. 💡 追加したGASの関数を呼び出し、サーバー側で100%確実なShift-JISのBase64に変換してもらう
-        const base64Data = await callGas("convertToSjisBase64", csvRows);
-        
-        // 4. ご提示いただいたサンプルコードのダウンロードロジックを再現
-        const bin = atob(base64Data.data);
-        const buf = new Uint8Array(bin.length);
-        for (let i = 0; i < bin.length; i++) {
-          buf[i] = bin.charCodeAt(i);
-        }
-        
-        const blob = new Blob([buf], {type: 'text/csv;charset=shift-jis'});
-  
+    
+        // 5. 【超重要】もう二度とバグっているGASの変換は通さない。JavaScriptだけでダウンロードさせる
+        const csvString = csvRows.join('\r\n');
+        const bom = new Uint8Array([0xEF, 0xBB, 0xBF]); // Excel文字化け防止
+        const blob = new Blob([bom, csvString], { type: 'text/csv;charset=utf-8;' });
+    
         // ファイル名の作成
-        // 🏢 選択されている「店舗名」「氏名」「対象月度」を画面のセレクトボックスから取得
-        const storeVal = document.getElementById("report-store").value || "不明な店舗";
-        const monthVal = (document.getElementById("report-month").value || "不明な月度").replace(/\//g, ""); // 2026/06 -> 202606
-        
-        let nameVal = document.getElementById("report-name").value || "ALL";
-        // 👤 氏名が未選択、または「すべて」の文言が含まれる場合は "ALL" に統一
-        if (!nameVal || nameVal.includes("すべてのスタッフ") || nameVal.includes("全員")) {
-          nameVal = "ALL";
-        }
-  
-        // ⏱️ ダウンロード日時のフォーマット作成 (YYYYMMDD_HHMMSS)
+        const fileMonth = monthVal.replace(/\//g, "");
+        const fileNameName = nameVal === "すべてのスタッフ" ? "ALL" : nameVal;
         const now = new Date();
-        const y = now.getFullYear();
-        const m = String(now.getMonth() + 1).padStart(2, '0');
-        const d = String(now.getDate()).padStart(2, '0');
-        const hh = String(now.getHours()).padStart(2, '0');
-        const mm = String(now.getMinutes()).padStart(2, '0');
-        const ss = String(now.getSeconds()).padStart(2, '0');
-        const downloadDateTime = `${y}${m}${d}_${hh}${mm}${ss}`;
-  
-        // 📝 指定のファイル名に組み立て [店舗名]_[氏名]_[対象月度]_[ダウンロード日時].csv
-        const fileName = `${storeVal}_${nameVal}_${monthVal}_${downloadDateTime}.csv`;      
+        const downloadDateTime = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`;
+        const fileName = `${storeVal}_${fileNameName}_${fileMonth}_${downloadDateTime}.csv`;      
+    
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
         link.download = fileName;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-  
+    
       } catch (err) {
         alert("CSVの生成中にエラーが発生しました。");
         console.error(err);
