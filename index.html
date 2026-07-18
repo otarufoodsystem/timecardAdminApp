@@ -1223,9 +1223,16 @@
         }
     
         // 💾 5. ブラウザ側で安全にBOM付きCSVファイルを組み立ててダウンロード
-        const csvString = csvRows.join('\r\n');
-        const bom = new Uint8Array([0xEF, 0xBB, 0xBF]); // Excel文字化け防止
-        const blob = new Blob([bom, csvString], { type: 'text/csv;charset=utf-8;' });
+        csvBtn.innerText = "⏳ Shift-JIS変換中...";
+        const base64Data = await callGas("convertToSjisBase64", csvRows);
+        
+        const bin = atob(base64Data.data);
+        const buf = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) {
+          buf[i] = bin.charCodeAt(i);
+        }
+        
+        const blob = new Blob([buf], { type: 'text/csv;charset=shift-jis' });
     
         // ファイル名用の月度整形（"2026/07" -> "202607"）
         const fileMonth = monthVal.replace(/\//g, "");
