@@ -1168,10 +1168,10 @@
             let cellValue = row.cells[j].innerText.trim();
             
             // 💡 文字の中に「〇」があれば、変数に代入せず、その場で「〇」を配列に入れて次のマスへ
-            if (cellValue.includes('〇')) {
-              rowData.push('〇');
-              continue;
-            }
+//            if (cellValue.includes('〇')) {
+//              rowData.push('〇');
+//              continue;
+//            }
             
             // 通常のエスケープ処理（元々のコードのまま）
             if (cellValue.indexOf(',') !== -1 || cellValue.indexOf('\n') !== -1 || cellValue.indexOf('"') !== -1) {
