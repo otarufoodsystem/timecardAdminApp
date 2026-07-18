@@ -1157,34 +1157,25 @@
         // 2. テーブル内のデータを取得しエスケープ処理を適用
         for (let i = 0; i < tbody.rows.length; i++) {
           const row = tbody.rows[i];
-          
-          // 💡 画面に表示されていない非表示行（フィルターされた行など）や、列数が足りない特殊な行はスキップ
-          if (row.style.display === 'none' || row.cells.length < headers.length) {
-            continue;
-          }
-
           const rowData = [];
+          
           for (let j = 0; j < row.cells.length; j++) {
-            let cellText = row.cells[j].innerText.trim();
+            // 💡 毎回「必ず」このマス専用の変数として宣言し、過去の値を引き継がせない
+            let currentCellText = row.cells[j].innerText.trim();
             
-            // 💡 列のインデックスではなく、対応するヘッダー名が「食事」かどうかで厳密に判定
-            const currentHeader = headers[j]; 
-
-            if (currentHeader === "食事") {
-              // 食事列に「〇」の文字が含まれていたら、改行やハイフンを無視して「〇」単体にする
-              if (cellText.includes('〇')) {
-                cellText = '〇';
-              } else {
-                cellText = '-'; // 〇がない場合はハイフン等に固定
+            // 💡 14番目の列（インデックス13 ＝ 食事列）の場合の個別処理
+            if (j === 13) {
+              if (currentCellText.includes('〇')) {
+                currentCellText = '〇';
               }
             } else {
-              // 👤 食事列以外の通常のエスケープ処理
-              if (cellText.indexOf(',') !== -1 || cellText.indexOf('\n') !== -1 || cellText.indexOf('"') !== -1) {
-                cellText = '"' + cellText.replace(/"/g, '""') + '"';
+              // 💡 食事列以外の場合のみ、通常のエスケープ処理を行う
+              if (currentCellText.indexOf(',') !== -1 || currentCellText.indexOf('\n') !== -1 || currentCellText.indexOf('"') !== -1) {
+                currentCellText = '"' + currentCellText.replace(/"/g, '""') + '"';
               }
             }
             
-            rowData.push(cellText);
+            rowData.push(currentCellText);
           }
           csvRows.push(rowData.join(','));
         }
