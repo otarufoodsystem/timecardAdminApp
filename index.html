@@ -1156,10 +1156,8 @@
         monthVal = String(monthVal || "").trim(); // 例: "2026/06" や "2026-06"
         nameVal = String(nameVal || "").trim();
     
-        // 月度の表記揺れ対策 ("2026-06" ➔ "2026/06" に統一)
-        if (monthVal.includes("-")) {
-          monthVal = monthVal.replace(/-/g, "/");
-        }
+        // 月度の表記揺れ対策 ("2026-06" ➔ "202606" に統一)
+        monthVal = monthVal.replace(/[\/\-]/g, "");
     
         if (!nameVal || nameVal.includes("すべてのスタッフ") || nameVal.includes("全員") || nameVal === "") {
           nameVal = "すべてのスタッフ";
