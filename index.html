@@ -1146,47 +1146,39 @@
       csvBtn.innerText = "⏳ CSV生成中...";
     
       try {
-        // 🏢 1. 画面の検索条件ボックスから値を取得
-        let storeVal = document.getElementById("report-store").value;
-        let monthVal = document.getElementById("report-month").value;
+        // 🏢 1. 画面の検索条件ボックスから値を「そのまま」取得（検索側と完全同一）
+        const monthVal = document.getElementById("report-month").value; // 例: "2026/07"
+        const storeVal = document.getElementById("report-store").value;
         let nameVal = document.getElementById("report-name").value;
-    
-        // 🔍 【原因対策】値の前後スペースや、不要な文字の揺らぎを徹底的に排除
-        storeVal = String(storeVal || "").trim();
-        monthVal = String(monthVal || "").trim(); // 例: "2026/06" や "2026-06"
-        nameVal = String(nameVal || "").trim();
-    
-        // 月度の表記揺れ対策 ("2026-06" ➔ "202606" に統一)
-        monthVal = monthVal.replace(/[\/\-]/g, "");
     
         if (!nameVal || nameVal.includes("すべてのスタッフ") || nameVal.includes("全員") || nameVal === "") {
           nameVal = "すべてのスタッフ";
         }
     
-        // 💡 2. GASのデータ取得関数を呼び出す
+        // 🚀 2. GASのデータ取得関数を呼び出す（認証情報不要の既存callGasを使用）
         const response = await callGas("getWorkReport", {
+          month: monthVal, // GAS側でsplit("/")されるため、"2026/07"のまま送る
           store: storeVal,
-          month: monthVal,
           name: nameVal
         });
     
+        // GASの返却オブジェクトから配列を取り出す
         const reportData = response.data || [];
         
-        // 🚨 3. それでもデータが空の場合の最終防衛策
         if (reportData.length === 0) {
-          // 画面上のテーブルにすでに表示されている「店舗」と「月度」を直接拾って再トライしてみる
           alert(`データが見つかりませんでした。\n選択条件を確認してください：\n・店舗: ${storeVal}\n・月度: ${monthVal}\n・スタッフ: ${nameVal}`);
           return;
         }
     
-        // 📊 4. CSVヘッダー定義
+        // 📊 3. CSVヘッダー定義
         const headers = ["メンバー名", "日付", "店舗", "出勤時刻", "退勤時刻", "休憩開始", "休憩終了", "IN１（まるめ後）", "OUT１（まるめ後）", "休憩時間", "勤務時間", "残業時間", "総労働", "食事", "コメント"];
         const csvRows = [headers.join(',')];
     
-        // 🔄 5. データをCSV行に変換
+        // 🔄 4. スプレッドシートから戻ってきた純粋なデータをCSV行に変換
         for (let i = 0; i < reportData.length; i++) {
           const item = reportData[i];
           
+          // ⭕ 食事列の汚れ対策
           let mealClean = "-";
           if (item.meal && String(item.meal).trim().includes("〇")) {
             mealClean = "〇";
@@ -1205,11 +1197,12 @@
             item.restTime,
             item.workTime,
             item.overTime,
-            item.totalTime,
+            item.totalTime, // GAS側の idxTotalTime（総時間）に対応
             mealClean,
             item.comment
           ];
     
+          // 各マスのエスケープ処理（カンマや改行対策）
           const escapedRow = row.map(text => {
             let str = String(text ?? "").trim();
             if (str.indexOf(',') !== -1 || str.indexOf('\n') !== -1 || str.indexOf('"') !== -1) {
@@ -1221,11 +1214,12 @@
           csvRows.push(escapedRow.join(','));
         }
     
-        // 💾 6. ダウンロード処理
+        // 💾 5. ブラウザ側で安全にBOM付きCSVファイルを組み立ててダウンロード
         const csvString = csvRows.join('\r\n');
-        const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+        const bom = new Uint8Array([0xEF, 0xBB, 0xBF]); // Excel文字化け防止
         const blob = new Blob([bom, csvString], { type: 'text/csv;charset=utf-8;' });
     
+        // ファイル名用の月度整形（"2026/07" -> "202607"）
         const fileMonth = monthVal.replace(/\//g, "");
         const fileNameName = nameVal === "すべてのスタッフ" ? "ALL" : nameVal;
         
