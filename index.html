@@ -1160,11 +1160,11 @@
           const rowData = [];
           
           for (let j = 0; j < row.cells.length; j++) {
-            // 💡 毎回「必ず」このマス専用の変数として宣言し、過去の値を引き継がせない
+            // 💡 毎回このマス専用の変数として宣言し、値を完全に独立させる
             let currentCellText = row.cells[j].innerText.trim();
             
-            // 💡 14番目の列（インデックス13 ＝ 食事列）の場合の個別処理
-            if (j === 13) {
+            // 💡 15番目の列（インデックス14 ＝ O列：食事）の場合の処理
+            if (j === 14) {
               if (currentCellText.includes('〇')) {
                 currentCellText = '〇';
               }
