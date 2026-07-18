@@ -1165,22 +1165,20 @@
 
           const rowData = [];
           for (let j = 0; j < row.cells.length; j++) {
+            // 💡【重要】ループの頭で、毎回必ず『そのマス専用の変数』として新しく文字を読み込む（過去のデータを絶対に引き継がせない）
             let currentCellText = row.cells[j].innerText.trim();
             
-            // ⭕ HTMLテーブルの14番目（インデックス13 ＝ 食事列）のときだけ処理
-            if (j === 13) {
-              if (currentCellText.includes('〇')) {
-                currentCellText = '〇'; // 〇が含まれていれば、改行などを無視して「〇」に固定
-              } else {
-                currentCellText = '-';  // 〇がなければハイフンにする
-              }
+            // ⭕【一発解決】列番号（j）は無視。そのマスに「〇」が含まれていたら、改行もハイフンもすべて消して「〇」単体にする
+            if (currentCellText.includes('〇')) {
+              currentCellText = '〇';
             } else {
-              // 👤 食事列以外の場合のみ、通常のエスケープ処理
+              // 「〇」が含まれない通常のマス（名前や時間など）だけ、通常のエスケープ処理を行う
               if (currentCellText.indexOf(',') !== -1 || currentCellText.indexOf('\n') !== -1 || currentCellText.indexOf('"') !== -1) {
                 currentCellText = '"' + currentCellText.replace(/"/g, '""') + '"';
               }
             }
             
+            // 安全に確定した文字だけを1列ずつ追加していく
             rowData.push(currentCellText);
           }
           csvRows.push(rowData.join(','));
