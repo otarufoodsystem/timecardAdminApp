@@ -1157,22 +1157,34 @@
         // 2. テーブル内のデータを取得しエスケープ処理を適用
         for (let i = 0; i < tbody.rows.length; i++) {
           const row = tbody.rows[i];
-          const rowData = [];
           
+          // 💡【重要】画面上に表示されていない非表示行（フィルターされた行やダミー行）は完全にスキップ
+          if (row.style.display === 'none' || row.offsetHeight === 0) {
+            continue;
+          }
+          
+          // 💡【重要】列数が正しく15列（O列まで）ない特殊な行もスキップして列ズレを防ぐ
+          if (row.cells.length < headers.length) {
+            continue;
+          }
+
+          const rowData = [];
           for (let j = 0; j < row.cells.length; j++) {
-            // 💡 毎回このマス専用の変数として宣言し、値を完全に独立させる
             let currentCellText = row.cells[j].innerText.trim();
             
-            // 💡 15番目の列（インデックス14 ＝ O列：食事）の場合の処理
-            if (j === 14) {
+            // 💡 数字（j）ではなく、ヘッダーの名前が「食事」の列かどうかで厳密に判定
+            if (headers[j] === "食事") {
               if (currentCellText.includes('〇')) {
-                currentCellText = '〇';
+                rowData.push('〇'); // 「〇」が入っていれば、改行もダッシュも無視して「〇」だけを格納
+              } else {
+                rowData.push('-');  // 「〇」がない場合は、ハイフンなどの未支給状態にする
               }
-            } else {
-              // 💡 食事列以外の場合のみ、通常のエスケープ処理を行う
-              if (currentCellText.indexOf(',') !== -1 || currentCellText.indexOf('\n') !== -1 || currentCellText.indexOf('"') !== -1) {
-                currentCellText = '"' + currentCellText.replace(/"/g, '""') + '"';
-              }
+              continue; // 食事列の処理はここで終了、次のマスのループへ
+            }
+            
+            // 👤 食事列以外の通常のエスケープ処理
+            if (currentCellText.indexOf(',') !== -1 || currentCellText.indexOf('\n') !== -1 || currentCellText.indexOf('"') !== -1) {
+              currentCellText = '"' + currentCellText.replace(/"/g, '""') + '"';
             }
             
             rowData.push(currentCellText);
