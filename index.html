@@ -1165,21 +1165,20 @@
 
           const rowData = [];
           for (let j = 0; j < row.cells.length; j++) {
-            // 💡【重要】ループの頭で、毎回必ず『そのマス専用の変数』として新しく文字を読み込む（過去のデータを絶対に引き継がせない）
-            let currentCellText = row.cells[j].innerText.trim();
+            let cellValue = row.cells[j].innerText.trim();
             
-            // ⭕【一発解決】列番号（j）は無視。そのマスに「〇」が含まれていたら、改行もハイフンもすべて消して「〇」単体にする
-            if (currentCellText.includes('〇')) {
-              currentCellText = '〇';
-            } else {
-              // 「〇」が含まれない通常のマス（名前や時間など）だけ、通常のエスケープ処理を行う
-              if (currentCellText.indexOf(',') !== -1 || currentCellText.indexOf('\n') !== -1 || currentCellText.indexOf('"') !== -1) {
-                currentCellText = '"' + currentCellText.replace(/"/g, '""') + '"';
-              }
+            // 💡 文字の中に「〇」があれば、変数に代入せず、その場で「〇」を配列に入れて次のマスへ
+            if (cellValue.includes('〇')) {
+              rowData.push('〇');
+              continue;
             }
             
-            // 安全に確定した文字だけを1列ずつ追加していく
-            rowData.push(currentCellText);
+            // 通常のエスケープ処理（元々のコードのまま）
+            if (cellValue.indexOf(',') !== -1 || cellValue.indexOf('\n') !== -1 || cellValue.indexOf('"') !== -1) {
+              cellValue = '"' + cellValue.replace(/"/g, '""') + '"';
+            }
+            
+            rowData.push(cellValue);
           }
           csvRows.push(rowData.join(','));
         }
