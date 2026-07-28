@@ -714,33 +714,134 @@
   </div>
   
   <script>
-// ----------------------------------------------------
+    // ----------------------------------------------------
     //  グローバル変数 & 初期設定
     // ----------------------------------------------------
-    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbx6SdsDW2Omsz_wUvJoQg6K5ofTj5Y9airolrUILJE2sgc1opxr58yy1n9Bg6trV-n8/exec"; // ※実際のエンドポイントURL
-    const APP_VERSION = "v1.7.0";
+    const GAS_API_URL = "YOUR_GAS_API_URL_HERE"; // ※実際のエンドポイントURLに置き換えてください
+    const APP_VERSION = "v1.0.0";
     const TEN_MINUTES = 10 * 60 * 1000;
-
+    
     let currentUsername = "";
     let currentPassword = "";
     let timeoutTimer = null;
-
+    
     let lastAuthTime = localStorage.getItem("admin_last_auth_time") || 0;
     let globalPaidLeaveList = []; // 有給休暇データ格納用
-
+    let globalStaffList = [];     // スタッフデータ格納用
+    let globalStoreList = [];     // 店舗データ格納用
+    let globalCommentList = [];   // コメントデータ格納用
+    
+    // ----------------------------------------------------
+    //  画面ロード時の初期化処理（イベント登録）
+    // ----------------------------------------------------
+    document.addEventListener("DOMContentLoaded", () => {
+      // ユーザーの操作検知（10分間無操作で自動ログアウト用）
+      ["mousemove", "keydown", "click", "touchstart", "scroll"].forEach(evtName => {
+        document.addEventListener(evtName, handleUserActivity, { passive: true });
+      });
+    
+      // 初期認証・データロード開始
+      runAuthentication();
+    });
+    
     // ----------------------------------------------------
     //  認証 & セキュリティ管理
     // ----------------------------------------------------
-
+    
+    /**
+     * 🔑 ログイン処理 (HTMLのログインボタンから呼び出し)
+     */
+    async function handleLogin(event) {
+      if (event) event.preventDefault();
+    
+      const userEl = document.getElementById("login-user");
+      const passEl = document.getElementById("login-pass");
+      const errMsgEl = document.getElementById("login-err-msg");
+    
+      const username = userEl ? userEl.value.trim() : "";
+      const password = passEl ? passEl.value.trim() : "";
+    
+      if (!username || !password) {
+        if (errMsgEl) {
+          errMsgEl.innerText = "ユーザー名とパスワードを入力してください。";
+          errMsgEl.style.display = "block";
+        }
+        return;
+      }
+    
+      showLoading(true);
+      if (errMsgEl) errMsgEl.style.display = "none";
+    
+      try {
+        const response = await fetch(GAS_API_URL, {
+          method: "POST",
+          body: JSON.stringify({
+            action: "checkAuth",
+            username: username,
+            password: password,
+            appVersion: APP_VERSION
+          })
+        });
+    
+        const resData = await response.json();
+        showLoading(false);
+    
+        if (resData.success) {
+          currentUsername = username;
+          currentPassword = password;
+          localStorage.setItem("admin_saved_username", username);
+          localStorage.setItem("admin_saved_password", password);
+          localStorage.setItem("admin_last_auth_time", Date.now().toString());
+    
+          const loginScreen = document.getElementById("login-screen");
+          const protectionOverlay = document.getElementById("protection-overlay");
+          if (loginScreen) loginScreen.style.display = "none";
+          if (protectionOverlay) protectionOverlay.style.display = "none";
+    
+          await loadStoreList();   // 1. 店舗読み込み
+          await loadStaffList();   // 2. スタッフ読み込み
+          await loadCommentList(); // 3. コメント読み込み
+          initReportForm();        // 4. 勤務表初期化
+          initPaidLeaveForm();     // 5. 有給休暇初期化
+    
+          resetTimeoutTimer();
+        } else {
+          if (errMsgEl) {
+            errMsgEl.innerText = resData.error || "ユーザー名またはパスワードが違います。";
+            errMsgEl.style.display = "block";
+          }
+        }
+      } catch (error) {
+        showLoading(false);
+        console.error("Login error:", error);
+        if (errMsgEl) {
+          errMsgEl.innerText = "通信エラーが発生しました。接続を確認してください。";
+          errMsgEl.style.display = "block";
+        }
+      }
+    }
+    
+    /**
+     * 🚪 ログアウト処理
+     */
+    function handleLogout() {
+      if (confirm("ログアウトしますか？")) {
+        clearAuthStorage();
+        currentUsername = "";
+        currentPassword = "";
+        location.reload();
+      }
+    }
+    
     async function runAuthentication() {
       if (document.getElementById("app-version")) {
         document.getElementById("app-version").innerText = APP_VERSION;
       }
-
+    
       const overlay = document.getElementById("protection-overlay");
       const loginScreen = document.getElementById("login-screen");
       const now = Date.now();
-  
+    
       if (now - parseInt(lastAuthTime, 10) > TEN_MINUTES) {
         currentUsername = "";
         currentPassword = "";
@@ -778,7 +879,7 @@
             showLoading(false);
             initReportForm();
             initPaidLeaveForm();     // 有給休暇フォーム初期化
-
+    
             resetTimeoutTimer();
             return;
           } else {
@@ -792,12 +893,12 @@
           return;
         }
       }
-  
+    
       if (overlay) overlay.style.display = "none";
       if (loginScreen) loginScreen.style.display = "flex";
       showLoading(false);
     }
-  
+    
     function resetTimeoutTimer() {
       if (timeoutTimer) clearTimeout(timeoutTimer);
       
@@ -806,7 +907,7 @@
         timeoutTimer = setTimeout(triggerTimeout, TEN_MINUTES);
       }
     }
-  
+    
     function triggerTimeout() {
       if (timeoutTimer) clearTimeout(timeoutTimer);
       
@@ -822,11 +923,10 @@
     
       location.reload();
     }
-  
-    function showAuthCancelMessage(overlay) {
-      if (!overlay) return;
-      overlay.innerHTML = "<div style='padding:20px;'>認証がキャンセルされたため、画面を表示できません。<br><button class='btn btn-primary' onclick='location.reload()' style='margin-top:10px;'>ログインする</button></div>";
-    }  
+    
+    function handleUserActivity() {
+      resetTimeoutTimer();
+    }
     
     async function callGas(action, data = null) {
       const savedUser = localStorage.getItem("admin_saved_username") || "";
@@ -836,7 +936,7 @@
         username: savedUser, 
         password: currentPassword 
       };
-  
+    
       if (data !== null) {
         if (action.startsWith("delete")) {
           payload.rowIndex = data;
@@ -847,7 +947,7 @@
           }
         }
       }
-  
+    
       try {
         const response = await fetch(GAS_API_URL, { method: "POST", body: JSON.stringify(payload) });
         const resData = await responseToJson(response);
@@ -859,7 +959,7 @@
         throw error;
       }
     }
-  
+    
     async function responseToJson(response) {
       const resData = await response.json();
       if (resData.authError) {
@@ -871,13 +971,13 @@
       if (!resData.success) throw new Error(resData.error || "エラーが発生しました");
       return resData;
     }
-  
+    
     function clearAuthStorage() {
       localStorage.removeItem("admin_saved_username");
       localStorage.removeItem("admin_saved_password");
       localStorage.removeItem("admin_last_auth_time");
     }
-  
+    
     function showLoading(show) { 
       const loadingEl = document.getElementById('loading');
       if (loadingEl) loadingEl.style.display = show ? 'flex' : 'none'; 
@@ -892,27 +992,18 @@
       if (targetBtn) targetBtn.classList.add('active');
       if (targetContent) targetContent.classList.add('active');
     }
-
-    function handleUserActivity() {
-      if (typeof resetTimeoutTimer === "function") {
-        resetTimeoutTimer();
-      }
-    }
-
+    
     // ----------------------------------------------------
     //  有給休暇管理機能
     // ----------------------------------------------------
-
-    /**
-     * 🌴 有給休暇：検索フォーム初期化
-     */
+    
     function initPaidLeaveForm() {
       const monthSelect = document.getElementById("paidleave-search-month");
       if (!monthSelect) return;
-
+    
       monthSelect.innerHTML = '<option value="">すべての月度</option>';
       const now = new Date();
-
+    
       for (let i = -4; i <= 2; i++) {
         const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
         const y = d.getFullYear();
@@ -923,23 +1014,20 @@
         const prevD = new Date(y, d.getMonth() - 1, 1);
         const prevM = prevD.getMonth() + 1;
         const text = `${y}年${m}月度 (${prevM}/16 ～ ${m}/15)`;
-
+    
         const opt = document.createElement("option");
         opt.value = val;
         opt.innerText = text;
         monthSelect.appendChild(opt);
       }
-
+    
       rebuildPaidLeaveStoreSelect();
     }
-
-    /**
-     * 🏢 有給休暇検索：店舗リスト更新
-     */
+    
     function rebuildPaidLeaveStoreSelect() {
       const storeSelect = document.getElementById("paidleave-search-store");
       if (!storeSelect) return;
-
+    
       storeSelect.innerHTML = '<option value="">すべての店舗</option>';
       globalStoreList.forEach(item => {
         if (item.storeName) {
@@ -949,22 +1037,19 @@
           storeSelect.appendChild(opt);
         }
       });
-
+    
       storeSelect.onchange = updatePaidLeaveSearchStaffSelect;
       updatePaidLeaveSearchStaffSelect();
     }
-
-    /**
-     * 👥 有給休暇検索：選択店舗に応じたスタッフ抽出
-     */
+    
     function updatePaidLeaveSearchStaffSelect() {
       const storeSelect = document.getElementById("paidleave-search-store");
       const nameSelect = document.getElementById("paidleave-search-name");
       if (!storeSelect || !nameSelect) return;
-
+    
       const selectedStore = storeSelect.value;
       nameSelect.innerHTML = '<option value="">すべての氏名</option>';
-
+    
       globalStaffList.forEach(staff => {
         if (!staff.stores) return;
         const belongStores = staff.stores.split(',').map(s => s.trim());
@@ -977,39 +1062,35 @@
         }
       });
     }
-
-    /**
-     * 🔍 有給休暇：検索実行処理
-     */
+    
     async function searchPaidLeave() {
       const month = document.getElementById("paidleave-search-month")?.value || "";
       const store = document.getElementById("paidleave-search-store")?.value || "";
       const name = document.getElementById("paidleave-search-name")?.value || "";
       const tbody = document.getElementById("paidleave-table-body");
       if (!tbody) return;
-
+    
       tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px; color:#c29d38; font-weight:bold;">🔄 有給申請データを取得中...</td></tr>`;
       showLoading(true);
-
+    
       try {
         const res = await callGas("getPaidLeaveList", { month, store, name });
         showLoading(false);
-
+    
         if (!res.success) {
           tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px; color:red;">エラー: ${res.error || "取得に失敗しました"}</td></tr>`;
           return;
         }
-
+    
         globalPaidLeaveList = res.data || [];
-
+    
         if (globalPaidLeaveList.length === 0) {
           tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px;" class="text-muted">該当する有給休暇申請データは見つかりませんでした。</td></tr>`;
           return;
         }
-
-        // 📅 日付順にソート (昇順)
+    
         globalPaidLeaveList.sort((a, b) => new Date(a.date.replace(/-/g, '/')) - new Date(b.date.replace(/-/g, '/')));
-
+    
         tbody.innerHTML = "";
         globalPaidLeaveList.forEach(item => {
           const tr = document.createElement("tr");
@@ -1025,23 +1106,19 @@
           `;
           tbody.appendChild(tr);
         });
-
+    
       } catch (e) {
         showLoading(false);
         console.error(e);
         tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px; color:red;">通信エラーが発生しました。</td></tr>`;
       }
     }
-
-    /**
-     * 🪟 モーダル表示（新規登録 / 編集）
-     */
+    
     function openPaidLeaveModal(rowIndex = null) {
       const modal = document.getElementById("paidleaveModal");
       const title = document.getElementById("paidleaveModalTitle");
       const storeSelect = document.getElementById("pl-store");
       
-      // 店舗一覧をセット
       storeSelect.innerHTML = '<option value="">店舗を選択してください</option>';
       globalStoreList.forEach(s => {
         if (s.storeName) {
@@ -1051,11 +1128,11 @@
           storeSelect.appendChild(opt);
         }
       });
-
+    
       if (rowIndex !== null) {
         const item = globalPaidLeaveList.find(p => p.rowIndex === rowIndex);
         if (!item) return;
-
+    
         title.innerText = "有給休暇 編集 (上書き)";
         document.getElementById("pl-row-index").value = item.rowIndex;
         document.getElementById("pl-store").value = item.store;
@@ -1074,24 +1151,21 @@
         document.getElementById("pl-time-from").value = "09:00";
         document.getElementById("pl-time-to").value = "18:00";
       }
-
+    
       modal.style.display = "flex";
     }
-
+    
     function closePaidLeaveModal() {
       document.getElementById("paidleaveModal").style.display = "none";
     }
-
-    /**
-     * 👥 モーダル内の店舗変更時にスタッフ一覧を追従させる
-     */
+    
     function updatePaidLeaveModalStaffSelect() {
       const selectedStore = document.getElementById("pl-store").value;
       const nameSelect = document.getElementById("pl-name");
       nameSelect.innerHTML = '<option value="">氏名を選択してください</option>';
-
+    
       if (!selectedStore) return;
-
+    
       globalStaffList.forEach(staff => {
         if (!staff.stores) return;
         const belongStores = staff.stores.split(',').map(s => s.trim());
@@ -1103,10 +1177,7 @@
         }
       });
     }
-
-    /**
-     * 💾 有給休暇 登録・上書き保存実行
-     */
+    
     async function submitPaidLeaveForm() {
       const rowIndex = document.getElementById("pl-row-index").value;
       const store = document.getElementById("pl-store").value;
@@ -1114,13 +1185,12 @@
       const date = document.getElementById("pl-date").value;
       const timeFrom = document.getElementById("pl-time-from").value;
       const timeTo = document.getElementById("pl-time-to").value;
-
-      // 必須チェック（全項目必須）
+    
       if (!store || !name || !date || !timeFrom || !timeTo) {
         alert("店舗、氏名、日付、時間From、時間Toのすべてを入力・選択してください。");
         return;
       }
-
+    
       showLoading(true);
       try {
         const res = await callGas("savePaidLeave", {
@@ -1131,23 +1201,20 @@
           timeFrom: timeFrom,
           timeTo: timeTo
         });
-
+    
         showLoading(false);
         alert(res.message || "有給休暇データを保存しました。");
         closePaidLeaveModal();
-        searchPaidLeave(); // リスト再読み込み
+        searchPaidLeave();
       } catch (e) {
         showLoading(false);
         console.error(e);
       }
     }
-
-    /**
-     * 🗑️ 有給休暇 削除処理
-     */
+    
     async function deletePaidLeave(rowIndex, name, date) {
       if (!confirm(`本当に ${name} さんの ${date} の有給申請を削除しますか？`)) return;
-
+    
       showLoading(true);
       try {
         const res = await callGas("deletePaidLeave", rowIndex);
@@ -1159,11 +1226,11 @@
         console.error(e);
       }
     }
-
+    
     // ----------------------------------------------------
     //  勤務表（レポート）機能
     // ----------------------------------------------------
-
+    
     function initReportForm() {
       const monthSelect = document.getElementById("report-month");
       if (!monthSelect) return;
@@ -1188,7 +1255,7 @@
         opt.innerText = text;
         monthSelect.appendChild(opt);
       }
-
+    
       let currentMonthString = "";
       if (now.getDate() >= 16) {
         currentMonthString = now.getFullYear() + "/" + String(now.getMonth() + 1).padStart(2, '0');
@@ -1207,29 +1274,24 @@
         rebuildReportStoreSelect(storeSelect);
       }
     }
-  
+    
     function rebuildReportStoreSelect(storeSelect) {
       if (!storeSelect) return;
       storeSelect.innerHTML = '';
       
-      const storeRows = document.querySelectorAll("#store-table-body tr");
-      storeRows.forEach(row => {
-        const td = row.querySelector("td");
-        if (td && td.getAttribute("colspan") === null) {
-          const sName = td.innerText.trim();
-          if (sName) {
-            const opt = document.createElement("option");
-            opt.value = sName;
-            opt.innerText = sName;
-            storeSelect.appendChild(opt);
-          }
+      globalStoreList.forEach(item => {
+        if (item.storeName) {
+          const opt = document.createElement("option");
+          opt.value = item.storeName;
+          opt.innerText = item.storeName;
+          storeSelect.appendChild(opt);
         }
       });
       
       storeSelect.onchange = updateReportNameSelect;
       updateReportNameSelect();
     }
-  
+    
     function updateReportNameSelect() {
       const storeSelect = document.getElementById("report-store");
       const nameSelect = document.getElementById("report-name");
@@ -1239,7 +1301,7 @@
       nameSelect.innerHTML = '<option value="すべてのスタッフ">すべてのスタッフ (店舗全員)</option>';
       
       if (!selectedStore) return;
-  
+    
       globalStaffList.forEach(staff => {
         if (!staff.stores) return;
         const belongStores = staff.stores.split(',').map(s => s.trim());
@@ -1259,14 +1321,14 @@
       const nameEl = document.getElementById("report-name");
       const tbody = document.getElementById("report-table-body");
       if (!tbody) return;
-
+    
       const month = monthEl ? monthEl.value : "";
       const store = storeEl ? storeEl.value : "";
       const name = nameEl ? nameEl.value : "";
-  
+    
       tbody.innerHTML = `<tr><td colspan="15" style="text-align:center; padding:20px; color:#c29d38; font-weight:bold;">🔄 スプレッドシートから勤務実績を抽出中...</td></tr>`;
       showLoading(true);
-  
+    
       try {
         const response = await fetch(GAS_API_URL, {
           method: "POST",
@@ -1279,20 +1341,20 @@
             name: name
           })
         });
-  
+    
         const res = await response.json();
         showLoading(false);
-  
+    
         if (!res.success) {
           tbody.innerHTML = `<tr><td colspan="15" style="text-align:center; padding:20px; color:red;">エラー: ${res.error || "データの取得に失敗しました"}</td></tr>`;
           return;
         }
-  
+    
         if (!res.data || res.data.length === 0) {
           tbody.innerHTML = `<tr><td colspan="15" style="text-align:center; padding:20px;" class="text-muted">該当する勤務実績データが見つかりませんでした。</td></tr>`;
           return;
         }
-  
+    
         tbody.innerHTML = "";
         res.data.forEach((item, index) => {
           const tr = document.createElement("tr");
@@ -1300,7 +1362,7 @@
           const mealOptions = ["", "〇"].map(val => 
             `<option value="${val}" ${item.meal === val ? 'selected' : ''}>${val || "-"}</option>`
           ).join("");
-
+    
           tr.innerHTML = `
             <td><strong>${item.name}</strong></td>
             <td>${item.date}</td>
@@ -1328,7 +1390,7 @@
           tr.dataset.raw = JSON.stringify(item);
           tbody.appendChild(tr);
         });
-  
+    
         let btnArea = document.getElementById("report-save-btn-area");
         if (!btnArea) {
           btnArea = document.createElement("div");
@@ -1358,7 +1420,7 @@
         tbody.innerHTML = `<tr><td colspan="15" style="text-align:center; padding:20px; color:red;">通信エラーが発生しました。時間をおいて再度お試しください。</td></tr>`;
       }
     }
-  
+    
     async function saveReportEdits() {
       const tbody = document.getElementById("report-table-body");
       if (!tbody) return;
@@ -1379,7 +1441,7 @@
         const restInEl = tr.querySelector(`[data-key="restIn"][data-index="${idx}"]`);
         const restOutEl = tr.querySelector(`[data-key="restOut"][data-index="${idx}"]`);
         const mealEl = tr.querySelector(`[data-key="meal"][data-index="${idx}"]`);
-
+    
         const inTime = inTimeEl ? inTimeEl.value.trim() : "";
         const outTime = outTimeEl ? outTimeEl.value.trim() : "";
         const restIn = restInEl ? restInEl.value.trim() : "";
@@ -1438,7 +1500,7 @@
         alert("通信エラーが発生しました。");
       }
     }
-
+    
     async function downloadReportCsv() {
       const csvBtn = document.getElementById('btn-csv-download');
       if (!csvBtn) return;
@@ -1549,11 +1611,10 @@
         csvBtn.innerText = originalText;
       }
     }
-
+    
     // ----------------------------------------------------
     //  スタッフ管理機能
     // ----------------------------------------------------
-    let globalStaffList = [];
     async function loadStaffList() {
       try {
         const res = await callGas("getStaffList");
@@ -1584,7 +1645,7 @@
         updatePaidLeaveSearchStaffSelect();
       } catch(e) {}
     }
-  
+    
     function editStaff(rowIndex) {
       const item = globalStaffList.find(s => s.rowIndex === rowIndex);
       if(!item) return;
@@ -1595,14 +1656,14 @@
       
       document.getElementById('staff-date-from').value = item.dateFrom ? item.dateFrom.replace(/\//g, '-') : "";
       document.getElementById('staff-date-to').value = item.dateTo ? item.dateTo.replace(/\//g, '-') : "";
-  
+    
       document.getElementById('staff-in-marume').value = item.inMarume || "15";
       document.getElementById('staff-out-marume').value = item.outMarume || "1";
       
       document.getElementById('staff-form-title').innerText = "スタッフ編集 (上書き)";
       if (window.innerWidth < 768) { window.scrollTo({ top: 0, behavior: 'smooth' }); }
     }
-  
+    
     function clearStaffForm() {
       document.getElementById('staff-row-index').value = "";
       document.getElementById('staff-name').value = "";
@@ -1611,13 +1672,13 @@
       
       document.getElementById('staff-date-from').value = "";
       document.getElementById('staff-date-to').value = "";
-  
+    
       document.getElementById('staff-in-marume').value = "15";
       document.getElementById('staff-out-marume').value = "1";
       
       document.getElementById('staff-form-title').innerText = "スタッフ登録・編集";
     }
-  
+    
     async function submitStaffForm() {
       const name = document.getElementById('staff-name').value;
       const stores = document.getElementById('staff-stores').value;
@@ -1626,7 +1687,7 @@
       
       const dateFrom = document.getElementById('staff-date-from').value;
       const dateTo = document.getElementById('staff-date-to').value;
-  
+    
       const inMarume = document.getElementById('staff-in-marume').value;
       const outMarume = document.getElementById('staff-out-marume').value;
       
@@ -1652,7 +1713,7 @@
         showLoading(false);
       }
     }
-  
+    
     async function deleteStaff(rowIndex, name) {
       if(!confirm(`本当に ${name} さんを削除しますか？`)) return;
       showLoading(true);
@@ -1667,18 +1728,17 @@
         showLoading(false);
       }
     }
-
+    
     // ----------------------------------------------------
     //  店舗管理機能
     // ----------------------------------------------------
-    let globalStoreList = [];
     async function loadStoreList() {
       try {
         const res = await callGas("getStoreList");
         globalStoreList = res.data;
         const tbody = document.getElementById('store-table-body');
         if (!tbody) return;
-
+    
         tbody.innerHTML = '';
         if(globalStoreList.length === 0) {
           tbody.innerHTML = '<tr><td colspan="4">登録店舗はありません</td></tr>';
@@ -1694,7 +1754,7 @@
             </td>`;
           tbody.appendChild(tr);
         });
-
+    
         rebuildPaidLeaveStoreSelect();
         const storeSelect = document.getElementById("report-store");
         if (storeSelect) {
@@ -1711,7 +1771,7 @@
         }
       } catch(e) {}
     }
-  
+    
     function editStore(rowIndex) {
       const item = globalStoreList.find(s => s.rowIndex === rowIndex);
       if(!item) return;
@@ -1723,7 +1783,7 @@
       document.getElementById('store-form-title').innerText = "店舗編集 (上書き)";
       if (window.innerWidth < 768) { window.scrollTo({ top: 0, behavior: 'smooth' }); }
     }
-  
+    
     function clearStoreForm() {
       document.getElementById('store-row-index').value = "";
       document.getElementById('store-name').value = "";
@@ -1732,7 +1792,7 @@
       document.getElementById('store-radius').value = "100";
       document.getElementById('store-form-title').innerText = "店舗登録・編集";
     }
-  
+    
     async function submitStoreForm() {
       const storeName = document.getElementById('store-name').value;
       const lat = document.getElementById('store-lat').value;
@@ -1753,7 +1813,7 @@
         showLoading(false);
       }
     }
-  
+    
     async function deleteStore(rowIndex, storeName) {
       if(!confirm(`本当に店舗「${storeName}」を削除しますか？`)) return;
       showLoading(true);
@@ -1768,11 +1828,10 @@
         showLoading(false);
       }
     }
-
+    
     // ----------------------------------------------------
     //  コメント通知機能
     // ----------------------------------------------------
-    let globalCommentList = [];
     async function loadCommentList() {
       showLoading(true);
       try {
@@ -1803,7 +1862,7 @@
           } catch(e) { console.error(e); }
           return { id: item.id, html: `<button class="btn" style="padding:4px 8px; font-size:0.75rem;" onclick="openStatusModal(${item.id})">確認状況</button>` };
         });
-
+    
         const statusResults = await Promise.all(statusPromises);
         
         globalCommentList.forEach((item, index) => {
@@ -1819,7 +1878,7 @@
           
           const statusObj = statusResults[index];
           const statusButtonHtml = statusObj && statusObj.html ? statusObj.html : `<button class="btn" style="padding:4px 8px; font-size:0.75rem;" onclick="openStatusModal(${item.id})">確認状況</button>`;
-
+    
           tr.innerHTML = `
             <td><small class="text-muted">#${item.id || '-'}</small></td>
             <td><strong>${item.target}</strong></td>
@@ -1833,7 +1892,7 @@
             </td>`;
           tbody.appendChild(tr);
         });
-
+    
       } catch(e) {
         console.error(e);
       } finally {
@@ -1868,7 +1927,7 @@
       document.getElementById('comment-form-title').innerText = "コメント編集 (上書き)";
       if (window.innerWidth < 768) { window.scrollTo({ top: 0, behavior: 'smooth' }); }
     }
-  
+    
     function clearCommentForm() {
       document.getElementById('comment-row-index').value = "";
       document.getElementById('comment-target').value = "";
@@ -1878,7 +1937,7 @@
       document.getElementById('comment-importance').value = "普通";
       document.getElementById('comment-form-title').innerText = "コメント登録・編集";
     }
-  
+    
     async function submitCommentForm() {
       const target = document.getElementById('comment-target').value.trim();
       const comment = document.getElementById('comment-text').value.trim();
@@ -1911,7 +1970,7 @@
         showLoading(false);
       }
     }
-  
+    
     async function deleteComment(rowIndex) {
       if(!confirm(`本当にこのコメント通知を削除しますか？\n（関連するスタッフの確認状況データも一括削除されます）`)) return;
       showLoading(true);
@@ -1925,7 +1984,7 @@
         showLoading(false);
       }
     }
-  
+    
     async function openStatusModal(commentId) {
       if(!commentId) return;
       showLoading(true);
@@ -1968,7 +2027,7 @@
         showLoading(false);
       }
     }
-  
+    
     function closeStatusModal() {
       const modal = document.getElementById("statusModal");
       if (modal) modal.style.display = "none";
