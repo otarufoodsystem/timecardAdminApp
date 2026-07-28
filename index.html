@@ -5,8 +5,33 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>勤務表・管理システム</title>
   <style>
-    /* 既存スタイルの要約・補填 */
     body { font-family: sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+    
+    /* 🔒 ログインモーダル用スタイル */
+    #login-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.6); display: flex; justify-content: center; align-items: center;
+      z-index: 10000;
+    }
+    .login-box {
+      background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      width: 100%; max-width: 360px; text-align: center;
+    }
+    .login-box h2 { margin-top: 0; color: #333; margin-bottom: 20px; }
+    .login-box .form-group { text-align: left; margin-bottom: 15px; }
+    .login-box input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+    .login-btn { width: 100%; padding: 10px; background: #007bff; color: white; border: none; border-radius: 4px; font-size: 1rem; cursor: pointer; font-weight: bold; }
+    .login-btn:hover { background: #0056b3; }
+    #login-error { color: #dc3545; margin-top: 10px; font-size: 0.85rem; display: none; }
+
+    /* メインコンテンツ（初期は非表示） */
+    #main-app { display: none; }
+    
+    /* ヘッダー・ログアウト */
+    .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+    .header-title { font-size: 1.2rem; font-weight: bold; }
+
+    /* タブ・レイアウト */
     .tabs { display: flex; gap: 5px; margin-bottom: 15px; border-bottom: 2px solid #ccc; flex-wrap: wrap; }
     .tab-btn { padding: 10px 15px; cursor: pointer; border: none; background: #e0e0e0; font-weight: bold; border-radius: 5px 5px 0 0; }
     .tab-btn.active { background: #007bff; color: white; }
@@ -31,247 +56,317 @@
     th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
     th { background: #f2f2f2; }
     .badge { padding: 3px 8px; border-radius: 12px; color: white; font-size: 0.8rem; display: inline-block; }
-    #loading { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.7); justify-content:center; align-items:center; z-index:9999; font-weight:bold; }
+    #loading { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.7); justify-content:center; align-items:center; z-index:99999; font-weight:bold; }
   </style>
 </head>
 <body>
 
+  <!-- ローディングオーバーレイ -->
   <div id="loading">処理中...</div>
 
-  <div class="tabs">
-    <button id="tab-report-btn" class="tab-btn active" onclick="switchTab('report')">📊 勤務表照会</button>
-    <button id="tab-staff-btn" class="tab-btn" onclick="switchTab('staff')">👤 スタッフ一覧メンテ</button>
-    <button id="tab-store-btn" class="tab-btn" onclick="switchTab('store')">🏪 店舗一覧メンテ</button>
-    <button id="tab-comment-btn" class="tab-btn" onclick="switchTab('comment')">💬 コメント一覧メンテ</button>
-    <!-- 🌴 有休管理タブ -->
-    <button id="tab-paidleave-btn" class="tab-btn" onclick="switchTab('paidleave')">🌴 有給申請管理</button>
+  <!-- 🔒 ログイン画面 (初期表示) -->
+  <div id="login-overlay">
+    <div class="login-box">
+      <h2>🔑 管理画面ログイン</h2>
+      <div class="form-group">
+        <label for="login-username">ユーザー名</label>
+        <input type="text" id="login-username" placeholder="ユーザー名を入力">
+      </div>
+      <div class="form-group">
+        <label for="login-password">パスワード</label>
+        <input type="password" id="login-password" placeholder="パスワードを入力">
+      </div>
+      <button class="login-btn" onclick="handleLogin()">ログイン</button>
+      <div id="login-error">ユーザー名またはパスワードが違います</div>
+    </div>
   </div>
 
-  <div class="container">
-    <!-- 📊 勤務表照会 -->
-    <div id="tab-report" class="tab-content active">
-      <div style="display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap; align-items:center;">
-        <select id="report-month"></select>
-        <select id="report-store"></select>
-        <select id="report-name"></select>
-        <button class="btn btn-primary" onclick="searchWorkReport()">🔍 検索</button>
-        <button id="btn-csv-download" class="btn btn-warning" onclick="downloadReportCsv()">📥 CSV出力</button>
-      </div>
-      <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>氏名</th><th>日付</th><th>店舗</th><th>出勤</th><th>退勤</th>
-              <th>休始</th><th>休終</th><th>IN1</th><th>OUT1</th><th>休憩</th>
-              <th>勤務</th><th>残業</th><th>総時間</th><th>食事</th><th>コメント</th>
-            </tr>
-          </thead>
-          <tbody id="report-table-body">
-            <tr><td colspan="15" style="text-align:center;">検索条件を指定して検索してください。</td></tr>
-          </tbody>
-        </table>
-      </div>
+  <!-- 📱 メインアプリケーション (ログイン成功後に表示) -->
+  <div id="main-app">
+    <div class="header-bar">
+      <div class="header-title">⚙️ 勤怠管理システム</div>
+      <button class="btn btn-clear" onclick="logout()">🚪 ログアウト</button>
     </div>
 
-    <!-- 👤 スタッフメンテ -->
-    <div id="tab-staff" class="tab-content">
-      <div class="view-grid">
-        <div class="form-box">
-          <h3 id="staff-form-title">スタッフ登録・編集</h3>
-          <input type="hidden" id="staff-row-index">
-          <div class="form-group"><label>氏名</label><input type="text" id="staff-name"></div>
-          <div class="form-group"><label>所属店舗(カンマ区切り)</label><input type="text" id="staff-stores"></div>
-          <div class="form-group"><label>定時時間</label><input type="text" id="staff-hours" value="08:00"></div>
-          <div class="form-group"><label>在籍開始</label><input type="date" id="staff-date-from"></div>
-          <div class="form-group"><label>在籍終了</label><input type="date" id="staff-date-to"></div>
-          <div class="form-group"><label>INまるめ(分)</label><input type="number" id="staff-in-marume" value="15"></div>
-          <div class="form-group"><label>OUTまるめ(分)</label><input type="number" id="staff-out-marume" value="1"></div>
-          <div class="btn-row">
-            <button class="btn btn-clear" onclick="clearStaffForm()">クリア</button>
-            <button class="btn btn-primary" onclick="submitStaffForm()">保存</button>
-          </div>
-        </div>
-        <div class="table-container">
-          <table>
-            <thead><tr><th>氏名</th><th>店舗</th><th>定時</th><th>開始</th><th>終了</th><th>まるめ</th><th>操作</th></tr></thead>
-            <tbody id="staff-table-body"></tbody>
-          </table>
-        </div>
-      </div>
+    <div class="tabs">
+      <button id="tab-report-btn" class="tab-btn active" onclick="switchTab('report')">📊 勤務表照会</button>
+      <button id="tab-staff-btn" class="tab-btn" onclick="switchTab('staff')">👤 スタッフ一覧メンテ</button>
+      <button id="tab-store-btn" class="tab-btn" onclick="switchTab('store')">🏪 店舗一覧メンテ</button>
+      <button id="tab-comment-btn" class="tab-btn" onclick="switchTab('comment')">💬 コメント一覧メンテ</button>
+      <button id="tab-paidleave-btn" class="tab-btn" onclick="switchTab('paidleave')">🌴 有給申請管理</button>
     </div>
 
-    <!-- 🏪 店舗メンテ -->
-    <div id="tab-store" class="tab-content">
-      <div class="view-grid">
-        <div class="form-box">
-          <h3 id="store-form-title">店舗登録・編集</h3>
-          <input type="hidden" id="store-row-index">
-          <div class="form-group"><label>店舗名</label><input type="text" id="store-name"></div>
-          <div class="form-group"><label>緯度</label><input type="text" id="store-lat"></div>
-          <div class="form-group"><label>経度</label><input type="text" id="store-lng"></div>
-          <div class="form-group"><label>許容半径(m)</label><input type="number" id="store-radius" value="100"></div>
-          <div class="btn-row">
-            <button class="btn btn-clear" onclick="clearStoreForm()">クリア</button>
-            <button class="btn btn-primary" onclick="submitStoreForm()">保存</button>
-          </div>
+    <div class="container">
+      <!-- 📊 勤務表照会 -->
+      <div id="tab-report" class="tab-content active">
+        <div style="display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap; align-items:center;">
+          <select id="report-month"></select>
+          <select id="report-store"></select>
+          <select id="report-name"></select>
+          <button class="btn btn-primary" onclick="searchWorkReport()">🔍 検索</button>
+          <button class="btn btn-edit" onclick="saveReportEdits()">💾 変更分を保存</button>
+          <button id="btn-csv-download" class="btn btn-warning" onclick="downloadReportCsv()">📥 CSV出力</button>
         </div>
         <div class="table-container">
-          <table>
-            <thead><tr><th>店舗名</th><th>座標</th><th>半径</th><th>操作</th></tr></thead>
-            <tbody id="store-table-body"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- 💬 コメントメンテ -->
-    <div id="tab-comment" class="tab-content">
-      <div class="view-grid">
-        <div class="form-box">
-          <h3 id="comment-form-title">コメント登録・編集</h3>
-          <input type="hidden" id="comment-row-index">
-          <div class="form-group"><label>対象</label><input type="text" id="comment-target"></div>
-          <div class="form-group"><label>コメント</label><textarea id="comment-text" rows="3" style="width:100%;"></textarea></div>
-          <div class="form-group"><label>表示開始</label><input type="datetime-local" id="comment-from"></div>
-          <div class="form-group"><label>表示終了</label><input type="datetime-local" id="comment-to"></div>
-          <div class="form-group"><label>重要度</label><select id="comment-importance"><option value="普通">普通</option><option value="重要">重要</option></select></div>
-          <div class="btn-row">
-            <button class="btn btn-clear" onclick="clearCommentForm()">クリア</button>
-            <button class="btn btn-primary" onclick="submitCommentForm()">保存</button>
-          </div>
-        </div>
-        <div class="table-container">
-          <div style="text-align:right; margin-bottom:5px;"><button class="btn btn-primary" onclick="refreshCommentList(this)">🔄 更新</button></div>
-          <table>
-            <thead><tr><th>ID</th><th>対象</th><th>確認</th><th>重要度</th><th>内容</th><th>期間</th><th>操作</th></tr></thead>
-            <tbody id="comment-table-body"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- 🌴 有給申請管理 -->
-    <div id="tab-paidleave" class="tab-content">
-      <div class="view-grid">
-        <div class="form-box">
-          <h3 id="paidleave-form-title">有給申請 登録・編集</h3>
-          <input type="hidden" id="paidleave-row-index" value="">
-          <div class="form-group">
-            <label for="paidleave-store">店舗名</label>
-            <select id="paidleave-store"></select>
-          </div>
-          <div class="form-group">
-            <label for="paidleave-name">氏名</label>
-            <select id="paidleave-name"></select>
-          </div>
-          <div class="form-group">
-            <label for="paidleave-date">取得日付 <span style="color:red">*</span></label>
-            <input type="date" id="paidleave-date">
-          </div>
-          <div class="form-group">
-            <label for="paidleave-time-from">開始時間 <small style="color:#777;">(任意)</small></label>
-            <input type="time" id="paidleave-time-from">
-          </div>
-          <div class="form-group">
-            <label for="paidleave-time-to">終了時間 <small style="color:#777;">(任意)</small></label>
-            <input type="time" id="paidleave-time-to">
-          </div>
-          <div class="btn-row">
-            <button class="btn btn-clear" onclick="clearPaidLeaveForm()">クリア</button>
-            <button class="btn btn-primary" onclick="submitPaidLeaveForm()">保存する</button>
-          </div>
-        </div>
-
-        <div class="table-container">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px;">
-            <div style="display: flex; align-items: center; gap: 10px;">
-              <h3 style="margin:0;">🌴 有給申請一覧</h3>
-              <span id="paidleave-count-badge" class="badge" style="background-color: #17a2b8;">取得日数: 0日 (0時間)</span>
-            </div>
-            <div style="display: flex; gap: 8px; align-items: center;">
-              <select id="paidleave-filter-month" onchange="loadPaidLeaveList()"></select>
-              <button type="button" class="btn btn-primary" onclick="loadPaidLeaveList()">🔄 更新</button>
-            </div>
-          </div>
           <table>
             <thead>
-              <tr><th>店舗</th><th>氏名</th><th>日付</th><th>From</th><th>To</th><th>区分</th><th>操作</th></tr>
+              <tr>
+                <th>氏名</th><th>日付</th><th>店舗</th><th>出勤</th><th>退勤</th>
+                <th>休始</th><th>休終</th><th>IN1</th><th>OUT1</th><th>休憩</th>
+                <th>勤務</th><th>残業</th><th>総時間</th><th>食事</th><th>コメント</th>
+              </tr>
             </thead>
-            <tbody id="paidleave-table-body">
-              <tr><td colspan="7" style="text-align:center;">データを読み込み中...</td></tr>
+            <tbody id="report-table-body">
+              <tr><td colspan="15" style="text-align:center;">検索条件を指定して検索してください。</td></tr>
             </tbody>
           </table>
+        </div>
+      </div>
+
+      <!-- 👤 スタッフメンテ -->
+      <div id="tab-staff" class="tab-content">
+        <div class="view-grid">
+          <div class="form-box">
+            <h3 id="staff-form-title">スタッフ登録・編集</h3>
+            <input type="hidden" id="staff-row-index">
+            <div class="form-group"><label>氏名</label><input type="text" id="staff-name"></div>
+            <div class="form-group"><label>所属店舗(カンマ区切り)</label><input type="text" id="staff-stores"></div>
+            <div class="form-group"><label>定時時間</label><input type="text" id="staff-hours" value="08:00"></div>
+            <div class="form-group"><label>在籍開始</label><input type="date" id="staff-date-from"></div>
+            <div class="form-group"><label>在籍終了</label><input type="date" id="staff-date-to"></div>
+            <div class="form-group"><label>INまるめ(分)</label><input type="number" id="staff-in-marume" value="15"></div>
+            <div class="form-group"><label>OUTまるめ(分)</label><input type="number" id="staff-out-marume" value="1"></div>
+            <div class="btn-row">
+              <button class="btn btn-clear" onclick="clearStaffForm()">クリア</button>
+              <button class="btn btn-primary" onclick="submitStaffForm()">保存</button>
+            </div>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead><tr><th>氏名</th><th>店舗</th><th>定時</th><th>開始</th><th>終了</th><th>まるめ</th><th>操作</th></tr></thead>
+              <tbody id="staff-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 🏪 店舗メンテ -->
+      <div id="tab-store" class="tab-content">
+        <div class="view-grid">
+          <div class="form-box">
+            <h3 id="store-form-title">店舗登録・編集</h3>
+            <input type="hidden" id="store-row-index">
+            <div class="form-group"><label>店舗名</label><input type="text" id="store-name"></div>
+            <div class="form-group"><label>緯度</label><input type="text" id="store-lat"></div>
+            <div class="form-group"><label>経度</label><input type="text" id="store-lng"></div>
+            <div class="form-group"><label>許容半径(m)</label><input type="number" id="store-radius" value="100"></div>
+            <div class="btn-row">
+              <button class="btn btn-clear" onclick="clearStoreForm()">クリア</button>
+              <button class="btn btn-primary" onclick="submitStoreForm()">保存</button>
+            </div>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead><tr><th>店舗名</th><th>座標</th><th>半径</th><th>操作</th></tr></thead>
+              <tbody id="store-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 💬 コメントメンテ -->
+      <div id="tab-comment" class="tab-content">
+        <div class="view-grid">
+          <div class="form-box">
+            <h3 id="comment-form-title">コメント登録・編集</h3>
+            <input type="hidden" id="comment-row-index">
+            <div class="form-group"><label>対象</label><input type="text" id="comment-target"></div>
+            <div class="form-group"><label>コメント</label><textarea id="comment-text" rows="3" style="width:100%;"></textarea></div>
+            <div class="form-group"><label>表示開始</label><input type="datetime-local" id="comment-from"></div>
+            <div class="form-group"><label>表示終了</label><input type="datetime-local" id="comment-to"></div>
+            <div class="form-group"><label>重要度</label><select id="comment-importance"><option value="普通">普通</option><option value="重要">重要</option></select></div>
+            <div class="btn-row">
+              <button class="btn btn-clear" onclick="clearCommentForm()">クリア</button>
+              <button class="btn btn-primary" onclick="submitCommentForm()">保存</button>
+            </div>
+          </div>
+          <div class="table-container">
+            <div style="text-align:right; margin-bottom:5px;"><button class="btn btn-primary" onclick="refreshCommentList(this)">🔄 更新</button></div>
+            <table>
+              <thead><tr><th>ID</th><th>対象</th><th>重要度</th><th>内容</th><th>期間</th><th>操作</th></tr></thead>
+              <tbody id="comment-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 🌴 有給申請管理 -->
+      <div id="tab-paidleave" class="tab-content">
+        <div class="view-grid">
+          <div class="form-box">
+            <h3 id="paidleave-form-title">有給申請 登録・編集</h3>
+            <input type="hidden" id="paidleave-row-index" value="">
+            <div class="form-group">
+              <label for="paidleave-store">店舗名</label>
+              <select id="paidleave-store"></select>
+            </div>
+            <div class="form-group">
+              <label for="paidleave-name">氏名</label>
+              <select id="paidleave-name"></select>
+            </div>
+            <div class="form-group">
+              <label for="paidleave-date">取得日付 <span style="color:red">*</span></label>
+              <input type="date" id="paidleave-date">
+            </div>
+            <div class="form-group">
+              <label for="paidleave-time-from">開始時間 <small style="color:#777;">(任意)</small></label>
+              <input type="time" id="paidleave-time-from">
+            </div>
+            <div class="form-group">
+              <label for="paidleave-time-to">終了時間 <small style="color:#777;">(任意)</small></label>
+              <input type="time" id="paidleave-time-to">
+            </div>
+            <div class="btn-row">
+              <button class="btn btn-clear" onclick="clearPaidLeaveForm()">クリア</button>
+              <button class="btn btn-primary" onclick="submitPaidLeaveForm()">保存する</button>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <h3 style="margin:0;">🌴 有給申請一覧</h3>
+                <span id="paidleave-count-badge" class="badge" style="background-color: #17a2b8;">取得日数: 0日 (0時間)</span>
+              </div>
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <select id="paidleave-filter-month" onchange="loadPaidLeaveList()"></select>
+                <button type="button" class="btn btn-primary" onclick="loadPaidLeaveList()">🔄 更新</button>
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr><th>店舗</th><th>氏名</th><th>日付</th><th>From</th><th>To</th><th>区分</th><th>操作</th></tr>
+              </thead>
+              <tbody id="paidleave-table-body">
+                <tr><td colspan="7" style="text-align:center;">データを読み込み中...</td></tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
   <script>
-    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbw1XlQUr-G7wq2jfpffq8v9g43V5tD4baDVxnnaU77n1SXnFvON5OhPqzHmmNlS1Oxq/exec";
-    const APP_VERSION = "1.7.0";
+    const GAS_API_URL = "YOUR_GAS_WEB_APP_URL_HERE"; // 👈 GASのWeb API URLを設定
+    const APP_VERSION = "1.0.0";
     const TEN_MINUTES = 10 * 60 * 1000;
     
     let currentUsername = "";
     let currentPassword = "";
     let timeoutTimer = null;
-    let lastAuthTime = localStorage.getItem("admin_last_auth_time") || "0";
 
     window.onload = function() {
+      // Enterキーでログイン
+      document.getElementById("login-password").addEventListener("keypress", function(e) {
+        if (e.key === "Enter") handleLogin();
+      });
       runAuthentication();
     };
 
+    // 自動ログインチェック
     async function runAuthentication() {
       const savedUser = localStorage.getItem("admin_saved_username") || "";
       const savedPass = localStorage.getItem("admin_saved_password") || "";
 
       if (savedUser && savedPass) {
         showLoading(true);
-        try {
-          const response = await fetch(GAS_API_URL, {
-            method: "POST",
-            body: JSON.stringify({ action: "checkAuth", username: savedUser, password: savedPass, appVersion: APP_VERSION })
-          });
-          const resData = await response.json();
-
-          if (resData.success) {
-            currentUsername = savedUser;
-            currentPassword = savedPass;
-            localStorage.setItem("admin_last_auth_time", Date.now().toString());
-
-            await loadStoreList();
-            await loadStaffList();
-            await loadCommentList();
-            initPaidLeaveForm(); // 有給画面の初期化
-            initReportForm();
-            showLoading(false);
-            resetTimeoutTimer();
-            return;
-          }
-        } catch (e) {
-          showLoading(false);
-        }
+        const success = await checkAuthAndLogin(savedUser, savedPass);
+        showLoading(false);
+        if (success) return;
       }
+      // 認証なし・失敗時はログインモーダルを表示
+      document.getElementById("login-overlay").style.display = "flex";
+      document.getElementById("main-app").style.display = "none";
+    }
+
+    // ログインボタン押下処理
+    async function handleLogin() {
+      const uInput = document.getElementById("login-username").value.trim();
+      const pInput = document.getElementById("login-password").value.trim();
+      const errDiv = document.getElementById("login-error");
+
+      errDiv.style.display = "none";
+      if (!uInput || !pInput) {
+        errDiv.innerText = "ユーザー名とパスワードを入力してください";
+        errDiv.style.display = "block";
+        return;
+      }
+
+      showLoading(true);
+      const success = await checkAuthAndLogin(uInput, pInput);
       showLoading(false);
+
+      if (!success) {
+        errDiv.innerText = "ユーザー名またはパスワードが間違っています";
+        errDiv.style.display = "block";
+      }
+    }
+
+    // GASへ認証問い合わせ & アプリ初期化
+    async function checkAuthAndLogin(user, pass) {
+      try {
+        const response = await fetch(GAS_API_URL, {
+          method: "POST",
+          body: JSON.stringify({ action: "checkAuth", username: user, password: pass, appVersion: APP_VERSION })
+        });
+        const resData = await response.json();
+
+        if (resData.success) {
+          currentUsername = user;
+          currentPassword = pass;
+          localStorage.setItem("admin_saved_username", user);
+          localStorage.setItem("admin_saved_password", pass);
+
+          // UIの切り替え
+          document.getElementById("login-overlay").style.display = "none";
+          document.getElementById("main-app").style.display = "block";
+
+          // 各機能データの初期ロード
+          await loadStoreList();
+          await loadStaffList();
+          await loadCommentList();
+          initPaidLeaveForm();
+          initReportForm();
+          resetTimeoutTimer();
+          return true;
+        }
+      } catch (e) {
+        console.error("Auth error:", e);
+      }
+      return false;
+    }
+
+    function logout() {
+      clearAuthStorage();
+      location.reload();
     }
 
     function resetTimeoutTimer() {
       if (timeoutTimer) clearTimeout(timeoutTimer);
       if (currentUsername && currentPassword) {
-        localStorage.setItem("admin_last_auth_time", Date.now().toString());
         timeoutTimer = setTimeout(triggerTimeout, TEN_MINUTES);
       }
     }
 
     function triggerTimeout() {
       alert("10分間操作がなかったため自動ログアウトしました。");
-      clearAuthStorage();
-      location.reload();
+      logout();
     }
 
     function clearAuthStorage() {
       localStorage.removeItem("admin_saved_username");
       localStorage.removeItem("admin_saved_password");
-      localStorage.removeItem("admin_last_auth_time");
     }
 
     function showLoading(show) {
@@ -279,6 +374,7 @@
     }
 
     function switchTab(type) {
+      resetTimeoutTimer();
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
       document.getElementById(`tab-${type}-btn`).classList.add('active');
@@ -290,8 +386,8 @@
     }
 
     async function callGas(action, data = null) {
-      const savedUser = localStorage.getItem("admin_saved_username") || currentUsername;
-      const payload = { action: action, username: savedUser, password: currentPassword };
+      resetTimeoutTimer();
+      const payload = { action: action, username: currentUsername, password: currentPassword };
 
       if (data !== null) {
         if (action.startsWith("delete")) { payload.rowIndex = data; }
@@ -751,7 +847,7 @@
         tbody.innerHTML = '';
         globalCommentList.forEach(item => {
           const tr = document.createElement('tr');
-          tr.innerHTML = `<td>#${item.id||'-'}</td><td><strong>${item.target}</strong></td><td>-</td><td>${item.importance||'普通'}</td><td>${item.comment||''}</td><td>${item.from||''}<br>～<br>${item.to||''}</td><td><button class="btn btn-edit" onclick="editComment(${item.rowIndex})">編集</button> <button class="btn btn-danger" onclick="deleteComment(${item.rowIndex})">削除</button></td>`;
+          tr.innerHTML = `<td>#${item.id||'-'}</td><td><strong>${item.target}</strong></td><td>${item.importance||'普通'}</td><td>${item.comment||''}</td><td>${item.from||''}<br>～<br>${item.to||''}</td><td><button class="btn btn-edit" onclick="editComment(${item.rowIndex})">編集</button> <button class="btn btn-danger" onclick="deleteComment(${item.rowIndex})">削除</button></td>`;
           tbody.appendChild(tr);
         });
       } catch(e){} finally { showLoading(false); }
@@ -801,7 +897,6 @@
     }
 
     async function downloadReportCsv() {
-      // 既存のShift-JIS変換・ダウンロード処理
       alert("CSVダウンロードを実行します。");
     }
   </script>
