@@ -148,11 +148,15 @@
     .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 8px; font-size: 0.9rem; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-family: inherit; }
     .form-group textarea { resize: vertical; height: 70px; }
     .form-group small { color: #777; font-size: 0.75rem; display: block; margin-top: 2px; }
+    .form-row-2col { display: flex; gap: 10px; }
+    .form-row-2col .form-group { flex: 1; }
     .btn-row { display: flex; gap: 10px; margin-top: 15px; }
     
     .btn { padding: 8px 12px; font-size: 0.85rem; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; transition: 0.2s; text-align: center; }
     .btn-primary { background-color: #28a745; color: white; flex: 1; }
     .btn-primary:hover { background-color: #218838; }
+    .btn-secondary { background-color: #6c757d; color: white; }
+    .btn-secondary:hover { background-color: #5a6268; }
     .btn-clear { background-color: #6c757d; color: white; }
     .btn-danger { background-color: #dc3545; color: white; padding: 4px 8px; font-size: 0.75rem; }
     .btn-edit { background-color: #007bff; color: white; padding: 4px 8px; font-size: 0.75rem; margin-right: 3px; }
@@ -166,7 +170,13 @@
     @media (min-width: 768px) {
       .list-area-container { height: 100%; overflow: hidden; }
     }
-    .list-area-container h3 { margin-top: 0; margin-bottom: 10px; font-size: 1rem; }
+    .list-area-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .list-area-header h3 { margin: 0; font-size: 1rem; }
 
     /* テーブルのスクロール設定 */
     .table-container { 
@@ -295,6 +305,13 @@
     #comment-table-body td:nth-child(5), th:nth-child(5) { max-width: 450px; min-width: 250px; white-space: normal; word-break: break-all; line-height: 1.4; }
     #comment-table-body td:nth-child(6), th:nth-child(6) { width: 140px; white-space: nowrap; line-height: 1.3; }
     #comment-table-body td:nth-child(7), th:nth-child(7) { width: 130px; white-space: nowrap; text-align: center; }
+
+    /* 🌴 有給休暇一覧テーブル 各列調整 */
+    #paidleave-table-body td:nth-child(1), #tab-paidleave th:nth-child(1) { min-width: 120px; white-space: nowrap; }
+    #paidleave-table-body td:nth-child(2), #tab-paidleave th:nth-child(2) { min-width: 120px; white-space: nowrap; }
+    #paidleave-table-body td:nth-child(3), #tab-paidleave th:nth-child(3) { width: 100px; white-space: nowrap; text-align: center; }
+    #paidleave-table-body td:nth-child(4), #tab-paidleave th:nth-child(4) { width: 130px; white-space: nowrap; text-align: center; }
+    #paidleave-table-body td:nth-child(5), #tab-paidleave th:nth-child(5) { width: 120px; white-space: nowrap; text-align: center; }
     
     .badge { padding: 3px 6px; font-size: 0.75rem; font-weight: bold; border-radius: 3px; color: #fff; }
     .badge-important { background-color: #dc3545; }
@@ -312,6 +329,7 @@
     .modal-header h4 { margin: 0; font-size: 1.05rem; color: #333; }
     .modal-close { font-size: 1.5rem; cursor: pointer; border: none; background: none; color: #aaa; padding: 0; line-height: 1; }
     .modal-close:hover { color: #333; }
+    .modal-footer { display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #eee; padding-top: 15px; margin-top: 15px; }
     .status-list { list-style: none; padding: 0; margin: 0; }
     .status-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 5px; border-bottom: 1px solid #f1f1f1; font-size: 0.85rem; }
     .status-ok { color: #28a745; font-weight: bold; }
@@ -404,7 +422,9 @@
         </div>
         
         <div class="list-area-container">
-          <h3>検索結果一覧</h3>
+          <div class="list-area-header">
+            <h3>検索結果一覧</h3>
+          </div>
           <div class="table-container">
             <table id="report-table">
               <thead>
@@ -427,7 +447,7 @@
                 </tr>
               </thead>
               <tbody id="report-table-body">
-                <tr><td colspan="15" class="text-muted" style="text-align:center; padding:20px;">検索条件を指定して「検索する」ボタンを押してください。</td></tr>
+                <tr><td colspan="15" style="text-align:center; padding:20px; color:#6c757d;">検索条件を指定して「検索する」ボタンを押してください。</td></tr>
               </tbody>
             </table>
           </div>
@@ -476,7 +496,9 @@
           </div>
         </div>
         <div class="list-area-container">
-          <h3>登録スタッフ一覧</h3>
+          <div class="list-area-header">
+            <h3>登録スタッフ一覧</h3>
+          </div>
           <div class="table-container">
             <table id="tab-staff">
               <thead>
@@ -526,7 +548,9 @@
           </div>
         </div>
         <div class="list-area-container">
-          <h3>登録店舗一覧</h3>
+          <div class="list-area-header">
+            <h3>登録店舗一覧</h3>
+          </div>
           <div class="table-container">
             <table id="tab-store">
               <thead>
@@ -581,7 +605,7 @@
           </div>
         </div>
         <div class="list-area-container">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <div class="list-area-header">
             <h3>💬 コメント通知一覧</h3>
             <button type="button" class="btn" style="background-color: #17a2b8; color: white; padding: 6px 12px; font-size: 0.85rem;" onclick="refreshCommentList(this)">🔄 最新の状況に更新</button>
           </div>
@@ -597,113 +621,101 @@
 
     <!-- 🌴 有休休暇管理タブ -->
     <div id="tab-paidleave" class="tab-content">
-      <div class="row">
+      <div class="view-grid">
         <!-- 左側：検索条件 -->
-        <div class="col-md-4 mb-3">
-          <div class="card">
-            <div class="card-header bg-primary text-white font-weight-bold">
-              🔍 有給休暇 検索条件
-            </div>
-            <div class="card-body">
-              <div class="form-group mb-2">
-                <label>対象月度</label>
-                <select id="paidleave-search-month" class="form-control">
-                  <!-- JSで自動生成 -->
-                </select>
-              </div>
-              <div class="form-group mb-2">
-                <label>店舗</label>
-                <select id="paidleave-search-store" class="form-control">
-                  <option value="">すべての店舗</option>
-                </select>
-              </div>
-              <div class="form-group mb-3">
-                <label>氏名</label>
-                <select id="paidleave-search-name" class="form-control">
-                  <option value="">すべての氏名</option>
-                </select>
-              </div>
-              <button type="button" class="btn btn-primary w-100 font-weight-bold" onclick="searchPaidLeave()">
-                🔍 検索実行
-              </button>
-            </div>
+        <div class="form-box">
+          <h3>🔍 有給休暇 検索条件</h3>
+          <div class="form-group">
+            <label for="paidleave-search-month">対象月度</label>
+            <select id="paidleave-search-month">
+              <!-- JSで自動生成 -->
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="paidleave-search-store">店舗</label>
+            <select id="paidleave-search-store">
+              <option value="">すべての店舗</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="paidleave-search-name">氏名</label>
+            <select id="paidleave-search-name">
+              <option value="">すべての氏名</option>
+            </select>
+          </div>
+          <div class="search-btn-container">
+            <button type="button" class="btn btn-primary" onclick="searchPaidLeave()">🔍 検索実行</button>
           </div>
         </div>
     
         <!-- 右側：リスト ＆ 新規登録ボタン -->
-        <div class="col-md-8 mb-3">
-          <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-              <span class="font-weight-bold">📋 有給休暇申請 一覧</span>
-              <button type="button" class="btn btn-success btn-sm font-weight-bold" onclick="openPaidLeaveModal()">
-                ＋ 新規有給登録
-              </button>
-            </div>
-            <div class="card-body p-0">
-              <div class="table-responsive">
-                <table class="table table-hover table-striped mb-0">
-                  <thead class="thead-light">
-                    <tr>
-                      <th>店舗</th>
-                      <th>氏名</th>
-                      <th>日付</th>
-                      <th>時間 (From～To)</th>
-                      <th style="width:120px;">操作</th>
-                    </tr>
-                  </thead>
-                  <tbody id="paidleave-table-body">
-                    <tr><td colspan="5" class="text-center text-muted p-3">検索条件を指定して検索してください</td></tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
+        <div class="list-area-container">
+          <div class="list-area-header">
+            <h3>📋 有給休暇申請 一覧</h3>
+            <button type="button" class="btn btn-primary" style="background-color: #28a745;" onclick="openPaidLeaveModal()">＋ 新規有給登録</button>
+          </div>
+          <div class="table-container">
+            <table id="tab-paidleave">
+              <thead>
+                <tr>
+                  <th>店舗</th>
+                  <th>氏名</th>
+                  <th>日付</th>
+                  <th>時間 (From～To)</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="paidleave-table-body">
+                <tr><td colspan="5" style="text-align:center; padding:20px; color:#6c757d;">検索条件を指定して検索してください</td></tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
     </div>
     
     <!-- 🪟 登録・編集用 ポップアップモーダル -->
-    <div id="paidleaveModal" class="modal" tabindex="-1" style="display:none; background:rgba(0,0,0,0.5); position:fixed; top:0; left:0; width:100%; height:100%; z-index:1050; justify-content:center; align-items:center;">
-      <div class="modal-dialog" style="max-width:500px; width:90%;">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="paidleaveModalTitle">有給休暇 登録・編集</h5>
-            <button type="button" class="close" onclick="closePaidLeaveModal()" style="border:none; background:none; font-size:1.5rem;">&times;</button>
+    <div id="paidleaveModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 id="paidleaveModalTitle">有給休暇 登録・編集</h4>
+          <button type="button" class="modal-close" onclick="closePaidLeaveModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="pl-row-index">
+          <div class="form-group">
+            <label>店舗 <span style="color:red">*</span></label>
+            <select id="pl-store" onchange="updatePaidLeaveModalStaffSelect()"></select>
           </div>
-          <div class="modal-body">
-            <input type="hidden" id="pl-row-index">
-            <div class="form-group mb-2">
-              <label>店舗 <span class="text-danger">*</span></label>
-              <select id="pl-store" class="form-control" onchange="updatePaidLeaveModalStaffSelect()"></select>
+          <div class="form-group">
+            <label>氏名 <span style="color:red">*</span></label>
+            <select id="pl-name"></select>
+          </div>
+          <div class="form-group">
+            <label>日付 <span style="color:red">*</span></label>
+            <input type="date" id="pl-date">
+          </div>
+          <div class="form-row-2col">
+            <div class="form-group">
+              <label>時間 From <span style="color:red">*</span></label>
+              <input type="time" id="pl-time-from">
             </div>
-            <div class="form-group mb-2">
-              <label>氏名 <span class="text-danger">*</span></label>
-              <select id="pl-name" class="form-control"></select>
-            </div>
-            <div class="form-group mb-2">
-              <label>日付 <span class="text-danger">*</span></label>
-              <input type="date" id="pl-date" class="form-control">
-            </div>
-            <div class="row">
-              <div class="col-6 form-group mb-2">
-                <label>時間 From <span class="text-danger">*</span></label>
-                <input type="time" id="pl-time-from" class="form-control">
-              </div>
-              <div class="col-6 form-group mb-2">
-                <label>時間 To <span class="text-danger">*</span></label>
-                <input type="time" id="pl-time-to" class="form-control">
-              </div>
+            <div class="form-group">
+              <label>時間 To <span style="color:red">*</span></label>
+              <input type="time" id="pl-time-to">
             </div>
           </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" onclick="closePaidLeaveModal()">キャンセル</button>
-            <button type="button" class="btn btn-primary" onclick="submitPaidLeaveForm()">保存する</button>
-          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closePaidLeaveModal()">キャンセル</button>
+          <button type="button" class="btn btn-primary" onclick="submitPaidLeaveForm()">保存する</button>
         </div>
       </div>
     </div>
   </div>
+
   <div id="loading">処理中...</div>
+
   <div id="statusModal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
