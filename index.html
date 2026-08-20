@@ -1373,7 +1373,7 @@
           const tr = document.createElement("tr");
           
           const mealOptions = ["", "〇"].map(val => 
-            `<option value="${val}" ${item.meal === val ? 'selected' : ''}>${val || "-"}</option>`
+            `<option value="${val}" ${item.meal === val ? 'selected' : ''}>${val || ""}</option>`
           ).join("");
     
           tr.innerHTML = `
@@ -1385,12 +1385,12 @@
             <td><input type="text" class="form-control form-control-sm edit-input" data-key="restIn" data-index="${index}" value="${item.restIn || ""}" style="width:70px; text-align:center;"></td>
             <td><input type="text" class="form-control form-control-sm edit-input" data-key="restOut" data-index="${index}" value="${item.restOut || ""}" style="width:70px; text-align:center;"></td>
             
-            <td><span style="color:#007bff; font-weight:bold;">${item.in1 || "-"}</span></td>
-            <td><span style="color:#007bff; font-weight:bold;">${item.out1 || "-"}</span></td>
-            <td>${item.restTime || "-"}</td>
-            <td><strong>${item.workTime || "-"}</strong></td>
-            <td>${item.overTime || "-"}</td>
-            <td>${item.totalTime || "-"}</td>
+            <td><span style="color:#007bff; font-weight:bold;">${item.in1 || ""}</span></td>
+            <td><span style="color:#007bff; font-weight:bold;">${item.out1 || ""}</span></td>
+            <td>${item.restTime || ""}</td>
+            <td><strong>${item.workTime || ""}</strong></td>
+            <td>${item.overTime || ""}</td>
+            <td>${item.totalTime || ""}</td>
             
             <td>
               <select class="form-control form-control-sm edit-input" data-key="meal" data-index="${index}" style="width:55px;">
@@ -1557,7 +1557,7 @@
         for (let i = 0; i < reportData.length; i++) {
           const item = reportData[i];
           
-          let mealClean = "-";
+          let mealClean = "";
           if (item.meal && String(item.meal).trim().includes("〇")) {
             mealClean = "〇";
           }
