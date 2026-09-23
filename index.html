@@ -425,6 +425,7 @@
         <div class="list-area-container">
           <div class="list-area-header">
             <h3>検索結果一覧</h3>
+            <button class="btn btn-primary" style="background-color: #28a745; width: auto; flex: initial;" onclick="openWorkReportAddModal()">＋ 勤務データ追加</button>
           </div>
           <div class="table-container">
             <table id="report-table">
@@ -726,13 +727,71 @@
       <div id="modalStatusBody"></div>
     </div>
   </div>
-  
+
+  <!-- 🪟 勤務データ追加用 ポップアップモーダル -->
+  <div id="workReportAddModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4>勤務データ 新規追加</h4>
+        <button type="button" class="modal-close" onclick="closeWorkReportAddModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>出勤店舗 <span style="color:red">*</span></label>
+          <select id="wr-add-store" onchange="updateWorkReportAddStaffSelect()"></select>
+        </div>
+        <div class="form-group">
+          <label>氏名 <span style="color:red">*</span></label>
+          <select id="wr-add-name"></select>
+        </div>
+        <div class="form-group">
+          <label>日付 <span style="color:red">*</span></label>
+          <input type="date" id="wr-add-date">
+        </div>
+        <div class="form-row-2col">
+          <div class="form-group">
+            <label>出勤時刻</label>
+            <input type="time" id="wr-add-in">
+          </div>
+          <div class="form-group">
+            <label>退勤時刻</label>
+            <input type="time" id="wr-add-out">
+          </div>
+        </div>
+        <div class="form-row-2col">
+          <div class="form-group">
+            <label>休憩開始</label>
+            <input type="time" id="wr-add-rest-in">
+          </div>
+          <div class="form-group">
+            <label>休憩終了</label>
+            <input type="time" id="wr-add-rest-out">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>食事</label>
+          <select id="wr-add-meal">
+            <option value=""></option>
+            <option value="〇">〇</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>コメント</label>
+          <input type="text" id="wr-add-comment" placeholder="コメントを入力（任意）">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeWorkReportAddModal()">キャンセル</button>
+        <button type="button" class="btn btn-primary" onclick="submitWorkReportAddForm()">追加する</button>
+      </div>
+    </div>
+  </div>  
   <script>
     // ----------------------------------------------------
     //  グローバル変数 & 初期設定
     // ----------------------------------------------------
-    const GAS_API_URL = "https://script.google.com/macros/s/AKfycby3RqtKDSng49kSB4BhZx4U9Qv7mIz0IjjNd9ryPXkQTwCRjRAxKDaLDErpOEqKPMGb/exec"; // ※実際のエンドポイントURLに置き換えてください
-    const APP_VERSION = "v1.7.7";
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbx7yWcHiOQHo2D6mcqyBS4iqsUDzX7867NS1Lq6Bo5YHuaoHn3hEQZB-MX_m-zcWdTI/exec"; // ※実際のエンドポイントURLに置き換えてください
+    const APP_VERSION = "v1.7.8";
     const TEN_MINUTES = 10 * 60 * 1000;
     
     let currentUsername = "";
@@ -1399,6 +1458,9 @@
               </select>
             </td>
             <td style="max-width:240px; white-space:normal; word-break:break-all;"><small>${item.comment || ""}</small></td>
+            <td>
+              <button class="btn btn-danger btn-sm" onclick="deleteWorkReportRow(${item.rowIndex}, '${item.store}', '${item.month}', '${item.name}', '${item.date}')">削除</button>
+            </td>
           `;
           
           tr.dataset.raw = JSON.stringify(item);
@@ -2063,6 +2125,120 @@
         btnElement.innerText = originalText;
       }
     }
+
+    // ----------------------------------------------------
+    // 勤務表追加・削除ダイアログ制御処理
+    // ----------------------------------------------------
+    function openWorkReportAddModal() {
+      const modal = document.getElementById("workReportAddModal");
+      const storeSelect = document.getElementById("wr-add-store");
+      
+      storeSelect.innerHTML = '<option value="">店舗を選択してください</option>';
+      globalStoreList.forEach(s => {
+        if (s.storeName) {
+          const opt = document.createElement("option");
+          opt.value = s.storeName;
+          opt.innerText = s.storeName;
+          storeSelect.appendChild(opt);
+        }
+      });
+    
+      document.getElementById("wr-add-name").innerHTML = '<option value="">先に店舗を選択してください</option>';
+      document.getElementById("wr-add-date").value = "";
+      document.getElementById("wr-add-in").value = "";
+      document.getElementById("wr-add-out").value = "";
+      document.getElementById("wr-add-rest-in").value = "";
+      document.getElementById("wr-add-rest-out").value = "";
+      document.getElementById("wr-add-meal").value = "";
+      document.getElementById("wr-add-comment").value = "";
+    
+      modal.style.display = "flex";
+    }
+    
+    function closeWorkReportAddModal() {
+      document.getElementById("workReportAddModal").style.display = "none";
+    }
+    
+    function updateWorkReportAddStaffSelect() {
+      const selectedStore = document.getElementById("wr-add-store").value;
+      const nameSelect = document.getElementById("wr-add-name");
+      nameSelect.innerHTML = '<option value="">氏名を選択してください</option>';
+    
+      if (!selectedStore) return;
+    
+      globalStaffList.forEach(staff => {
+        if (!staff.stores) return;
+        const belongStores = staff.stores.split(',').map(s => s.trim());
+        if (belongStores.includes(selectedStore)) {
+          const opt = document.createElement("option");
+          opt.value = staff.name;
+          opt.innerText = staff.name;
+          nameSelect.appendChild(opt);
+        }
+      });
+    }
+    
+    async function submitWorkReportAddForm() {
+      const store = document.getElementById("wr-add-store").value;
+      const name = document.getElementById("wr-add-name").value;
+      const dateVal = document.getElementById("wr-add-date").value; // YYYY-MM-DD
+      const inTime = document.getElementById("wr-add-in").value;
+      const outTime = document.getElementById("wr-add-out").value;
+      const restIn = document.getElementById("wr-add-rest-in").value;
+      const restOut = document.getElementById("wr-add-rest-out").value;
+      const meal = document.getElementById("wr-add-meal").value;
+      const comment = document.getElementById("wr-add-comment").value.trim();
+    
+      if (!store || !name || !dateVal) {
+        alert("出勤店舗、氏名、日付は必須項目です。");
+        return;
+      }
+    
+      // 日付を YYYY/MM/DD 形式へ変換
+      const formattedDate = dateVal.replace(/-/g, "/");
+    
+      showLoading(true);
+      try {
+        const res = await callGas("addWorkReportRow", {
+          store: store,
+          name: name,
+          date: formattedDate,
+          inTime: inTime,
+          outTime: outTime,
+          restIn: restIn,
+          restOut: restOut,
+          meal: meal,
+          comment: comment
+        });
+    
+        showLoading(false);
+        alert(res.message || "勤務データを追加しました。");
+        closeWorkReportAddModal();
+        searchWorkReport();
+      } catch (e) {
+        showLoading(false);
+        console.error(e);
+      }
+    }
+    
+    async function deleteWorkReportRow(rowIndex, store, monthStr, name, dateStr) {
+      if (!confirm(`本当に ${name} さんの ${dateStr} (${store}) の勤務データを削除しますか？`)) return;
+    
+      showLoading(true);
+      try {
+        const res = await callGas("deleteWorkReportRow", {
+          rowIndex: rowIndex,
+          store: store,
+          monthStr: monthStr
+        });
+        showLoading(false);
+        alert(res.message || "削除処理が完了しました。");
+        searchWorkReport();
+      } catch (e) {
+        showLoading(false);
+        console.error(e);
+      }
+    }    
   </script>
 </body>
 </html>
