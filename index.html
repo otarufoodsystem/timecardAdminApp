@@ -790,8 +790,8 @@
     // ----------------------------------------------------
     //  グローバル変数 & 初期設定
     // ----------------------------------------------------
-    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbx7yWcHiOQHo2D6mcqyBS4iqsUDzX7867NS1Lq6Bo5YHuaoHn3hEQZB-MX_m-zcWdTI/exec"; // ※実際のエンドポイントURLに置き換えてください
-    const APP_VERSION = "v1.7.8";
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzLsjZp4Eba0tDVFl62Ey9iH_qSBV6CjVjmrPnumaJhQRlbSx0Tio__LaN9NJtZFCRz/exec"; // ※実際のエンドポイントURLに置き換えてください
+    const APP_VERSION = "v1.7.9";
     const TEN_MINUTES = 10 * 60 * 1000;
     
     let currentUsername = "";
@@ -2194,6 +2194,12 @@
         return;
       }
     
+      // ✨ ポップアップ内ボタンの「処理中」表示制御
+      const submitBtn = document.querySelector("#workReportAddModal .btn-primary");
+      const originalBtnText = submitBtn.innerText;
+      submitBtn.innerText = "追加中...";
+      submitBtn.disabled = true;
+    
       // 日付を YYYY/MM/DD 形式へ変換
       const formattedDate = dateVal.replace(/-/g, "/");
     
@@ -2218,9 +2224,13 @@
       } catch (e) {
         showLoading(false);
         console.error(e);
+      } finally {
+        // ✨ ボタンの状態を復元
+        submitBtn.innerText = originalBtnText;
+        submitBtn.disabled = false;
       }
-    }
-    
+    }    
+
     async function deleteWorkReportRow(rowIndex, store, monthStr, name, dateStr) {
       if (!confirm(`本当に ${name} さんの ${dateStr} (${store}) の勤務データを削除しますか？`)) return;
     
