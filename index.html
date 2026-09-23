@@ -790,8 +790,8 @@
     // ----------------------------------------------------
     //  グローバル変数 & 初期設定
     // ----------------------------------------------------
-    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyUE4pUz3VZN3YrOOKJi9aDkwc50ReRK3QdeAbi_azpyEO8qGzPKMIocIX_IJbIU1GF/exec"; // ※実際のエンドポイントURLに置き換えてください
-    const APP_VERSION = "v1.7.13";
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyk7Zd3w1NSTZbJ755fniemw1VXVAyZWN52qlYFH5eidGeB3moaUImTZyqGrQfCgsqN/exec"; // ※実際のエンドポイントURLに置き換えてください
+    const APP_VERSION = "v1.7.14";
     const TEN_MINUTES = 10 * 60 * 1000;
     
     let currentUsername = "";
@@ -1011,9 +1011,11 @@
       };
     
       if (data !== null) {
-        if (action.startsWith("delete")) {
+        // 💡 行番号（数値）または文字列単体を送る従来のアクションのみ payload.rowIndex に設定
+        if (typeof data === "number" || (typeof data === "string" && !isNaN(data))) {
           payload.rowIndex = data;
         } else {
+          // 💡 オブジェクトデータ（store, name, date など）は payload.data に格納
           payload.data = data;
           if (data.rowIndex) {
             payload.rowIndex = data.rowIndex;
@@ -2237,6 +2239,11 @@
     }
 
     async function deleteWorkReportRow(store, name, dateStr) {
+      if (!store || !name || !dateStr) {
+        alert(`削除に必要なパラメータが取得できませんでした。\n店舗: ${store}, 氏名: ${name}, 日付: ${dateStr}`);
+        return;
+      }
+    
       if (!confirm(`本当に ${name} さんの ${dateStr} (${store}) の勤務データを削除しますか？`)) return;
     
       showLoading(true);
@@ -2251,7 +2258,6 @@
         searchWorkReport();
       } catch (e) {
         showLoading(false);
-        alert("エラーが発生しました: " + e.message);
         console.error(e);
       }
     }
