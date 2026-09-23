@@ -790,8 +790,8 @@
     // ----------------------------------------------------
     //  グローバル変数 & 初期設定
     // ----------------------------------------------------
-    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbx9MTHOJs8_HKNfQze6LlqG1IOe15BNIWisZJzOJ66wOmwkEHo59fmcjEIoEhh-5v6u/exec"; // ※実際のエンドポイントURLに置き換えてください
-    const APP_VERSION = "v1.7.11";
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyyaCwlA_grBLPQwra5zwBQw9LmNmOUY-IMJtVAKZf8qspVZ5SvRSthuhH-0F37FH8v/exec"; // ※実際のエンドポイントURLに置き換えてください
+    const APP_VERSION = "v1.7.12";
     const TEN_MINUTES = 10 * 60 * 1000;
     
     let currentUsername = "";
@@ -1459,7 +1459,7 @@
             </td>
             <td style="max-width:240px; white-space:normal; word-break:break-all;"><small>${item.comment || ""}</small></td>
             <td>
-              <button class="btn btn-danger btn-sm" onclick="deleteWorkReportRow(${item.rowIndex}, '${item.store}', '${item.month}', '${item.name}', '${item.date}')">削除</button>
+              <button class="btn btn-danger btn-sm" onclick="deleteWorkReportRow('${item.store}', '${item.name}', '${item.date}')">削除</button>
             </td>
           `;
           
@@ -2236,24 +2236,25 @@
       }
     }
 
-    async function deleteWorkReportRow(rowIndex, store, monthStr, name, dateStr) {
+    async function deleteWorkReportRow(store, name, dateStr) {
       if (!confirm(`本当に ${name} さんの ${dateStr} (${store}) の勤務データを削除しますか？`)) return;
     
       showLoading(true);
       try {
         const res = await callGas("deleteWorkReportRow", {
-          rowIndex: rowIndex,
           store: store,
-          monthStr: monthStr
+          name: name,
+          date: dateStr
         });
         showLoading(false);
         alert(res.message || "削除処理が完了しました。");
         searchWorkReport();
       } catch (e) {
         showLoading(false);
+        alert("エラーが発生しました: " + e.message);
         console.error(e);
       }
-    }    
+    }
   </script>
 </body>
 </html>
