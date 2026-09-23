@@ -790,8 +790,8 @@
     // ----------------------------------------------------
     //  グローバル変数 & 初期設定
     // ----------------------------------------------------
-    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzLsjZp4Eba0tDVFl62Ey9iH_qSBV6CjVjmrPnumaJhQRlbSx0Tio__LaN9NJtZFCRz/exec"; // ※実際のエンドポイントURLに置き換えてください
-    const APP_VERSION = "v1.7.10";
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbx9MTHOJs8_HKNfQze6LlqG1IOe15BNIWisZJzOJ66wOmwkEHo59fmcjEIoEhh-5v6u/exec"; // ※実際のエンドポイントURLに置き換えてください
+    const APP_VERSION = "v1.7.11";
     const TEN_MINUTES = 10 * 60 * 1000;
     
     let currentUsername = "";
@@ -2244,7 +2244,7 @@
         const res = await callGas("deleteWorkReportRow", {
           rowIndex: rowIndex,
           store: store,
-          month: monthStr
+          monthStr: monthStr
         });
         showLoading(false);
         alert(res.message || "削除処理が完了しました。");
