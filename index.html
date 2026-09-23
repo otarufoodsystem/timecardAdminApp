@@ -791,7 +791,7 @@
     //  グローバル変数 & 初期設定
     // ----------------------------------------------------
     const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzLsjZp4Eba0tDVFl62Ey9iH_qSBV6CjVjmrPnumaJhQRlbSx0Tio__LaN9NJtZFCRz/exec"; // ※実際のエンドポイントURLに置き換えてください
-    const APP_VERSION = "v1.7.9";
+    const APP_VERSION = "v1.7.10";
     const TEN_MINUTES = 10 * 60 * 1000;
     
     let currentUsername = "";
@@ -2194,16 +2194,21 @@
         return;
       }
     
-      // ✨ ポップアップ内ボタンの「処理中」表示制御
-      const submitBtn = document.querySelector("#workReportAddModal .btn-primary");
+      // モーダル内の全要素を取得
+      const modal = document.getElementById("workReportAddModal");
+      const formElements = modal.querySelectorAll("input, select, button");
+      const submitBtn = modal.querySelector(".btn-primary");
       const originalBtnText = submitBtn.innerText;
-      submitBtn.innerText = "追加中...";
-      submitBtn.disabled = true;
     
-      // 日付を YYYY/MM/DD 形式へ変換
+      // 🔒 1. 画面操作を遮断（ボタン名変更 + 全入力要素を非活性化）
+      submitBtn.innerText = "処理中...";
+      formElements.forEach(el => el.disabled = true);
+      
+      // 🔒 2. 全画面ローディングを表示して画面全体のクリックをガード
+      showLoading(true);
+    
       const formattedDate = dateVal.replace(/-/g, "/");
     
-      showLoading(true);
       try {
         const res = await callGas("addWorkReportRow", {
           store: store,
@@ -2225,11 +2230,11 @@
         showLoading(false);
         console.error(e);
       } finally {
-        // ✨ ボタンの状態を復元
+        // 🔓 3. 処理完了・エラー時に活性化状態へ戻す
         submitBtn.innerText = originalBtnText;
-        submitBtn.disabled = false;
+        formElements.forEach(el => el.disabled = false);
       }
-    }    
+    }
 
     async function deleteWorkReportRow(rowIndex, store, monthStr, name, dateStr) {
       if (!confirm(`本当に ${name} さんの ${dateStr} (${store}) の勤務データを削除しますか？`)) return;
@@ -2239,7 +2244,7 @@
         const res = await callGas("deleteWorkReportRow", {
           rowIndex: rowIndex,
           store: store,
-          monthStr: monthStr
+          month: monthStr
         });
         showLoading(false);
         alert(res.message || "削除処理が完了しました。");
