@@ -446,10 +446,11 @@
                   <th>総時間</th>
                   <th>食事</th>
                   <th>コメント</th>
+                  <th>操作</th>
                 </tr>
               </thead>
               <tbody id="report-table-body">
-                <tr><td colspan="15" style="text-align:center; padding:20px; color:#6c757d;">検索条件を指定して「検索する」ボタンを押してください。</td></tr>
+                <tr><td colspan="16" style="text-align:center; padding:20px; color:#6c757d;">検索条件を指定して「検索する」ボタンを押してください。</td></tr>
               </tbody>
             </table>
           </div>
@@ -791,7 +792,7 @@
     //  グローバル変数 & 初期設定
     // ----------------------------------------------------
     const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyk7Zd3w1NSTZbJ755fniemw1VXVAyZWN52qlYFH5eidGeB3moaUImTZyqGrQfCgsqN/exec"; // ※実際のエンドポイントURLに置き換えてください
-    const APP_VERSION = "v1.7.14";
+    const APP_VERSION = "v1.7.15";
     const TEN_MINUTES = 10 * 60 * 1000;
     
     let currentUsername = "";
@@ -1401,7 +1402,7 @@
       const store = storeEl ? storeEl.value : "";
       const name = nameEl ? nameEl.value : "";
     
-      tbody.innerHTML = `<tr><td colspan="15" style="text-align:center; padding:20px; color:#c29d38; font-weight:bold;">🔄 スプレッドシートから勤務実績を抽出中...</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="16" style="text-align:center; padding:20px; color:#c29d38; font-weight:bold;">🔄 スプレッドシートから勤務実績を抽出中...</td></tr>`;
       showLoading(true);
     
       try {
@@ -1421,12 +1422,12 @@
         showLoading(false);
     
         if (!res.success) {
-          tbody.innerHTML = `<tr><td colspan="15" style="text-align:center; padding:20px; color:red;">エラー: ${res.error || "データの取得に失敗しました"}</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="16" style="text-align:center; padding:20px; color:red;">エラー: ${res.error || "データの取得に失敗しました"}</td></tr>`;
           return;
         }
     
         if (!res.data || res.data.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="15" style="text-align:center; padding:20px;" class="text-muted">該当する勤務実績データが見つかりませんでした。</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="16" style="text-align:center; padding:20px;" class="text-muted">該当する勤務実績データが見つかりませんでした。</td></tr>`;
           return;
         }
     
@@ -1495,7 +1496,7 @@
       } catch (e) {
         showLoading(false);
         console.error(e);
-        tbody.innerHTML = `<tr><td colspan="15" style="text-align:center; padding:20px; color:red;">通信エラーが発生しました。時間をおいて再度お試しください。</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="16" style="text-align:center; padding:20px; color:red;">通信エラーが発生しました。時間をおいて再度お試しください。</td></tr>`;
       }
     }
     
