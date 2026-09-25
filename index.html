@@ -791,8 +791,8 @@
     // ----------------------------------------------------
     //  グローバル変数 & 初期設定
     // ----------------------------------------------------
-    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyk7Zd3w1NSTZbJ755fniemw1VXVAyZWN52qlYFH5eidGeB3moaUImTZyqGrQfCgsqN/exec"; // ※実際のエンドポイントURLに置き換えてください
-    const APP_VERSION = "v1.7.15";
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyFOOKbdxfj3nWiy9-fm40vkqWEss1-lwMokvmQ3SREn8Y0480FSLYMF4yZ_SEhW6tp/exec"; // ※実際のエンドポイントURLに置き換えてください
+    const APP_VERSION = "v1.7.16";
     const TEN_MINUTES = 10 * 60 * 1000;
     
     let currentUsername = "";
@@ -1037,6 +1037,36 @@
     }
     
     async function responseToJson(response) {
+      // 1. まずレスポンスをテキストとして取得
+      const text = await response.text();
+      let resData;
+    
+      // 2. JSONパースを試みる
+      try {
+        resData = JSON.parse(text);
+      } catch (e) {
+        // GASからHTML（<!DOCTYPE ...）等の非JSONが返ってきた場合のハンドリング
+        console.error("GASからの返却値がJSONではありません:", text);
+        throw new Error("サーバーから一時的なエラー応答（HTML）が返されました。GASの実行ログをご確認ください。");
+      }
+    
+      // 3. 既存の認証エラー判定（セッション切れ・パスワード変更）
+      if (resData.authError) {
+        clearAuthStorage();
+        alert("セッションの有効期限が切れたか、パスワードが変更されました。再入力してください。");
+        location.reload();
+        throw new Error("Auth Error");
+      }
+    
+      // 4. 既存の処理成功判定
+      if (!resData.success) {
+        throw new Error(resData.error || "エラーが発生しました");
+      }
+    
+      return resData;
+    }
+/*    
+    async function responseToJson(response) {
       const resData = await response.json();
       if (resData.authError) {
         clearAuthStorage();
@@ -1047,7 +1077,7 @@
       if (!resData.success) throw new Error(resData.error || "エラーが発生しました");
       return resData;
     }
-    
+*/    
     function clearAuthStorage() {
       localStorage.removeItem("admin_saved_username");
       localStorage.removeItem("admin_saved_password");
