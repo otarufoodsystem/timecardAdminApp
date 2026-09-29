@@ -804,6 +804,34 @@
     let globalStaffList = [];     // スタッフデータ格納用
     let globalStoreList = [];     // 店舗データ格納用
     let globalCommentList = [];   // コメントデータ格納用
+
+    // 💡【追加】各データが読み込み済みかを管理するフラグ
+    let loadedStoreList = false;
+    let loadedStaffList = false;
+    let loadedCommentList = false;
+
+    // 💡【更新】タブ切り替え時に必要なデータをオンデマンド読み込み
+    async function switchTab(type) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      
+      const targetBtn = document.getElementById(`tab-${type}-btn`);
+      const targetContent = document.getElementById(`tab-${type}`);
+      if (targetBtn) targetBtn.classList.add('active');
+      if (targetContent) targetContent.classList.add('active');
+
+      // アクティブになったタブに応じて未読み込みのデータのみ読み込む
+      if (type === 'staff') {
+        if (!loadedStaffList) await loadStaffList();
+      } else if (type === 'store') {
+        if (!loadedStoreList) await loadStoreList();
+      } else if (type === 'comment') {
+        if (!loadedCommentList) await loadCommentList();
+      } else if (type === 'paidleave') {
+        if (!loadedStoreList) await loadStoreList();
+        if (!loadedStaffList) await loadStaffList();
+      }
+    }    
     
     // ----------------------------------------------------
     //  画面ロード時の初期化処理（イベント登録）
@@ -871,10 +899,11 @@
           const protectionOverlay = document.getElementById("protection-overlay");
           if (loginScreen) loginScreen.style.display = "none";
           if (protectionOverlay) protectionOverlay.style.display = "none";
-    
-          await loadStoreList();   // 1. 店舗読み込み
-          await loadStaffList();   // 2. スタッフ読み込み
-          await loadCommentList(); // 3. コメント読み込み
+
+          // 💡 アクティブタブ（勤務表照会）の表示に必要な店舗とスタッフ情報のみを初期読み込み
+          await loadStoreList();   
+          await loadStaffList();   
+//          await loadCommentList(); // 3. コメント読み込み
           initReportForm();        // 4. 勤務表初期化
           initPaidLeaveForm();     // 5. 有給休暇初期化
     
@@ -949,7 +978,7 @@
             
             await loadStoreList();   // 1. 店舗読み込み
             await loadStaffList();   // 2. スタッフ読み込み
-            await loadCommentList(); // 3. コメント読み込み
+//            await loadCommentList(); // 3. コメント読み込み
             showLoading(false);
             initReportForm();
             initPaidLeaveForm();     // 有給休暇フォーム初期化
@@ -1728,6 +1757,7 @@
       try {
         const res = await callGas("getStaffList");
         globalStaffList = res.data;
+        loadedStaffList = true; // 💡 取得完了フラグを立てる
         const tbody = document.getElementById('staff-table-body');
         if (!tbody) return;
         
@@ -1845,6 +1875,7 @@
       try {
         const res = await callGas("getStoreList");
         globalStoreList = res.data;
+        loadedStoreList = true; // 💡 取得完了フラグを立てる
         const tbody = document.getElementById('store-table-body');
         if (!tbody) return;
     
@@ -1946,6 +1977,7 @@
       try {
         const res = await callGas("getCommentList");
         globalCommentList = res.data;
+        loadedCommentList = true; // 💡 取得完了フラグを立てる
         const tbody = document.getElementById('comment-table-body');
         if (!tbody) return;
         
