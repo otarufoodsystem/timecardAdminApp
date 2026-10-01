@@ -859,6 +859,8 @@
       const userEl = document.getElementById("login-user");
       const passEl = document.getElementById("login-pass");
       const errMsgEl = document.getElementById("login-err-msg");
+      // ログインボタンの取得（ID指定またはフォーム内のsubmitボタン）
+      const loginBtn = document.getElementById("login-btn") || document.querySelector("#login-screen button[type='submit']");
     
       const username = userEl ? userEl.value.trim() : "";
       const password = passEl ? passEl.value.trim() : "";
@@ -869,6 +871,14 @@
           errMsgEl.style.display = "block";
         }
         return;
+      }
+
+      // 💡 ボタンのテキスト退避＆「処理中...」に変更してクリック不可にする
+      let originalBtnText = "";
+      if (loginBtn) {
+        originalBtnText = loginBtn.innerText;
+        loginBtn.innerText = "処理中...";
+        loginBtn.disabled = true;
       }
     
       showLoading(true);
@@ -886,7 +896,6 @@
         });
     
         const resData = await response.json();
-        showLoading(false);
     
         if (resData.success) {
           currentUsername = username;
@@ -900,12 +909,11 @@
           if (loginScreen) loginScreen.style.display = "none";
           if (protectionOverlay) protectionOverlay.style.display = "none";
 
-          // 💡 アクティブタブ（勤務表照会）の表示に必要な店舗とスタッフ情報のみを初期読み込み
+          // 💡 後続データ取得中も showLoading(true) のままにして操作をブロック
           await loadStoreList();   
           await loadStaffList();   
-//          await loadCommentList(); // 3. コメント読み込み
-          initReportForm();        // 4. 勤務表初期化
-          initPaidLeaveForm();     // 5. 有給休暇初期化
+          initReportForm();        
+          initPaidLeaveForm();     
     
           resetTimeoutTimer();
         } else {
@@ -915,11 +923,17 @@
           }
         }
       } catch (error) {
-        showLoading(false);
         console.error("Login error:", error);
         if (errMsgEl) {
           errMsgEl.innerText = "通信エラーが発生しました。接続を確認してください。";
           errMsgEl.style.display = "block";
+        }
+      } finally {
+        // 💡 全ての処理（または失敗処理）が終わったらローディングを解除しボタンを復元
+        showLoading(false);
+        if (loginBtn) {
+          loginBtn.innerText = originalBtnText || "ログイン";
+          loginBtn.disabled = false;
         }
       }
     }
