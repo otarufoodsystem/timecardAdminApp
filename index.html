@@ -1047,6 +1047,7 @@
     
     async function callGas(action, data = null) {
       const savedUser = localStorage.getItem("admin_saved_username") || "";
+      console.log("callGas 送信データ:", action, payload);
       
       const payload = { 
         action: action, 
