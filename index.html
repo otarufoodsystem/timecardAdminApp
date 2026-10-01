@@ -390,7 +390,7 @@
     <button id="tab-report-btn" class="tab-btn active" onclick="switchTab('report')">📊 勤務表照会</button>
     <button id="tab-staff-btn" class="tab-btn" onclick="switchTab('staff')">👤 スタッフ一覧メンテ</button>
     <button id="tab-store-btn" class="tab-btn" onclick="switchTab('store')">🏪 店舗一覧メンテ</button>
-    <button id="tab-comment-btn" class="tab-btn" onclick="switchTab('comment')">💬 コメント一覧メンテ</button>
+    <button id="tab-comment-btn" class="tab-btn" onclick="switchTab('comment')" style="display: none;">💬 コメント一覧メンテ</button>
     <button id="tab-paidleave-btn" class="tab-btn" onclick="switchTab('paidleave')">🌴 有給休暇管理</button>
   </div>
   
@@ -573,7 +573,7 @@
       </div>
     </div>
   
-    <div id="tab-comment" class="tab-content">
+    <div id="tab-comment" class="tab-content" style="display: none;">
       <div class="view-grid">
         <div class="form-box">
           <h3 id="comment-form-title">コメント登録・編集</h3>
@@ -825,8 +825,8 @@
         if (!loadedStaffList) await loadStaffList();
       } else if (type === 'store') {
         if (!loadedStoreList) await loadStoreList();
-      } else if (type === 'comment') {
-        if (!loadedCommentList) await loadCommentList();
+//      } else if (type === 'comment') {
+//        if (!loadedCommentList) await loadCommentList();
       } else if (type === 'paidleave') {
         if (!loadedStoreList) await loadStoreList();
         if (!loadedStaffList) await loadStaffList();
