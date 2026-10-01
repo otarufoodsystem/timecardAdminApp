@@ -1047,13 +1047,13 @@
     
     async function callGas(action, data = null) {
       const savedUser = localStorage.getItem("admin_saved_username") || "";
-      console.log("callGas 送信データ:", action, payload);
       
       const payload = { 
         action: action, 
         username: savedUser, 
         password: currentPassword 
       };
+      console.log("callGas 送信データ:", action, payload);
     
       if (data !== null) {
         // 💡 行番号（数値）または文字列単体を送る従来のアクションのみ payload.rowIndex に設定
